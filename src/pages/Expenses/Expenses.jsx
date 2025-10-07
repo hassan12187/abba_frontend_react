@@ -1,66 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './Expenses.css';
+import useExpenseQuery from '../../components/hooks/useExpenseQuery';
+import { useCustom } from '../../Store/Store';
+import Pagination from '../../components/Layout/Pagination';
+import { PostService } from '../../Services/Services';
 
 const Expenses = () => {
-  const [expenses, setExpenses] = useState([]);
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
+  const {token}=useCustom();
   const [formData, setFormData] = useState({
     expense_type: '',
     description: '',
     amount: ''
   });
-  const [editIndex, setEditIndex] = useState(null);
   const [filters, setFilters] = useState({
     type: '',
     date: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const {data,isLoading}=useExpenseQuery(`/api/expense?page=${currentPage-1}&limit=${10}`,token,currentPage);
+  // // Sample initial data
+  // useEffect(() => {
+  //   const sampleExpenses = [
+  //     {
+  //       id: 1,
+  //       expense_type: 'salary',
+  //       description: 'Staff salaries for January',
+  //       amount: 50000,
+  //       date: '2024-01-15'
+  //     },
+  //     {
+  //       id: 2,
+  //       expense_type: 'normal expense',
+  //       description: 'Electricity bill',
+  //       amount: 15000,
+  //       date: '2024-01-10'
+  //     },
+  //     {
+  //       id: 3,
+  //       expense_type: 'asset',
+  //       description: 'New furniture purchase',
+  //       amount: 75000,
+  //       date: '2024-01-05'
+  //     }
+  //   ];
+  //   setExpenses(sampleExpenses);
+  //   setFilteredExpenses(sampleExpenses);
+  // }, []);
 
-  // Sample initial data
-  useEffect(() => {
-    const sampleExpenses = [
-      {
-        id: 1,
-        expense_type: 'salary',
-        description: 'Staff salaries for January',
-        amount: 50000,
-        date: '2024-01-15'
-      },
-      {
-        id: 2,
-        expense_type: 'normal expense',
-        description: 'Electricity bill',
-        amount: 15000,
-        date: '2024-01-10'
-      },
-      {
-        id: 3,
-        expense_type: 'asset',
-        description: 'New furniture purchase',
-        amount: 75000,
-        date: '2024-01-05'
-      }
-    ];
-    setExpenses(sampleExpenses);
-    setFilteredExpenses(sampleExpenses);
-  }, []);
+  // // Filter expenses when filters change
+  // useEffect(() => {
+  //   let filtered = expenses;
 
-  // Filter expenses when filters change
-  useEffect(() => {
-    let filtered = expenses;
+  //   if (filters.type) {
+  //     filtered = filtered.filter(expense => expense.expense_type === filters.type);
+  //   }
 
-    if (filters.type) {
-      filtered = filtered.filter(expense => expense.expense_type === filters.type);
-    }
+  //   if (filters.date) {
+  //     filtered = filtered.filter(expense => expense.date === filters.date);
+  //   }
 
-    if (filters.date) {
-      filtered = filtered.filter(expense => expense.date === filters.date);
-    }
-
-    setFilteredExpenses(filtered);
-    setCurrentPage(1);
-  }, [filters, expenses]);
+  //   setFilteredExpenses(filtered);
+  //   setCurrentPage(1);
+  // }, [filters, expenses]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -78,29 +79,29 @@ const Expenses = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
-    if (editIndex !== null) {
-      // Update existing expense
-      const updatedExpenses = expenses.map((expense, index) =>
-        index === editIndex 
-          ? { ...expense, ...formData, amount: parseFloat(formData.amount) }
-          : expense
-      );
-      setExpenses(updatedExpenses);
-      setEditIndex(null);
-    } else {
-      // Add new expense
-      const newExpense = {
-        id: expenses.length + 1,
-        ...formData,
-        amount: parseFloat(formData.amount),
-        date: new Date().toISOString().split('T')[0]
-      };
-      setExpenses(prev => [...prev, newExpense]);
-    }
-
+    // if (editIndex !== null) {
+    //   // Update existing expense
+    //   const updatedExpenses = expenses.map((expense, index) =>
+    //     index === editIndex 
+    //       ? { ...expense, ...formData, amount: parseFloat(formData.amount) }
+    //       : expense
+    //   );
+    //   setExpenses(updatedExpenses);
+    //   setEditIndex(null);
+    // } else {
+    //   // Add new expense
+    //   const newExpense = {
+    //     id: expenses.length + 1,
+    //     ...formData,
+    //     amount: parseFloat(formData.amount),
+    //     date: new Date().toISOString().split('T')[0]
+    //   };
+    //   setExpenses(prev => [...prev, newExpense]);
+    // }
+    PostService("/api/expense",formData,token);
     // Reset form
     setFormData({
       expense_type: '',
@@ -147,30 +148,12 @@ const Expenses = () => {
     alert('Export to Excel functionality would be implemented here');
     console.log('Exporting expenses:', filteredExpenses);
   };
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentExpenses = filteredExpenses.slice(startIndex, startIndex + itemsPerPage);
-
   const goToPage = (page) => {
     setCurrentPage(page);
   };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   // Calculate total expenses
-  const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  console.log(data);    
+  const totalExpenses = data?.data?.reduce((sum, expense) => sum + expense.amount, 0);
 
   const getExpenseTypeBadge = (type) => {
     const typeConfig = {
@@ -198,7 +181,7 @@ const Expenses = () => {
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-plus-circle"></i>
-            {editIndex !== null ? 'Edit Expense' : 'Add New Expense'}
+            {/* {editIndex !== null ? 'Edit Expense' : 'Add New Expense'} */}
           </h4>
           <form onSubmit={handleSubmit} className="expense-form">
             <div className="form-row">
@@ -257,14 +240,14 @@ const Expenses = () => {
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
                 <i className="fas fa-save"></i>
-                {editIndex !== null ? 'Update Expense' : 'Save Expense'}
+                {/* {editIndex !== null ? 'Update Expense' : 'Save Expense'} */}
               </button>
-              {editIndex !== null && (
+              {/* {editIndex !== null && (
                 <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
                   <i className="fas fa-times"></i>
                   Cancel Edit
                 </button>
-              )}
+              )} */}
             </div>
           </form>
         </div>
@@ -334,7 +317,7 @@ const Expenses = () => {
               Expenses List
             </h3>
             <div className="total-expenses">
-              Total Expenses: <span className="total-amount">PKR {totalExpenses.toLocaleString()}</span>
+              {/* Total Expenses: <span className="total-amount">PKR {totalExpenses.toLocaleString()}</span> */}
             </div>
           </div>
 
@@ -351,14 +334,14 @@ const Expenses = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentExpenses.length > 0 ? (
-                    currentExpenses.map((expense, index) => (
-                      <tr key={expense.id} className="expense-row">
+                  {data?.data?.length > 0 ? (
+                    data?.data?.map((expense, index) => (
+                      <tr key={index} className="expense-row">
                         <td>
-                          {getExpenseTypeBadge(expense.expense_type)}
+                          {getExpenseTypeBadge(expense?.expense_type)}
                         </td>
                         <td className="description-cell">
-                          {expense.description}
+                          {expense?.description}
                         </td>
                         <td className="amount-cell">
                           PKR {expense.amount.toLocaleString()}
@@ -370,14 +353,14 @@ const Expenses = () => {
                           <div className="action-buttons">
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(expenses.findIndex(e => e.id === expense.id))}
+                              onClick={() => handleEdit(data?.data?.findIndex(e => e.id === expense?._id))}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-delete"
-                              onClick={() => handleDelete(expenses.findIndex(e => e.id === expense.id))}
+                              onClick={() => handleDelete(data?.data?.findIndex(e => e.id === expense?._id))}
                               title="Delete"
                             >
                               <i className="fas fa-trash"></i>
@@ -397,43 +380,9 @@ const Expenses = () => {
                 </tbody>
               </table>
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination-container">
-                <nav className="pagination-nav">
-                  <button
-                    className="pagination-btn"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                  >
-                    <i className="fas fa-chevron-left"></i>
-                    Previous
-                  </button>
-
-                  <div className="page-numbers">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <button
-                        key={page}
-                        className={`page-number ${currentPage === page ? 'active' : ''}`}
-                        onClick={() => goToPage(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    className="pagination-btn"
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <i className="fas fa-chevron-right"></i>
-                  </button>
-                </nav>
-              </div>
-            )}
+                {/* Pagination */}
+                <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length} />
+     
           </div>
         </div>
       </div>

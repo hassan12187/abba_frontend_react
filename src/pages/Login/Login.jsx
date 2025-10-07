@@ -63,8 +63,11 @@ const Login = () => {
         });
         if(result.status==200){
           setToken(result?.data.token);
-          navigate("/");
+          return navigate("/");
         };
+        if(result.status==429){
+          window.alert(result.config);
+        }
       // // Mock authentication - in real app, this would be an API call
       // if (formData.email === 'admin' && formData.password === 'password') {
       //   // Store authentication state (in real app, use context or redux)

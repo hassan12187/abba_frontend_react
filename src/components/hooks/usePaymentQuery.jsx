@@ -7,8 +7,8 @@ export const usePaymentQuery=(page,token)=>{
         queryKey:["page",`${page}`],
         queryFn:async()=>await GetService(`/api/payment?page=${page}&limit=10`,token),
         enabled:!!token,
-        cacheTime:60000*60,
-        staleTime:60000*60        
+        cacheTime: 1000 * 60 * 60,
+        staleTime: 1000 * 60 * 60,     
     });
 };
 export const useStudentApplication=(page)=>{

@@ -4,16 +4,42 @@ import {jwtDecode} from "jwt-decode";
 export const GetService=async(route,token)=>{
     const result = await Axios.get(route,{
         headers:{
-            Authorization:`Bearer ${token}`
-        }
+            Authorization:`Bearer ${token}`,
+        },
+        withCredentials:true
     });    
-    console.log(result);
     if(result.status==200){
         return result.data;
     };
 };
-export const PostService=(route,data)=>{};
-export const PatchService=(route,data)=>{};
+export const PostService=async(route,data,token)=>{
+    try {
+        const result = await Axios.post(route,data,{
+            headers:{
+                'Authorization':`Bearer ${token}`
+            },
+            withCredentials:true
+        });
+        console.log(result);
+    } catch (error) {
+        console.log(`post server error ${error}`);
+    }
+};
+export const PatchService=async(route,data,token)=>{
+    try {
+        const result = await Axios.patch(route,data,{
+            headers:{
+                Authorization:`Bearer ${token}`
+            },
+            withCredentials:true,
+        });
+        if(result.status==200){
+            console.log(result);
+        };
+    } catch (error) {
+        console.log(`patch error ${error}`);
+    }
+};
 export const DeleteService=(route)=>{};
 export const isTokenExpired=(token)=>{
     if(!token)return true;

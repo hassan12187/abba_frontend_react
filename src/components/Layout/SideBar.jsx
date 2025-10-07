@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = ({ isOpen }) => {
-  // const [sideBarAnimation,setSideBarAnimation]=useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,7 +11,8 @@ const Sidebar = ({ isOpen }) => {
     { path: '/payments', icon: 'fas fa-credit-card', label: 'Payments' },
     { path: '/reports', icon: 'fas fa-chart-bar', label: 'Reports' },
     { path: '/applications', icon: 'fas fa-file-alt', label: 'Applications' },
-    { path: '/expenses', icon: 'fas fa-money-bill-wave', label: 'Expenses' }
+    { path: '/expenses', icon: 'fas fa-money-bill-wave', label: 'Expenses' },
+    {path:'/settings',icon:''}
   ];
 
   const isActive = (path) => {

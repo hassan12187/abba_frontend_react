@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import  { useState } from 'react';
 import './Payments.css';
-import { useQuery } from '@tanstack/react-query';
-import { GetService } from '../../Services/Services';
 import { usePaymentQuery } from '../../components/hooks/usePaymentQuery';
 import { useCustom } from '../../Store/Store';
+import Pagination from '../../components/Layout/Pagination';
+import { GetService, PostService } from '../../Services/Services';
+import { useEffect } from 'react';
 
 const Payments = () => {
   const {token}=useCustom();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pages,setPages]=useState([1,2,3]);
   const [formData, setFormData] = useState({
     student_registration_no: '',
     amount: '',
@@ -17,33 +17,44 @@ const Payments = () => {
  const {data,isLoading}=usePaymentQuery(currentPage-1,token);
     const [editIndex, setEditIndex] = useState(null);
     const [filters, setFilters] = useState({
-      regNo: '',
+      student_registration_no: '',
       date: ''
     });
-
-  const itemsPerPage = 10;
-
-          const handleInputChange = (e) => {
-            const { name, value } = e.target;
-            setFormData(prev => ({
-              ...prev,
-              [name]: value
-            }));
-          };
-          
-          const handleFilterChange = (e) => {
-            const { name, value } = e.target;
-            setFilters(prev => ({
-              ...prev,
-              [name]: value
-            }));
-          };
-          
-          const handleSubmit = (e) => {
-            e.preventDefault();
-            
-           
     
+  const handleGetDataOnInputChange=async()=>{
+    try {
+    const qPaymentData=await GetService(`/api/payment?page=${currentPage-1}&limit=10&query=${filters.student_registration_no}`,token);
+    console.log(qPaymentData);
+   } catch (error) {
+    console.log(error);
+   }
+  }
+  useEffect(()=>{
+   handleGetDataOnInputChange();
+    return ()=>null;
+  },[filters.student_registration_no]);
+ const handleInputChange = (e) => {
+   const { name, value } = e.target;
+    
+   setFormData(prev => ({
+     ...prev,
+     [name]: value
+   }));
+  
+ };
+ 
+ const handleFilterChange = async(e) => {
+   const { name, value } = e.target;
+
+   setFilters(prev => ({
+     ...prev,
+     [name]: value
+   }));
+ };
+          
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    PostService("/api/payment",formData,token);
     // Reset form
     setFormData({
       student_registration_no: '',
@@ -174,32 +185,6 @@ const Payments = () => {
               printWindow.onafterprint = () => printWindow.close();
             }, 100);
           };
-          
-          // Pagination logic
-          // const currentPayments = data?.payments.slice(startIndex, startIndex + itemsPerPage);
-          
-          const goToPage = (page) => {
-            setCurrentPage(page);
-          };
-          
-          const goToPreviousPage = () => {
-            setPages([pages[0]-1,pages[1]-1,pages[2]-1]);
-            if (currentPage > 1) {
-              setCurrentPage(currentPage - 1);
-            }
-          };
-
-          const goToNextPage = () => {
-            setPages(()=>{
-              return [pages[0]+1,pages[1]+1,pages[2]+1];
-            });
-            setCurrentPage(currentPage+1);
-            // if (currentPage < totalPages) {
-            //   setCurrentPage(currentPage + 1);
-            // }
-          };
-          
-          // Calculate total amount
           const totalAmount = data?.payments?.reduce((sum, payment) => sum + payment.amount, 0);
           
           const getPaymentMethodBadge = (method) => {
@@ -211,7 +196,7 @@ const Payments = () => {
     const config = methodConfig[method] || { label: method, class: 'badge-default' };
     return <span className={`payment-badge ${config.class}`}>{config.label}</span>;
   };
-  
+  console.log(data);
   return (
     <div className="payments-page">
       <div className="page-header">
@@ -306,13 +291,13 @@ const Payments = () => {
           </h4>
           <div className="filters-row">
             <div className="filter-group">
-              <label htmlFor="searchRegNo" className="form-label">Search by Reg No</label>
+              <label htmlFor="student_registration_no" className="form-label">Search by Reg No</label>
               <input
                 type="text"
-                id="searchRegNo"
-                name="regNo"
+                id="student_registration_no"
+                name="student_registration_no"
                 className="form-control"
-                value={filters.regNo}
+                value={filters.student_registration_no}
                 onChange={handleFilterChange}
                 placeholder="Enter registration number"
               />
@@ -375,8 +360,8 @@ const Payments = () => {
                   </tr>
                 </thead>
                 <tbody>
-                   {data?.payments?.length > 0 ? (
-                    data?.payments?.map((payment, index) => (
+                   {data?.data?.length > 0 ? (
+                    data?.data?.map((payment, index) => (
                       <tr key={index} className="payment-row">
                         <td className="reg-no-cell">
                           <div className="student-info">
@@ -407,14 +392,14 @@ const Payments = () => {
                             </button>
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(payments.findIndex(p => p.id === payment.id))}
+                              onClick={() => handleEdit(data?.findIndex(p => p.id === payment.id))}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-delete"
-                              onClick={() => handleDelete(payments.findIndex(p => p.id === payment.id))}
+                              onClick={() => handleDelete(data?.findIndex(p => p.id === payment.id))}
                               title="Delete"
                             >
                               <i className="fas fa-trash"></i>
@@ -437,40 +422,7 @@ const Payments = () => {
 
             {/* Pagination */}
             {
-              <div className="pagination-container">
-                <nav className="pagination-nav">
-                  <button
-                    className="pagination-btn"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                  >
-                    <i className="fas fa-chevron-left"></i>
-                    Previous
-                  </button>
-
-                  <div className="page-numbers">
-                    {
-                    pages.map(page => (
-                      <button
-                        key={page}
-                        className={`page-number ${currentPage === page ? 'active' : ''}`}
-                        onClick={() => goToPage(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    className="pagination-btn"
-                    onClick={goToNextPage}
-                    disabled={data?.payments?.length < itemsPerPage ? true : false}
-                  >
-                    Next
-                    <i className="fas fa-chevron-right"></i>
-                  </button>
-                </nav>
-              </div>
+             <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length}/>
             }
           </div>
         </div>

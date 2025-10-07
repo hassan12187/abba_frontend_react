@@ -15,7 +15,8 @@ import Students from './pages/Students/Students';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Unauthorized from './pages/Unauthorized/Unauthorized';
 import CheckAuth from './components/CheckAuth';
-import 'bootstrap/dist/css/bootstrap.css';
+// import 'bootstrap/dist/css/bootstrap.css';
+import AdmissionForm from './pages/AdmissionForm/AdmissionForm';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -61,8 +62,11 @@ const App=()=>{
     {
       path:'/unauthorize',
       element:<Unauthorized title={'Access Denied'} info={"You don't have permission to access this page."} />
+    },
+    {
+      path:'/admission-form',
+      element:<AdmissionForm />
     }
-    
   ]);
   return <RouterProvider router={router}/>
 };

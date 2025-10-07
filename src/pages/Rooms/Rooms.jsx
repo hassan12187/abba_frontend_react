@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './Room.css';
+import { useRoomsQuery } from '../../components/hooks/useRoomQuery';
+import { useCustom } from '../../Store/Store';
+import { PostService } from '../../Services/Services';
+import socket from '../../Services/Socket';
+import Pagination from '../../components/Layout/Pagination';
 
 const Rooms = () => {
+  const {token}=useCustom();
   const [rooms, setRooms] = useState([]);
-  const [filteredRooms, setFilteredRooms] = useState([]);
+  // const [filteredRooms, setFilteredRooms] = useState([]);
   const [formData, setFormData] = useState({
-    roomNo: '',
-    totalBeds: '',
-    availableBeds: '',
-    roomStatus: 'available'
+    room_no: '',
+    total_beds: '',
+    available_beds: '',
+    status: 'available'
   });
   const [editIndex, setEditIndex] = useState(null);
   const [filters, setFilters] = useState({
@@ -17,73 +23,7 @@ const Rooms = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
-  // Sample initial data
-  useEffect(() => {
-    const sampleRooms = [
-      {
-        id: 1,
-        roomNo: '101',
-        totalBeds: 4,
-        availableBeds: 2,
-        roomStatus: 'available',
-        occupancy: '50%'
-      },
-      {
-        id: 2,
-        roomNo: '102',
-        totalBeds: 3,
-        availableBeds: 0,
-        roomStatus: 'occupied',
-        occupancy: '100%'
-      },
-      {
-        id: 3,
-        roomNo: '103',
-        totalBeds: 2,
-        availableBeds: 2,
-        roomStatus: 'available',
-        occupancy: '0%'
-      },
-      {
-        id: 4,
-        roomNo: '201',
-        totalBeds: 4,
-        availableBeds: 1,
-        roomStatus: 'available',
-        occupancy: '75%'
-      },
-      {
-        id: 5,
-        roomNo: '202',
-        totalBeds: 3,
-        availableBeds: 0,
-        roomStatus: 'maintenance',
-        occupancy: '100%'
-      }
-    ];
-    setRooms(sampleRooms);
-    setFilteredRooms(sampleRooms);
-  }, []);
-
-  // Filter rooms when filters change
-  useEffect(() => {
-    let filtered = rooms;
-
-    if (filters.status) {
-      filtered = filtered.filter(room => room.roomStatus === filters.status);
-    }
-
-    if (filters.search) {
-      filtered = filtered.filter(room => 
-        room.roomNo.toLowerCase().includes(filters.search.toLowerCase())
-      );
-    }
-
-    setFilteredRooms(filtered);
-    setCurrentPage(1);
-  }, [filters, rooms]);
-
+  const {data,isLoading}=useRoomsQuery(`/api/room?page=${currentPage-1}&limit=${itemsPerPage}`,token,currentPage);
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({
@@ -105,7 +45,7 @@ const Rooms = () => {
     return ((occupied / totalBeds) * 100).toFixed(0) + '%';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     // Validate available beds don't exceed total beds
@@ -113,56 +53,57 @@ const Rooms = () => {
       alert('Available beds cannot exceed total beds');
       return;
     }
+    console.log(formData);
+    PostService("/api/room",formData,token);
+    // const occupancy = calculateOccupancy(
+    //   parseInt(formData.totalBeds),
+    //   parseInt(formData.availableBeds)
+    // );
 
-    const occupancy = calculateOccupancy(
-      parseInt(formData.totalBeds),
-      parseInt(formData.availableBeds)
-    );
-
-    if (editIndex !== null) {
-      // Update existing room
-      const updatedRooms = rooms.map((room, index) =>
-        index === editIndex 
-          ? { 
-              ...room, 
-              ...formData, 
-              totalBeds: parseInt(formData.totalBeds),
-              availableBeds: parseInt(formData.availableBeds),
-              occupancy 
-            }
-          : room
-      );
-      setRooms(updatedRooms);
-      setEditIndex(null);
-    } else {
-      // Add new room
-      const newRoom = {
-        id: rooms.length + 1,
-        ...formData,
-        totalBeds: parseInt(formData.totalBeds),
-        availableBeds: parseInt(formData.availableBeds),
-        occupancy,
-        createdAt: new Date().toISOString()
-      };
-      setRooms(prev => [...prev, newRoom]);
-    }
+    // if (editIndex !== null) {
+    //   // Update existing room
+    //   const updatedRooms = rooms.map((room, index) =>
+    //     index === editIndex 
+    //       ? { 
+    //           ...room, 
+    //           ...formData, 
+    //           totalBeds: parseInt(formData.totalBeds),
+    //           availableBeds: parseInt(formData.availableBeds),
+    //           occupancy 
+    //         }
+    //       : room
+    //   );
+    //   setRooms(updatedRooms);
+    //   setEditIndex(null);
+    // } else {
+    //   // Add new room
+    //   const newRoom = {
+    //     id: rooms.length + 1,
+    //     ...formData,
+    //     totalBeds: parseInt(formData.totalBeds),
+    //     availableBeds: parseInt(formData.availableBeds),
+    //     occupancy,
+    //     createdAt: new Date().toISOString()
+    //   };
+    //   setRooms(prev => [...prev, newRoom]);
+    // }
 
     // Reset form
     setFormData({
-      roomNo: '',
-      totalBeds: '',
-      availableBeds: '',
-      roomStatus: 'available'
+      room_no: '',
+      total_beds: '',
+      available_beds: '',
+      status: 'available'
     });
   };
 
   const handleEdit = (index) => {
-    const roomToEdit = rooms[index];
+    const roomToEdit = data?.data?.[index];
     setFormData({
-      roomNo: roomToEdit.roomNo,
-      totalBeds: roomToEdit.totalBeds.toString(),
-      availableBeds: roomToEdit.availableBeds.toString(),
-      roomStatus: roomToEdit.roomStatus
+      room_no: roomToEdit.room_no,
+      total_beds: roomToEdit.total_beds.toString(),
+      available_beds: roomToEdit.available_beds.toString(),
+      status: roomToEdit.status
     });
     setEditIndex(index);
   };
@@ -177,10 +118,10 @@ const Rooms = () => {
   const cancelEdit = () => {
     setEditIndex(null);
     setFormData({
-      roomNo: '',
-      totalBeds: '',
-      availableBeds: '',
-      roomStatus: 'available'
+      room_no: '',
+      total_beds: '',
+      available_beds: '',
+      status: 'available'
     });
   };
 
@@ -192,9 +133,9 @@ const Rooms = () => {
   };
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentRooms = filteredRooms.slice(startIndex, startIndex + itemsPerPage);
+  // const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
+  // const startIndex = (currentPage - 1) * itemsPerPage;
+  // const currentRooms = filteredRooms.slice(startIndex, startIndex + itemsPerPage);
 
   const goToPage = (page) => {
     setCurrentPage(page);
@@ -223,7 +164,8 @@ const Rooms = () => {
     return <span className={`status-badge ${config.class}`}>{config.label}</span>;
   };
 
-  const getOccupancyLevel = (occupancy) => {
+  const getOccupancyLevel = (availableBeds,totalBeds) => {
+    const occupancy=calculateOccupancy(totalBeds,availableBeds);
     const percentage = parseInt(occupancy);
     if (percentage === 0) return 'empty';
     if (percentage < 50) return 'low';
@@ -232,13 +174,13 @@ const Rooms = () => {
   };
 
   // Statistics
-  const totalRooms = rooms.length;
-  const availableRooms = rooms.filter(room => room.roomStatus === 'available').length;
-  const occupiedRooms = rooms.filter(room => room.roomStatus === 'occupied').length;
-  const maintenanceRooms = rooms.filter(room => room.roomStatus === 'maintenance').length;
-  const totalBeds = rooms.reduce((sum, room) => sum + room.totalBeds, 0);
-  const availableBeds = rooms.reduce((sum, room) => sum + room.availableBeds, 0);
-
+  const totalRooms = data?.data.length;
+  const availableRooms = data?.data.filter(room => room.status === 'available').length;
+  const occupiedRooms = data?.data.filter(room => room.status === 'occupied').length;
+  const maintenanceRooms = data?.data.filter(room => room.status === 'maintenance').length;
+  const totalBeds = data?.data.reduce((sum, room) => sum + room.total_beds, 0);
+  const availableBeds = data?.data.reduce((sum, room) => sum + room.available_beds, 0);
+  if(isLoading)return <h1>loading...</h1>;
   return (
     <div className="rooms-page">
       <div className="page-header">
@@ -322,14 +264,15 @@ const Rooms = () => {
           <form onSubmit={handleSubmit} className="room-form">
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="roomNo" className="form-label">
+                <label htmlFor="room_no" className="form-label">
                   Room Number <span className="required">*</span>
                 </label>
                 <input
                   type="text"
-                  id="roomNo"
+                  id="room_no"
+                  name='room_no'
                   className="form-control"
-                  value={formData.roomNo}
+                  value={formData.room_no}
                   onChange={handleInputChange}
                   placeholder="Enter room number"
                   required
@@ -337,14 +280,15 @@ const Rooms = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="totalBeds" className="form-label">
+                <label htmlFor="total_beds" className="form-label">
                   Total Beds <span className="required">*</span>
                 </label>
                 <input
                   type="number"
-                  id="totalBeds"
+                  id="total_beds"
+                  name="total_beds"
                   className="form-control"
-                  value={formData.totalBeds}
+                  value={formData.total_beds}
                   onChange={handleInputChange}
                   placeholder="Enter total beds"
                   min="1"
@@ -354,14 +298,15 @@ const Rooms = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="availableBeds" className="form-label">
+                <label htmlFor="available_beds" className="form-label">
                   Available Beds <span className="required">*</span>
                 </label>
                 <input
                   type="number"
-                  id="availableBeds"
+                  id="available_beds"
+                  name='available_beds'
                   className="form-control"
-                  value={formData.availableBeds}
+                  value={formData.available_beds}
                   onChange={handleInputChange}
                   placeholder="Enter available beds"
                   min="0"
@@ -371,13 +316,14 @@ const Rooms = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="roomStatus" className="form-label">
+                <label htmlFor="status" className="form-label">
                   Status <span className="required">*</span>
                 </label>
                 <select
-                  id="roomStatus"
+                  id="status"
                   className="form-control"
-                  value={formData.roomStatus}
+                  name="status"
+                  value={formData.status}
                   onChange={handleInputChange}
                   required
                 >
@@ -461,7 +407,7 @@ const Rooms = () => {
               Rooms List
             </h3>
             <div className="rooms-summary">
-              Showing {filteredRooms.length} of {rooms.length} rooms
+              {/* Showing {filteredRooms.length} of {rooms.length} rooms */}
             </div>
           </div>
 
@@ -479,41 +425,41 @@ const Rooms = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRooms.length > 0 ? (
-                    currentRooms.map((room, index) => (
-                      <tr key={room.id} className="room-row">
+                  {data.data?.length > 0 ? (
+                    data.data?.map((room, index) => (
+                      <tr key={index} className="room-row">
                         <td className="room-no-cell">
                           <div className="room-info">
-                            <div className="room-number">{room.roomNo}</div>
+                            <div className="room-number">{room.room_no}</div>
                             <div className="room-floor">
-                              Floor {room.roomNo.charAt(0)}
+                              Floor {room.room_no.charAt(0)}
                             </div>
                           </div>
                         </td>
                         <td className="beds-cell">
                           <div className="beds-display">
                             <i className="fas fa-bed"></i>
-                            {room.totalBeds} beds
+                            {room.total_beds} beds
                           </div>
                         </td>
                         <td className="available-beds-cell">
-                          <div className={`available-beds ${room.availableBeds === 0 ? 'full' : 'available'}`}>
-                            {room.availableBeds} available
+                          <div className={`available-beds ${room.available_beds === 0 ? 'full' : 'available'}`}>
+                            {room.available_beds} available
                           </div>
                         </td>
                         <td className="occupancy-cell">
                           <div className="occupancy-display">
                             <div className="occupancy-bar">
                               <div 
-                                className={`occupancy-fill ${getOccupancyLevel(room.occupancy)}`}
-                                style={{ width: room.occupancy }}
+                                className={`occupancy-fill ${getOccupancyLevel(room.available_beds,room.total_beds)}`}
+                                style={{ width: calculateOccupancy(room.total_beds,room.available_beds) }}
                               ></div>
                             </div>
-                            <span className="occupancy-text">{room.occupancy}</span>
+                            <span className="occupancy-text">{calculateOccupancy(room.total_beds,room.available_beds)}</span>
                           </div>
                         </td>
                         <td className="status-cell">
-                          {getStatusBadge(room.roomStatus)}
+                          {getStatusBadge(room.status)}
                         </td>
                         <td className="actions-cell">
                           <div className="action-buttons">
@@ -525,14 +471,14 @@ const Rooms = () => {
                             </button>
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(rooms.findIndex(r => r.id === room.id))}
+                              onClick={() => handleEdit(data?.data?.findIndex(r => r._id === room._id))}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-delete"
-                              onClick={() => handleDelete(rooms.findIndex(r => r.id === room.id))}
+                              onClick={() => handleDelete(data?.data?.findIndex(r => r._id === room._id))}
                               title="Delete"
                             >
                               <i className="fas fa-trash"></i>
@@ -552,43 +498,7 @@ const Rooms = () => {
                 </tbody>
               </table>
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination-container">
-                <nav className="pagination-nav">
-                  <button
-                    className="pagination-btn"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                  >
-                    <i className="fas fa-chevron-left"></i>
-                    Previous
-                  </button>
-
-                  <div className="page-numbers">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <button
-                        key={page}
-                        className={`page-number ${currentPage === page ? 'active' : ''}`}
-                        onClick={() => goToPage(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    className="pagination-btn"
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <i className="fas fa-chevron-right"></i>
-                  </button>
-                </nav>
-              </div>
-            )}
+              <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length} />
           </div>
         </div>
       </div>
