@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { GetService } from "../../Services/Services";
 import { useCustom } from "../../Store/Store";
 
-export const usePaymentQuery=(page,token)=>{
+export const usePaymentQuery=(page,token,q)=>{
     return useQuery({
-        queryKey:["page",`${page}`],
-        queryFn:async()=>await GetService(`/api/payment?page=${page}&limit=10`,token),
+        queryKey:["page",`${page}`,q],
+        queryFn:async()=>await GetService(`/api/payment?page=${page}&limit=10&query=${q}`,token),
         enabled:!!token,
         cacheTime: 1000 * 60 * 60,
         staleTime: 1000 * 60 * 60,     

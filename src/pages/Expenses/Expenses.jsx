@@ -4,6 +4,7 @@ import useExpenseQuery from '../../components/hooks/useExpenseQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
 import { PostService } from '../../Services/Services';
+import { useDebounce } from '../../components/hooks/useDebounce';
 
 const Expenses = () => {
   const {token}=useCustom();
@@ -12,12 +13,17 @@ const Expenses = () => {
     description: '',
     amount: ''
   });
+  const [instantVals,setInstandVals]=useState({
+    type:"",
+    date:""
+  });
   const [filters, setFilters] = useState({
     type: '',
     date: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const {data,isLoading}=useExpenseQuery(`/api/expense?page=${currentPage-1}&limit=${10}`,token,currentPage);
+  const {data,isLoading}=useExpenseQuery(currentPage-1,token,filters.type,filters.date);
+  console.log(data);
   // // Sample initial data
   // useEffect(() => {
   //   const sampleExpenses = [
@@ -70,15 +76,21 @@ const Expenses = () => {
       [name]: value
     }));
   };
-
+  const updateFilters=useDebounce(
+    (name,value)=>{
+   setFilters(prev => {
+      return {...prev,[name]:value};
+    });
+    },500
+  );
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setInstandVals((prev)=>{
+      return {...prev,[name]:value};
+    })
+    updateFilters(name,value);
   };
-
+  console.log(filters);
   const handleSubmit = async(e) => {
     e.preventDefault();
 
@@ -152,7 +164,6 @@ const Expenses = () => {
     setCurrentPage(page);
   };
   // Calculate total expenses
-  console.log(data);    
   const totalExpenses = data?.data?.reduce((sum, expense) => sum + expense.amount, 0);
 
   const getExpenseTypeBadge = (type) => {
@@ -262,12 +273,12 @@ const Expenses = () => {
           </h4>
           <div className="filters-row">
             <div className="filter-group">
-              <label htmlFor="searchType" className="form-label">Expense Type</label>
+              <label htmlFor="type" className="form-label">Expense Type</label>
               <select
-                id="searchType"
+                id="type"
                 name="type"
                 className="form-control"
-                value={filters.type}
+                value={instantVals.type}
                 onChange={handleFilterChange}
               >
                 <option value="">All Types</option>
@@ -278,13 +289,13 @@ const Expenses = () => {
             </div>
 
             <div className="filter-group">
-              <label htmlFor="searchExpenseDate" className="form-label">Date</label>
+              <label htmlFor="date" className="form-label">Date</label>
               <input
                 type="date"
-                id="searchExpenseDate"
+                id="date"
                 name="date"
                 className="form-control"
-                value={filters.date}
+                value={instantVals.date}
                 onChange={handleFilterChange}
               />
             </div>

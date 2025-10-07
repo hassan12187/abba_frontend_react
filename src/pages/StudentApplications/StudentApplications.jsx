@@ -3,26 +3,30 @@ import './StudentApplications.css';
 import useApplicationQuery from '../../components/hooks/useApplicationQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
+import { useDebounce } from '../../components/hooks/useDebounce';
 
 const StudentApplications = () => {
   const {token}=useCustom();
   const [applications, setApplications] = useState([]);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [inputVal,setInputVal]=useState("");
   const [filters, setFilters] = useState({
     search: '',
     status: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-console.log(selectedApplication);
-const {data,isLoading}=useApplicationQuery(`/api/student/application?page=${currentPage-1}&limit=${10}`,token,currentPage);
-  const handleFilterChange = (e) => {
+  const updateFilters=useDebounce((name,value)=>{
+    setFilters((prev)=>{
+      return {...prev,[name]:value};
+    })
+  },500);
+  const handleFilterChange = (e) => { 
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setInputVal(value);
+    updateFilters(name,value);
   };
+  const {data,isLoading}=useApplicationQuery(currentPage-1,filters.search,token);
   const handleViewDetails = (application) => {
     setSelectedApplication(application);
     setShowModal(true);
@@ -49,7 +53,6 @@ const {data,isLoading}=useApplicationQuery(`/api/student/application?page=${curr
       alert('Application rejected!');
     }
   };
-
   const exportToExcel = () => {
     // In a real app, implement Excel export using SheetJS
     alert('Excel export functionality would be implemented here');
@@ -83,8 +86,6 @@ const {data,isLoading}=useApplicationQuery(`/api/student/application?page=${curr
     };
     return stats;
   };
-  if(isLoading)return <h1>Loading...</h1>;  
-console.log(data);
   const stats = getStatusStats();
 
   return (
@@ -170,7 +171,7 @@ console.log(data);
                 id="searchApplications"
                 name="search"
                 className="form-control"
-                value={filters.search}
+                value={inputVal}
                 onChange={handleFilterChange}
                 placeholder="Search by roll no, name, or mobile..."
               />

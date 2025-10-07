@@ -11,6 +11,9 @@ export const GetService=async(route,token)=>{
     if(result.status==200){
         return result.data;
     };
+    if(result.status==204){
+        return result.data;
+    }
 };
 export const PostService=async(route,data,token)=>{
     try {

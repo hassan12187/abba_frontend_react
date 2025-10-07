@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 const Pagination=({currentPage,setCurrentPage,length})=>{
-  console.log(length);
     const ITEMS_PER_PAGE=10;
       const [pages,setPages]=useState([1,2,3]);
        const goToPreviousPage = () => {

@@ -1,56 +1,51 @@
-import  { useState } from 'react';
+import  { useCallback, useState } from 'react';
 import './Payments.css';
 import { usePaymentQuery } from '../../components/hooks/usePaymentQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
 import { GetService, PostService } from '../../Services/Services';
 import { useEffect } from 'react';
+import { useDebounce } from '../../components/hooks/useDebounce';
 
 const Payments = () => {
   const {token}=useCustom();
   const [currentPage, setCurrentPage] = useState(1);
+  const [inputVal,setInputVal]=useState("");
   const [formData, setFormData] = useState({
     student_registration_no: '',
     amount: '',
     payment_method: 'cash'
   });
- const {data,isLoading}=usePaymentQuery(currentPage-1,token);
-    const [editIndex, setEditIndex] = useState(null);
-    const [filters, setFilters] = useState({
-      student_registration_no: '',
-      date: ''
-    });
-    
-  const handleGetDataOnInputChange=async()=>{
-    try {
-    const qPaymentData=await GetService(`/api/payment?page=${currentPage-1}&limit=10&query=${filters.student_registration_no}`,token);
-    console.log(qPaymentData);
-   } catch (error) {
-    console.log(error);
-   }
-  }
-  useEffect(()=>{
-   handleGetDataOnInputChange();
-    return ()=>null;
-  },[filters.student_registration_no]);
- const handleInputChange = (e) => {
+  const [filters, setFilters] = useState({
+    student_registration_no: '',
+    date: ''
+  });
+  const [editIndex, setEditIndex] = useState(null);
+  const debounce=(func,delay)=>{
+    let timer;
+    return (...args)=>{
+      clearTimeout(timer);
+      timer=setTimeout(()=> func(...args),delay);
+      };
+    }
+const handleInputChange = (e) => {
    const { name, value } = e.target;
-    
    setFormData(prev => ({
      ...prev,
      [name]: value
-   }));
-  
- };
- 
- const handleFilterChange = async(e) => {
-   const { name, value } = e.target;
-
-   setFilters(prev => ({
-     ...prev,
-     [name]: value
-   }));
- };
+    }));
+    
+  };
+  const updateFilters=useDebounce((name,value)=>{
+    setFilters((prev)=>{
+      return {...prev,[name]:value};
+    })
+  },500);
+  const handleFilterChange = (e)=>{
+    setInputVal(e.target.value);
+    updateFilters(e.target.name,e.target.value);
+  }
+const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_registration_no);
           
   const handleSubmit = async(e) => {
     e.preventDefault();
@@ -62,7 +57,7 @@ const Payments = () => {
       payment_method: 'cash'
     });
   };
-  
+  console.log(data);
   const handleEdit = (index) => {
     setEditIndex(index);
   };
@@ -81,8 +76,11 @@ const Payments = () => {
   };
   
   const clearFilters = () => {
+    if(!filters.student_registration_no && !filters.date)return;
+    if(!inputVal && !filters.date)return;
+    setInputVal("");
     setFilters({
-      regNo: '',
+      student_registration_no: '',
       date: ''
     });
   };
@@ -196,7 +194,6 @@ const Payments = () => {
     const config = methodConfig[method] || { label: method, class: 'badge-default' };
     return <span className={`payment-badge ${config.class}`}>{config.label}</span>;
   };
-  console.log(data);
   return (
     <div className="payments-page">
       <div className="page-header">
@@ -297,7 +294,7 @@ const Payments = () => {
                 id="student_registration_no"
                 name="student_registration_no"
                 className="form-control"
-                value={filters.student_registration_no}
+                value={inputVal}
                 onChange={handleFilterChange}
                 placeholder="Enter registration number"
               />
