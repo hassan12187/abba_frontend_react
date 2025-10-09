@@ -164,7 +164,7 @@ const Expenses = () => {
     setCurrentPage(page);
   };
   // Calculate total expenses
-  const totalExpenses = data?.data?.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalExpenses = data?.reduce((sum, expense) => sum + expense.amount, 0);
 
   const getExpenseTypeBadge = (type) => {
     const typeConfig = {
@@ -345,8 +345,8 @@ const Expenses = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.data?.length > 0 ? (
-                    data?.data?.map((expense, index) => (
+                  {data?.length > 0 ? (
+                    data?.map((expense, index) => (
                       <tr key={index} className="expense-row">
                         <td>
                           {getExpenseTypeBadge(expense?.expense_type)}
@@ -364,14 +364,14 @@ const Expenses = () => {
                           <div className="action-buttons">
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(data?.data?.findIndex(e => e.id === expense?._id))}
+                              onClick={() => handleEdit(data?.findIndex(e => e.id === expense?._id))}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-delete"
-                              onClick={() => handleDelete(data?.data?.findIndex(e => e.id === expense?._id))}
+                              onClick={() => handleDelete(data?.findIndex(e => e.id === expense?._id))}
                               title="Delete"
                             >
                               <i className="fas fa-trash"></i>
@@ -392,7 +392,7 @@ const Expenses = () => {
               </table>
             </div>
                 {/* Pagination */}
-                <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length} />
+                <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.length} />
      
           </div>
         </div>

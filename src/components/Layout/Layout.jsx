@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Header from './Header';
-import Sidebar from './Sidebar';
+// import Sidebar from './Sidebar';
 import Footer from './Footer';
 import './Layout.css';
 import { Outlet } from 'react-router-dom';
+import Sidebar from './SideBar';
 
 // // In Layout.jsx, update the logout button in Sidebar.jsx
 // const handleLogout = () => {

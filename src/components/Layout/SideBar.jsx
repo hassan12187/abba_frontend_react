@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 
 const Sidebar = ({ isOpen }) => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Sidebar = ({ isOpen }) => {
     { path: '/reports', icon: 'fas fa-chart-bar', label: 'Reports' },
     { path: '/applications', icon: 'fas fa-file-alt', label: 'Applications' },
     { path: '/expenses', icon: 'fas fa-money-bill-wave', label: 'Expenses' },
-    {path:'/settings',icon:''}
+    {path:'/settings',icon: 'fas fa-money-bill-wave', label: 'Settings'}
   ];
 
   const isActive = (path) => {
@@ -28,7 +28,7 @@ const Sidebar = ({ isOpen }) => {
     console.log('Logging out...');
   };
   return (
-    <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
+    <aside className={`sidebar-custom ${isOpen ? 'open' : 'closed'}`}>
       <div className="sidebar-header">
         <div className="logo">
           <i className="fas fa-hotel"></i>
@@ -38,14 +38,16 @@ const Sidebar = ({ isOpen }) => {
       
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
-          <button
-            key={item.path}
-            className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-            onClick={() => handleNavigation(item.path)}
-          >
+          <NavLink to={`${item.path}`} className={`nav-item ${isActive(item.path) ? 'active':'' }`}>
+          {/* <button */}
+            {/* key={item.path} */}
+            {/* className={`${isActive(item.path) ? 'active' : ''}`} */}
+            {/* // onClick={() => handleNavigation(item.path)} */}
+            {/* > */}
             <i className={item.icon}></i>
             <span>{item.label}</span>
-          </button>
+          {/* </button> */}
+            </NavLink>
         ))}
       </nav>
       

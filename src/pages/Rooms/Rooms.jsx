@@ -3,12 +3,18 @@ import './Room.css';
 import { useRoomsQuery } from '../../components/hooks/useRoomQuery';
 import { useCustom } from '../../Store/Store';
 import { PostService } from '../../Services/Services';
-import socket from '../../Services/Socket';
 import Pagination from '../../components/Layout/Pagination';
+import { useDebounce } from '../../components/hooks/useDebounce';
+import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const Rooms = () => {
   const {token}=useCustom();
+  const queryClient=useQueryClient();
   const [rooms, setRooms] = useState([]);
+  const [InputVal,setInputVal]=useState({
+    room_no:"",
+    status:""
+  });
   // const [filteredRooms, setFilteredRooms] = useState([]);
   const [formData, setFormData] = useState({
     room_no: '',
@@ -18,12 +24,26 @@ const Rooms = () => {
   });
   const [editIndex, setEditIndex] = useState(null);
   const [filters, setFilters] = useState({
-    status: '',
-    search: ''
+    room_no: '',
+    status: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-  const {data,isLoading}=useRoomsQuery(`/api/room?page=${currentPage-1}&limit=${itemsPerPage}`,token,currentPage);
+  const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
+  const mutate=useMutation({
+    mutationFn:async(data)=>await PostService('/api/room',data,token),
+    onSuccess:()=>{
+      queryClient.invalidateQueries({
+        queryKey:['rooms:'],
+      })
+      setFormData({
+      room_no: '',
+      total_beds: '',
+      available_beds: '',
+      status: 'available'
+    });
+    },
+    onError:(err)=>{console.log(err);}
+  });
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({
@@ -31,13 +51,19 @@ const Rooms = () => {
       [id]: value
     }));
   };
-
+  const updateFilters=useDebounce(
+    (name,value)=>{
+      setFilters((prev)=>{
+        return {...prev,[name]:value};
+      })
+    },500
+  );
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setInputVal((prev)=>{
+      return {...prev,[name]:value};
+    });
+    updateFilters(name,value);
   };
 
   const calculateOccupancy = (totalBeds, availableBeds) => {
@@ -47,58 +73,15 @@ const Rooms = () => {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-
-    // Validate available beds don't exceed total beds
-    if (parseInt(formData.availableBeds) > parseInt(formData.totalBeds)) {
-      alert('Available beds cannot exceed total beds');
-      return;
-    }
     console.log(formData);
-    PostService("/api/room",formData,token);
-    // const occupancy = calculateOccupancy(
-    //   parseInt(formData.totalBeds),
-    //   parseInt(formData.availableBeds)
-    // );
-
-    // if (editIndex !== null) {
-    //   // Update existing room
-    //   const updatedRooms = rooms.map((room, index) =>
-    //     index === editIndex 
-    //       ? { 
-    //           ...room, 
-    //           ...formData, 
-    //           totalBeds: parseInt(formData.totalBeds),
-    //           availableBeds: parseInt(formData.availableBeds),
-    //           occupancy 
-    //         }
-    //       : room
-    //   );
-    //   setRooms(updatedRooms);
-    //   setEditIndex(null);
-    // } else {
-    //   // Add new room
-    //   const newRoom = {
-    //     id: rooms.length + 1,
-    //     ...formData,
-    //     totalBeds: parseInt(formData.totalBeds),
-    //     availableBeds: parseInt(formData.availableBeds),
-    //     occupancy,
-    //     createdAt: new Date().toISOString()
-    //   };
-    //   setRooms(prev => [...prev, newRoom]);
-    // }
+    mutate.mutate(formData);
 
     // Reset form
-    setFormData({
-      room_no: '',
-      total_beds: '',
-      available_beds: '',
-      status: 'available'
-    });
+    
   };
 
   const handleEdit = (index) => {
-    const roomToEdit = data?.data?.[index];
+    const roomToEdit = data?.[index];
     setFormData({
       room_no: roomToEdit.room_no,
       total_beds: roomToEdit.total_beds.toString(),
@@ -174,13 +157,12 @@ const Rooms = () => {
   };
 
   // Statistics
-  const totalRooms = data?.data.length;
-  const availableRooms = data?.data.filter(room => room.status === 'available').length;
-  const occupiedRooms = data?.data.filter(room => room.status === 'occupied').length;
-  const maintenanceRooms = data?.data.filter(room => room.status === 'maintenance').length;
-  const totalBeds = data?.data.reduce((sum, room) => sum + room.total_beds, 0);
-  const availableBeds = data?.data.reduce((sum, room) => sum + room.available_beds, 0);
-  if(isLoading)return <h1>loading...</h1>;
+  const totalRooms = data?.length;
+  const availableRooms = data?.filter(room => room.status === 'available').length;
+  const occupiedRooms = data?.filter(room => room.status === 'occupied').length;
+  const maintenanceRooms = data?.filter(room => room.status === 'maintenance').length;
+  const totalBeds = data?.reduce((sum, room) => sum + room.total_beds, 0);
+  const availableBeds = data?.reduce((sum, room) => sum + room.available_beds, 0);
   return (
     <div className="rooms-page">
       <div className="page-header">
@@ -310,7 +292,7 @@ const Rooms = () => {
                   onChange={handleInputChange}
                   placeholder="Enter available beds"
                   min="0"
-                  max={formData.totalBeds || 10}
+                  max={formData.total_beds || 10}
                   required
                 />
               </div>
@@ -359,25 +341,25 @@ const Rooms = () => {
           </h4>
           <div className="filters-row">
             <div className="filter-group">
-              <label htmlFor="searchRoom" className="form-label">Search Room</label>
+              <label htmlFor="room_no" className="form-label">Search Room</label>
               <input
                 type="text"
-                id="searchRoom"
-                name="search"
+                id="room_no"
+                name="room_no"
                 className="form-control"
-                value={filters.search}
+                value={InputVal.room_no}
                 onChange={handleFilterChange}
                 placeholder="Search by room number"
               />
             </div>
 
             <div className="filter-group">
-              <label htmlFor="filterStatus" className="form-label">Status</label>
+              <label htmlFor="status" className="form-label">Status</label>
               <select
-                id="filterStatus"
+                id="status"
                 name="status"
                 className="form-control"
-                value={filters.status}
+                value={InputVal.status}
                 onChange={handleFilterChange}
               >
                 <option value="">All Status</option>
@@ -425,8 +407,8 @@ const Rooms = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.data?.length > 0 ? (
-                    data.data?.map((room, index) => (
+                  {data?.length > 0 ? (
+                    data?.map((room, index) => (
                       <tr key={index} className="room-row">
                         <td className="room-no-cell">
                           <div className="room-info">
@@ -471,14 +453,14 @@ const Rooms = () => {
                             </button>
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(data?.data?.findIndex(r => r._id === room._id))}
+                              onClick={() => handleEdit(data?.findIndex(r => r._id === room._id))}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-delete"
-                              onClick={() => handleDelete(data?.data?.findIndex(r => r._id === room._id))}
+                              onClick={() => handleDelete(data?.findIndex(r => r._id === room._id))}
                               title="Delete"
                             >
                               <i className="fas fa-trash"></i>
@@ -498,7 +480,7 @@ const Rooms = () => {
                 </tbody>
               </table>
             </div>
-              <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length} />
+              <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.length} />
           </div>
         </div>
       </div>

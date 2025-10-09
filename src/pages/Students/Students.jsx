@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,  } from 'react';
+import { useDebounce } from '../../components/hooks/useDebounce';
 import './Students.css';
+import useStudentQuery from '../../components/hooks/useStudentQuery';
+import { useCustom } from '../../Store/Store';
+import Pagination from '../../components/Layout/Pagination';
+import useBlockQuery from '../../components/hooks/useBlockQuery';
 
 const Students = () => {
+  const {token}=useCustom();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -12,147 +18,25 @@ const Students = () => {
     room: ''
   });
   const [roomAssignment, setRoomAssignment] = useState({
-    hostelBlock: '',
-    roomNumber: ''
+    hostel_block: '',
+    room_no: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage=5;
 
-  // Sample initial data
-  useEffect(() => {
-    const sampleStudents = [
-      {
-        id: 1,
-        regNumber: '2024-CS-001',
-        fullName: 'Ali Ahmed',
-        room: '101-A',
-        cellphone: '0300-1234567',
-        status: 'active',
-        registrationDate: '2024-01-15',
-        email: 'ali.ahmed@email.com',
-        fatherName: 'M. Khan',
-        guardian: 'Tariq Mehmood',
-        academicYear: '2024-25',
-        remarks: 'I require hostel accommodation due to my permanent residence being far from the campus.',
-        cnic: '12345-6789012-3',
-        address: 'House #123, Street 45, Lahore',
-        roomAllocated: true
-      },
-      {
-        id: 2,
-        regNumber: '2024-CE-005',
-        fullName: 'Sara Bilal',
-        room: '201-B',
-        cellphone: '0333-9876543',
-        status: 'active',
-        registrationDate: '2024-01-12',
-        email: 'sara.bilal@email.com',
-        fatherName: 'Bilal Zafar',
-        guardian: 'Bilal Zafar',
-        academicYear: '2024-25',
-        remarks: 'Need accommodation for better study environment.',
-        cnic: '23456-7890123-4',
-        address: 'Flat #45, Model Town, Karachi',
-        roomAllocated: true
-      },
-      {
-        id: 3,
-        regNumber: '2024-EE-012',
-        fullName: 'Ahmed Raza',
-        room: 'Not Assigned',
-        cellphone: '0321-4567890',
-        status: 'pending',
-        registrationDate: '2024-01-10',
-        email: 'ahmed.raza@email.com',
-        fatherName: 'Raza Muhammad',
-        guardian: 'Raza Muhammad',
-        academicYear: '2024-25',
-        remarks: 'Applying for hostel facility.',
-        cnic: '34567-8901234-5',
-        address: 'Street 78, Faisalabad',
-        roomAllocated: false
-      },
-      {
-        id: 4,
-        regNumber: '2024-ME-008',
-        fullName: 'Fatima Khan',
-        room: '102-A',
-        cellphone: '0345-6789012',
-        status: 'active',
-        registrationDate: '2024-01-08',
-        email: 'fatima.khan@email.com',
-        fatherName: 'Kashif Khan',
-        guardian: 'Kashif Khan',
-        academicYear: '2024-25',
-        remarks: 'Required for academic sessions.',
-        cnic: '45678-9012345-6',
-        address: 'House #67, Islamabad',
-        roomAllocated: true
-      },
-      {
-        id: 5,
-        regNumber: '2024-CS-015',
-        fullName: 'Usman Ali',
-        room: 'Not Assigned',
-        cellphone: '0312-3456789',
-        status: 'pending',
-        registrationDate: '2024-01-05',
-        email: 'usman.ali@email.com',
-        fatherName: 'Ali Raza',
-        guardian: 'Ali Raza',
-        academicYear: '2024-25',
-        remarks: 'Need hostel for better focus on studies.',
-        cnic: '56789-0123456-7',
-        address: 'Sector G-10, Rawalpindi',
-        roomAllocated: false
-      }
-    ];
-    setStudents(sampleStudents);
-    setFilteredStudents(sampleStudents);
-  }, []);
-
-  // Available rooms data
-  const availableRooms = {
-    'A': ['101-A', '102-A', '103-A', '104-A', '105-A'],
-    'B': ['201-B', '202-B', '203-B', '204-B', '205-B'],
-    'C': ['301-C', '302-C', '303-C', '304-C', '305-C']
-  };
-
-  // Filter students when filters change
-  useEffect(() => {
-    let filtered = students;
-
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filtered = filtered.filter(student => 
-        student.regNumber.toLowerCase().includes(searchTerm) ||
-        student.fullName.toLowerCase().includes(searchTerm) ||
-        student.cellphone.includes(searchTerm)
-      );
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter(student => student.status === filters.status);
-    }
-
-    if (filters.room) {
-      if (filters.room === 'assigned') {
-        filtered = filtered.filter(student => student.roomAllocated);
-      } else if (filters.room === 'not-assigned') {
-        filtered = filtered.filter(student => !student.roomAllocated);
-      }
-    }
-
-    setFilteredStudents(filtered);
-    setCurrentPage(1);
-  }, [filters, students]);
-
+  const {data,isLoading}=useStudentQuery(currentPage-1,filters.search,filters.status,filters.room,token);
+  const {data:BlockData}=useBlockQuery(roomAssignment.hostel_block,showModal,token);
+  console.log(BlockData);  
+  const updateFilters=useDebounce(
+    (name,value)=>{
+      setFilters((prev)=>{
+        return {...prev,[name]:value};
+      })
+    },500
+  );
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    updateFilters(name,value);
   };
 
   const handleRoomAssignmentChange = (e) => {
@@ -166,24 +50,24 @@ const Students = () => {
   const handleViewDetails = (student) => {
     setSelectedStudent(student);
     setRoomAssignment({
-      hostelBlock: student.roomAllocated ? student.room.split('-')[1] : '',
-      roomNumber: student.roomAllocated ? student.room : ''
+      hostel_block: student.roomAllocated ? student.room.split('-')[1] : '',
+      room_no: student.roomAllocated ? student.room : ''
     });
     setShowModal(true);
   };
 
   const handleAssignRoom = () => {
-    if (!roomAssignment.hostelBlock || !roomAssignment.roomNumber) {
+    if (!roomAssignment.hostel_block || !roomAssignment.room_no) {
       alert('Please select both hostel block and room number');
       return;
     }
 
-    if (window.confirm(`Assign room ${roomAssignment.roomNumber} to ${selectedStudent.fullName}?`)) {
+    if (window.confirm(`Assign room ${roomAssignment.room_no} to ${selectedStudent.fullName}?`)) {
       const updatedStudents = students.map(student =>
         student.id === selectedStudent.id 
           ? { 
               ...student, 
-              room: roomAssignment.roomNumber,
+              room: roomAssignment.room_no,
               roomAllocated: true,
               status: 'active'
             }
@@ -191,7 +75,7 @@ const Students = () => {
       );
       setStudents(updatedStudents);
       setShowModal(false);
-      alert(`Room ${roomAssignment.roomNumber} assigned successfully to ${selectedStudent.fullName}!`);
+      alert(`Room ${roomAssignment.room_no} assigned successfully to ${selectedStudent.fullName}!`);
     }
   };
 
@@ -237,10 +121,11 @@ const Students = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      active: { label: 'Active', class: 'badge-active' },
-      pending: { label: 'Pending', class: 'badge-pending' },
-      rejected: { label: 'Rejected', class: 'badge-rejected' },
-      inactive: { label: 'Inactive', class: 'badge-inactive' }
+      accepted: { label: 'accepted', class: 'badge-active' },
+      approved: { label: 'approved', class: 'badge-active' },
+      pending: { label: 'pending', class: 'badge-pending' },
+      rejected: { label: 'rejected', class: 'badge-rejected' },
+      inactive: { label: 'inactive', class: 'badge-inactive' }
     };
 
     const config = statusConfig[status] || { label: status, class: 'badge-default' };
@@ -418,29 +303,29 @@ const Students = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentStudents.length > 0 ? (
-                    currentStudents.map((student) => (
-                      <tr key={student.id} className="student-row">
+                  {data?.length > 0 ? (
+                    data?.map((student) => (
+                      <tr key={student._id} className="student-row">
                         <td className="reg-number-cell">
-                          <div className="reg-number">{student.regNumber}</div>
+                          <div className="reg-number">{student.student_reg_no||"-"}</div>
                         </td>
                         <td className="name-cell">
                           <div className="student-info">
-                            <div className="full-name">{student.fullName}</div>
-                            <div className="student-email">{student.email}</div>
+                            <div className="full-name">{student.student_name}</div>
+                            <div className="student-email">{student.student_email}</div>
                           </div>
                         </td>
                         <td className="room-cell">
-                          {getRoomBadge(student.room, student.roomAllocated)}
+                          {getRoomBadge(student.room_id?.room_no, student.room_id?._id)}
                         </td>
                         <td className="mobile-cell">
-                          {student.cellphone}
+                          {student.student_cellphone}
                         </td>
                         <td className="status-cell">
                           {getStatusBadge(student.status)}
                         </td>
                         <td className="date-cell">
-                          {new Date(student.registrationDate).toLocaleDateString()}
+                          {new Date(student.application_submit_date).toLocaleDateString()}
                         </td>
                         <td className="actions-cell">
                           <div className="action-buttons">
@@ -451,7 +336,7 @@ const Students = () => {
                             >
                               <i className="fas fa-eye"></i>
                             </button>
-                            {student.status === 'pending' && (
+                            {!student?.room_id && (
                               <button
                                 className="btn btn-sm btn-assign"
                                 onClick={() => handleViewDetails(student)}
@@ -474,44 +359,10 @@ const Students = () => {
                   )}
                 </tbody>
               </table>
-            </div>
+            </div>  
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination-container">
-                <nav className="pagination-nav">
-                  <button
-                    className="pagination-btn"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                  >
-                    <i className="fas fa-chevron-left"></i>
-                    Previous
-                  </button>
-
-                  <div className="page-numbers">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <button
-                        key={page}
-                        className={`page-number ${currentPage === page ? 'active' : ''}`}
-                        onClick={() => goToPage(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    className="pagination-btn"
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <i className="fas fa-chevron-right"></i>
-                  </button>
-                </nav>
-              </div>
-            )}
+            <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.length}  />
           </div>
         </div>
       </div>
@@ -599,8 +450,9 @@ const Students = () => {
                     </div>
                   </div>
                 </div>
-
-                {selectedStudent.status === 'pending' && (
+                {/* below condition we will check later */}
+        {/* selectedStudent.status === 'pending' */}
+                {selectedStudent?.room_id == null && (
                   <div className="detail-section">
                     <h5 className="section-title">
                       <i className="fas fa-door-open"></i>
@@ -608,12 +460,12 @@ const Students = () => {
                     </h5>
                     <div className="detail-row">
                       <div className="detail-group">
-                        <label htmlFor="hostelBlockSelect">Select Hostel Block</label>
+                        <label htmlFor="hostel_blockSelect">Select Hostel Block</label>
                         <select
-                          id="hostelBlockSelect"
-                          name="hostelBlock"
+                          id="hostel_blockSelect"
+                          name="hostel_block"
                           className="form-control"
-                          value={roomAssignment.hostelBlock}
+                          value={roomAssignment.hostel_block}
                           onChange={handleRoomAssignmentChange}
                         >
                           <option value="">Select Block</option>
@@ -623,18 +475,18 @@ const Students = () => {
                         </select>
                       </div>
                       <div className="detail-group">
-                        <label htmlFor="roomNumberSelect">Select Room Number</label>
+                        <label htmlFor="room_noSelect">Select Room Number</label>
                         <select
-                          id="roomNumberSelect"
-                          name="roomNumber"
+                          id="room_noSelect"
+                          name="room_no"
                           className="form-control"
-                          value={roomAssignment.roomNumber}
+                          value={roomAssignment.room_no}
                           onChange={handleRoomAssignmentChange}
-                          disabled={!roomAssignment.hostelBlock}
+                          disabled={!roomAssignment.hostel_block}
                         >
                           <option value="">Select Room</option>
-                          {roomAssignment.hostelBlock && 
-                            availableRooms[roomAssignment.hostelBlock].map(room => (
+                          {roomAssignment.hostel_block && 
+                            availableRooms[roomAssignment.hostel_block].map(room => (
                               <option key={room} value={room}>{room}</option>
                             ))
                           }
@@ -668,7 +520,7 @@ const Students = () => {
                   <button 
                     className="btn btn-success"
                     onClick={handleAssignRoom}
-                    disabled={!roomAssignment.hostelBlock || !roomAssignment.roomNumber}
+                    disabled={!roomAssignment.hostel_block || !roomAssignment.room_no}
                   >
                     <i className="fas fa-door-open"></i>
                     Assign Room & Approve

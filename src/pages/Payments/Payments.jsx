@@ -6,11 +6,16 @@ import Pagination from '../../components/Layout/Pagination';
 import { GetService, PostService } from '../../Services/Services';
 import { useEffect } from 'react';
 import { useDebounce } from '../../components/hooks/useDebounce';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const Payments = () => {
   const {token}=useCustom();
+  const queryClient=useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [inputVal,setInputVal]=useState("");
+  const [inputVal,setInputVal]=useState({
+    student_registration_no:"",
+    date:""
+  });
   const [formData, setFormData] = useState({
     student_registration_no: '',
     amount: '',
@@ -21,13 +26,6 @@ const Payments = () => {
     date: ''
   });
   const [editIndex, setEditIndex] = useState(null);
-  const debounce=(func,delay)=>{
-    let timer;
-    return (...args)=>{
-      clearTimeout(timer);
-      timer=setTimeout(()=> func(...args),delay);
-      };
-    }
 const handleInputChange = (e) => {
    const { name, value } = e.target;
    setFormData(prev => ({
@@ -36,26 +34,38 @@ const handleInputChange = (e) => {
     }));
     
   };
+  const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_registration_no,filters.date);
+  const mutate = useMutation({
+    mutationFn:async(fmData)=>await PostService("/api/payment",fmData,token),
+    // mutationKey:["page"],
+    onSuccess:()=>{
+      queryClient.invalidateQueries({
+        queryKey:["page"]
+      });
+          // Reset form
+    setFormData({
+      student_registration_no: '',
+      amount: '',
+      payment_method: 'cash'
+    });
+    }
+  })
   const updateFilters=useDebounce((name,value)=>{
     setFilters((prev)=>{
       return {...prev,[name]:value};
     })
   },500);
   const handleFilterChange = (e)=>{
-    setInputVal(e.target.value);
-    updateFilters(e.target.name,e.target.value);
+    const {name,value}=e.target;
+    setInputVal((prev)=>{
+      return {...prev,[name]:value};
+    });
+    updateFilters(name,value);
   }
-const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_registration_no);
           
   const handleSubmit = async(e) => {
     e.preventDefault();
-    PostService("/api/payment",formData,token);
-    // Reset form
-    setFormData({
-      student_registration_no: '',
-      amount: '',
-      payment_method: 'cash'
-    });
+    mutate.mutate(formData);
   };
   console.log(data);
   const handleEdit = (index) => {
@@ -294,20 +304,20 @@ const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_regis
                 id="student_registration_no"
                 name="student_registration_no"
                 className="form-control"
-                value={inputVal}
+                value={inputVal.student_registration_no}
                 onChange={handleFilterChange}
                 placeholder="Enter registration number"
               />
             </div>
 
             <div className="filter-group">
-              <label htmlFor="searchDate" className="form-label">Date</label>
+              <label htmlFor="date" className="form-label">Date</label>
               <input
                 type="date"
-                id="searchDate"
+                id="date"
                 name="date"
                 className="form-control"
-                value={filters.date}
+                value={inputVal.date}
                 onChange={handleFilterChange}
               />
             </div>
@@ -357,8 +367,8 @@ const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_regis
                   </tr>
                 </thead>
                 <tbody>
-                   {data?.data?.length > 0 ? (
-                    data?.data?.map((payment, index) => (
+                   {data?.length > 0 ? (
+                    data?.map((payment, index) => (
                       <tr key={index} className="payment-row">
                         <td className="reg-no-cell">
                           <div className="student-info">
@@ -419,7 +429,7 @@ const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_regis
 
             {/* Pagination */}
             {
-             <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length}/>
+             <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.length}/>
             }
           </div>
         </div>

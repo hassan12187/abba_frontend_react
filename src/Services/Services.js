@@ -9,10 +9,10 @@ export const GetService=async(route,token)=>{
         withCredentials:true
     });    
     if(result.status==200){
-        return result.data;
+        return result.data.data;
     };
     if(result.status==204){
-        return result.data;
+        return result.data.data;
     }
 };
 export const PostService=async(route,data,token)=>{

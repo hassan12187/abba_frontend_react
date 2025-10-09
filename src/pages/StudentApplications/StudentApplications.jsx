@@ -10,7 +10,10 @@ const StudentApplications = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [inputVal,setInputVal]=useState("");
+  const [inputVal,setInputVal]=useState({
+    search:"",
+    status:""
+  });
   const [filters, setFilters] = useState({
     search: '',
     status: ''
@@ -23,10 +26,12 @@ const StudentApplications = () => {
   },500);
   const handleFilterChange = (e) => { 
     const { name, value } = e.target;
-    setInputVal(value);
+    setInputVal((prev)=>{
+      return {...prev,[name]:value};
+    });
     updateFilters(name,value);
   };
-  const {data,isLoading}=useApplicationQuery(currentPage-1,filters.search,token);
+  const {data,isLoading}=useApplicationQuery(currentPage-1,filters.search,token,filters.status);
   const handleViewDetails = (application) => {
     setSelectedApplication(application);
     setShowModal(true);
@@ -79,10 +84,10 @@ const StudentApplications = () => {
 
   const getStatusStats = () => {
     const stats = {
-      total: data?.data.length,
-      pending: data?.data.filter(app => app.status === 'pending').length,
-      approved: data?.data.filter(app => app.status === 'approved').length,
-      rejected: data?.data.filter(app => app.status === 'rejected').length
+      total: data?.length,
+      pending: data?.filter(app => app.status === 'pending').length,
+      approved: data?.filter(app => app.status === 'approved').length,
+      rejected: data?.filter(app => app.status === 'rejected').length
     };
     return stats;
   };
@@ -171,7 +176,7 @@ const StudentApplications = () => {
                 id="searchApplications"
                 name="search"
                 className="form-control"
-                value={inputVal}
+                value={inputVal.search}
                 onChange={handleFilterChange}
                 placeholder="Search by roll no, name, or mobile..."
               />
@@ -183,7 +188,7 @@ const StudentApplications = () => {
                 id="filterStatus"
                 name="status"
                 className="form-control"
-                value={filters.status}
+                value={inputVal.status}
                 onChange={handleFilterChange}
               >
                 <option value="">All Status</option>
@@ -213,7 +218,7 @@ const StudentApplications = () => {
               Applications List
             </h3>
             <div className="applications-summary">
-              Showing {data?.data?.length} of {applications.length} applications
+              Showing {data?.length} of {applications.length} applications
             </div>
           </div>
 
@@ -233,8 +238,8 @@ const StudentApplications = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.data?.length > 0 ? (
-                    data?.data?.map((application,index) => (
+                  {data?.length > 0 ? (
+                    data?.map((application,index) => (
                       <tr key={index} className="application-row">
                         <td className="roll-no-cell">
                           <div className="roll-no">{application.student_roll_no}</div>
@@ -304,7 +309,7 @@ const StudentApplications = () => {
             </div>
 
             {/* Pagination */}
-           <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.data?.length} />
+           <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={data?.length} />
           </div>
         </div>
       </div>
