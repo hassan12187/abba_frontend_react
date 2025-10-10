@@ -12,7 +12,8 @@ const Sidebar = ({ isOpen }) => {
     { path: '/reports', icon: 'fas fa-chart-bar', label: 'Reports' },
     { path: '/applications', icon: 'fas fa-file-alt', label: 'Applications' },
     { path: '/expenses', icon: 'fas fa-money-bill-wave', label: 'Expenses' },
-    {path:'/settings',icon: 'fas fa-money-bill-wave', label: 'Settings'}
+    {path:'/blocks',icon: 'fa-solid fa-building', label: 'Blocks'},
+    {path:'/settings',icon: 'fa-solid fa-gear', label: 'Settings'}
   ];
 
   const isActive = (path) => {
@@ -37,8 +38,8 @@ const Sidebar = ({ isOpen }) => {
       </div>
       
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <NavLink to={`${item.path}`} className={`nav-item ${isActive(item.path) ? 'active':'' }`}>
+        {menuItems.map((item,index) => (
+          <NavLink key={index} to={`${item.path}`} className={`nav-item ${isActive(item.path) ? 'active':'' }`}>
           {/* <button */}
             {/* key={item.path} */}
             {/* className={`${isActive(item.path) ? 'active' : ''}`} */}

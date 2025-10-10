@@ -18,6 +18,7 @@ import CheckAuth from './components/CheckAuth';
 // import 'bootstrap/dist/css/bootstrap.css';
 import AdmissionForm from './pages/AdmissionForm/AdmissionForm';
 import Settings from './pages/Settings/Settings';
+import Blocks from './pages/Blocks/Blocks';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -54,9 +55,13 @@ const App=()=>{
         path:"/students",
         element:<CheckAuth><Students /></CheckAuth>
       },
-        {
+      {
         path:"/settings",
         element:<CheckAuth><Settings /></CheckAuth>
+      },
+      {
+        path:"/blocks",
+        element:<CheckAuth><Blocks /></CheckAuth>
       }
       ]
     },

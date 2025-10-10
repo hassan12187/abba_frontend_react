@@ -1,10 +1,11 @@
-import React, { useState,  } from 'react';
+import React, { useEffect, useState,  } from 'react';
 import { useDebounce } from '../../components/hooks/useDebounce';
 import './Students.css';
 import useStudentQuery from '../../components/hooks/useStudentQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
 import useBlockQuery from '../../components/hooks/useBlockQuery';
+import { useBlockRoomsQuery } from '../../components/hooks/useRoomQuery';
 
 const Students = () => {
   const {token}=useCustom();
@@ -12,20 +13,24 @@ const Students = () => {
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showBlocks,setShowBlocks]=useState(false);
   const [filters, setFilters] = useState({
     search: '',
     status: '',
     room: ''
   });
   const [roomAssignment, setRoomAssignment] = useState({
-    hostel_block: '',
+    block_id: '',
     room_no: ''
   });
+  console.log(roomAssignment);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage=5;
 
   const {data,isLoading}=useStudentQuery(currentPage-1,filters.search,filters.status,filters.room,token);
-  const {data:BlockData}=useBlockQuery(roomAssignment.hostel_block,showModal,token);
+  const {data:BlockData}=useBlockQuery(token);
+  const {data:roomData,isLoading:isLoadingRoomData}=useBlockRoomsQuery(roomAssignment.block_id,token);
+  console.log(roomData);
+  console.log(roomAssignment);
   console.log(BlockData);  
   const updateFilters=useDebounce(
     (name,value)=>{
@@ -41,23 +46,23 @@ const Students = () => {
 
   const handleRoomAssignmentChange = (e) => {
     const { name, value } = e.target;
+    if(!value)return;
     setRoomAssignment(prev => ({
       ...prev,
       [name]: value
     }));
   };
-
   const handleViewDetails = (student) => {
     setSelectedStudent(student);
     setRoomAssignment({
-      hostel_block: student.roomAllocated ? student.room.split('-')[1] : '',
+      block_id: student.roomAllocated ? student.room.split('-')[1] : '',
       room_no: student.roomAllocated ? student.room : ''
     });
     setShowModal(true);
   };
 
   const handleAssignRoom = () => {
-    if (!roomAssignment.hostel_block || !roomAssignment.room_no) {
+    if (!roomAssignment.block_id || !roomAssignment.room_no) {
       alert('Please select both hostel block and room number');
       return;
     }
@@ -99,9 +104,6 @@ const Students = () => {
   };
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentStudents = filteredStudents.slice(startIndex, startIndex + itemsPerPage);
 
   const goToPage = (page) => {
     setCurrentPage(page);
@@ -460,34 +462,39 @@ const Students = () => {
                     </h5>
                     <div className="detail-row">
                       <div className="detail-group">
-                        <label htmlFor="hostel_blockSelect">Select Hostel Block</label>
+                        <label htmlFor="block_id">Select Hostel Block</label>
                         <select
-                          id="hostel_blockSelect"
-                          name="hostel_block"
+                          id="block_id"
+                          name="block_id"
                           className="form-control"
-                          value={roomAssignment.hostel_block}
+                          value={roomAssignment.block_id}
                           onChange={handleRoomAssignmentChange}
                         >
                           <option value="">Select Block</option>
-                          <option value="A">Block A</option>
-                          <option value="B">Block B</option>
-                          <option value="C">Block C</option>
+                          {
+                            BlockData?.map(block=>(
+                                 <option value={block._id} key={block._id}>Block {block.block_no}</option>
+                            )
+                              
+                            )
+                          }
                         </select>
                       </div>
                       <div className="detail-group">
-                        <label htmlFor="room_noSelect">Select Room Number</label>
+                        <label htmlFor="room_no">Select Room Number</label>
                         <select
-                          id="room_noSelect"
+                          id="room_no"
                           name="room_no"
                           className="form-control"
                           value={roomAssignment.room_no}
                           onChange={handleRoomAssignmentChange}
-                          disabled={!roomAssignment.hostel_block}
+                          disabled={!roomAssignment.block_id || isLoadingRoomData}
                         >
-                          <option value="">Select Room</option>
-                          {roomAssignment.hostel_block && 
-                            availableRooms[roomAssignment.hostel_block].map(room => (
-                              <option key={room} value={room}>{room}</option>
+                          <option value="" defaultValue hidden>Select Room</option>
+                          {roomAssignment.block_id && roomData?.length <=0 ? <option value="" aria-readonly>No Room Found</option>:null}
+                          {roomAssignment.block_id && 
+                            roomData?.map(room => (
+                              <option key={room._id} value={room._id}>{room.room_no}</option>
                             ))
                           }
                         </select>
@@ -520,7 +527,7 @@ const Students = () => {
                   <button 
                     className="btn btn-success"
                     onClick={handleAssignRoom}
-                    disabled={!roomAssignment.hostel_block || !roomAssignment.room_no}
+                    disabled={!roomAssignment.block_id || !roomAssignment.room_no}
                   >
                     <i className="fas fa-door-open"></i>
                     Assign Room & Approve

@@ -12,7 +12,8 @@ export const GetService=async(route,token)=>{
         return result.data.data;
     };
     if(result.status==204){
-        return result.data.data;
+        console.log(result);
+        return [];
     }
 };
 export const PostService=async(route,data,token)=>{

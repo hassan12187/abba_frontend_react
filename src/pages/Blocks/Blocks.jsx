@@ -1,53 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import './Room.css';
-import { useRoomsQuery } from '../../components/hooks/useRoomQuery';
+import { useState } from 'react';
+import '../Rooms/Room.css';
 import { useCustom } from '../../Store/Store';
 import { PostService } from '../../Services/Services';
 import Pagination from '../../components/Layout/Pagination';
 import { useDebounce } from '../../components/hooks/useDebounce';
-import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
-import useBlockQuery from '../../components/hooks/useBlockQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import usePagedBlockQuery from '../../components/hooks/usePagedBlockQuery';
 
-const Rooms = () => {
+const Blocks = () => {
+    const queryClient=useQueryClient();
   const {token}=useCustom();
-  const queryClient=useQueryClient();
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setBlocks] = useState([]);
   const [InputVal,setInputVal]=useState({
-    room_no:"",
+    block_no:"",
     status:""
   });
-  // const [filteredRooms, setFilteredRooms] = useState([]);
   const [formData, setFormData] = useState({
-    room_no: '',
-    total_beds: '',
-    available_beds: '',
-    block_id:'',
-    status: 'available'
+    block_no: '',
+    total_rooms: '',
+    description: '',
+    status: ''
   });
   const [editIndex, setEditIndex] = useState(null);
   const [filters, setFilters] = useState({
-    room_no: '',
+    block_no: '',
     status: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
-  const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
+  const {data} = usePagedBlockQuery(token,currentPage-1,filters.block_no,filters.status);
+  console.log(data);
   const mutate=useMutation({
-    mutationFn:async(data)=>await PostService('/api/room',data,token),
+    mutationFn:async({url,data})=>await PostService(url,data,token),
     onSuccess:()=>{
-      queryClient.invalidateQueries({
-        queryKey:['rooms'],
-      })
-      setFormData({
-      room_no: '',
-      total_beds: '',
-      available_beds: '',
-      block_id:'',
-      status: 'available'
-    });
-    },
-    onError:(err)=>{console.log(err);}
-  });
+        console.log("yes it is successfull");
+        queryClient.invalidateQueries({
+            queryKey:["block_page"]
+        });
+    }
+  })
+  // const [filteredRooms, setFilteredRooms] = useState([]);
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({
@@ -55,7 +46,6 @@ const Rooms = () => {
       [id]: value
     }));
   };
-  console.log(formData);
   const updateFilters=useDebounce(
     (name,value)=>{
       setFilters((prev)=>{
@@ -70,46 +60,34 @@ const Rooms = () => {
     });
     updateFilters(name,value);
   };
-
-  const calculateOccupancy = (totalBeds, availableBeds) => {
-    const occupied = totalBeds - availableBeds;
-    return ((occupied / totalBeds) * 100).toFixed(0) + '%';
-  };
+//   const calculateOccupancy = (totalBeds, ) => {
+//     const occupied = totalBeds - ;
+//     return ((occupied / totalBeds) * 100).toFixed(0) + '%';
+//   };
 
   const handleSubmit = async(e) => {
     e.preventDefault();
     console.log(formData);
-    mutate.mutate(formData);
-
-    // Reset form
-    
+    mutate.mutate({url:"/api/block",data:formData});
   };
 
   const handleEdit = (index) => {
     const roomToEdit = data?.[index];
     setFormData({
-      room_no: roomToEdit.room_no,
+      block_no: roomToEdit.block_no,
       total_beds: roomToEdit.total_beds.toString(),
       available_beds: roomToEdit.available_beds.toString(),
       status: roomToEdit.status
     });
     setEditIndex(index);
   };
-
-  const handleDelete = (index) => {
-    if (window.confirm('Are you sure you want to delete this room?')) {
-      const updatedRooms = rooms.filter((_, i) => i !== index);
-      setRooms(updatedRooms);
-    }
-  };
-
   const cancelEdit = () => {
     setEditIndex(null);
     setFormData({
-      room_no: '',
-      total_beds: '',
-      available_beds: '',
-      status: 'available'
+        block_no: '',
+    total_rooms: '',
+    description: '',
+    status: ''
     });
   };
 
@@ -120,31 +98,14 @@ const Rooms = () => {
     });
   };
 
-  // Pagination logic
-  // const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
-  // const startIndex = (currentPage - 1) * itemsPerPage;
-  // const currentRooms = filteredRooms.slice(startIndex, startIndex + itemsPerPage);
-
-  const goToPage = (page) => {
-    setCurrentPage(page);
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   const getStatusBadge = (status) => {
+    if(status=="under construction"){
+        let splt = status.split(" ");
+        status=`${splt[0]}_${splt[1]}`;
+    };
     const statusConfig = {
-      available: { label: 'Available', class: 'badge-available' },
-      occupied: { label: 'Occupied', class: 'badge-occupied' },
+      ready: { label: 'Ready', class: 'badge-available' },
+      under_construction: { label: 'Under Construction', class: 'badge-occupied' },
       maintenance: { label: 'Maintenance', class: 'badge-maintenance' }
     };
 
@@ -152,30 +113,28 @@ const Rooms = () => {
     return <span className={`status-badge ${config.class}`}>{config.label}</span>;
   };
 
-  const getOccupancyLevel = (availableBeds,totalBeds) => {
-    const occupancy=calculateOccupancy(totalBeds,availableBeds);
-    const percentage = parseInt(occupancy);
-    if (percentage === 0) return 'empty';
-    if (percentage < 50) return 'low';
-    if (percentage < 80) return 'medium';
-    return 'high';
-  };
+//   const getOccupancyLevel = (totalBeds) => {
+//     const occupancy=calculateOccupancy(totalBeds,);
+//     const percentage = parseInt(occupancy);
+//     if (percentage === 0) return 'empty';
+//     if (percentage < 50) return 'low';
+//     if (percentage < 80) return 'medium';
+//     return 'high';
+//   };
 
   // Statistics
   const totalRooms = data?.length;
   const availableRooms = data?.filter(room => room.status === 'available').length;
   const occupiedRooms = data?.filter(room => room.status === 'occupied').length;
   const maintenanceRooms = data?.filter(room => room.status === 'maintenance').length;
-  const totalBeds = data?.reduce((sum, room) => sum + room.total_beds, 0);
-  const availableBeds = data?.reduce((sum, room) => sum + room.available_beds, 0);
   return (
     <div className="rooms-page">
       <div className="page-header">
         <h2>
           <i className="fas fa-bed"></i>
-          Rooms Management
+          Blocks Management
         </h2>
-        <p>Manage hostel rooms, beds, and occupancy</p>
+        <p>Manage hostel blocks, rooms</p>
       </div>
 
       {/* Room Statistics */}
@@ -224,7 +183,7 @@ const Rooms = () => {
               <p className="stat-description">Being serviced</p>
             </div>
           </div>
-          <div className="beds-stats ">
+          {/* <div className="beds-stats ">
           <div className="stat-card info">
             <div className="stat-icon">
               <i className="fas fa-bed"></i>
@@ -232,95 +191,73 @@ const Rooms = () => {
             <div className="stat-content">
               <h3>Total Beds</h3>
               <div className="stat-value">{totalBeds}</div>
-              <p className="stat-description">{availableBeds} beds available</p>
+              <p className="stat-description">{} beds available</p>
             </div>
           </div>
-        </div>
+        </div> */}
         </div>
 
      
       </div>
 
-      {/* Room Form */}
+      {/* Block  Form */}
       <div className="room-form-section">
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-plus-circle"></i>
-            {editIndex !== null ? 'Edit Room' : 'Add New Room'}
+            {editIndex !== null ? 'Edit Block' : 'Add New Block'}
           </h4>
-          <form onSubmit={handleSubmit} className="room-form">
+          <form onSubmit={handleSubmit} method='POST'>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="room_no" className="form-label">
-                  Room Number <span className="required">*</span>
+                <label htmlFor="block_no" className="form-label">
+                  Block Number <span className="required">*</span>
                 </label>
                 <input
                   type="text"
-                  id="room_no"
-                  name='room_no'
+                  id="block_no"
+                  name='block_no'
                   className="form-control"
-                  value={formData.room_no}
+                  value={formData.block_no}
                   onChange={handleInputChange}
-                  placeholder="Enter room number"
+                  placeholder="Enter block number"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="total_beds" className="form-label">
-                  Total Beds <span className="required">*</span>
+                <label htmlFor="total_rooms" className="form-label">
+                  Total Rooms <span className="required">*</span>
                 </label>
                 <input
                   type="number"
-                  id="total_beds"
-                  name="total_beds"
+                  id="total_rooms"
+                  name="total_rooms"
                   className="form-control"
-                  value={formData.total_beds}
+                  value={formData.total_rooms}
                   onChange={handleInputChange}
-                  placeholder="Enter total beds"
+                  placeholder="Enter total rooms"
                   min="1"
-                  max="10"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="available_beds" className="form-label">
-                  Available Beds <span className="required">*</span>
+                <label htmlFor="description" className="form-label">
+                  Block Description <span className="required">*</span>
                 </label>
                 <input
-                  type="number"
-                  id="available_beds"
-                  name='available_beds'
+                  type="text"
+                  id="description"
+                  name='description'
                   className="form-control"
-                  value={formData.available_beds}
+                  value={formData.description}
                   onChange={handleInputChange}
-                  placeholder="Enter available beds"
-                  min="0"
-                  max={formData.total_beds || 10}
+                  placeholder="Description..."
                   required
                 />
               </div>
-                 <div className="form-group">
-                <label htmlFor="block_id" className="form-label">
-                  Block Number <span className="required">*</span>
-                </label>
-                <select
-                  id="block_id"
-                  className="form-control"
-                  name="block_id"
-                  value={formData.block_id}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="" defaultValue hidden>Select Any Block</option>
-                    {
-                      blockData?.map(block=>(
-                        <option value={block?._id} key={block?._id}>{`Block ${block?.block_no}`}</option>
-                      ))
-                    }
-                </select>
-              </div>
+
               <div className="form-group">
                 <label htmlFor="status" className="form-label">
                   Status <span className="required">*</span>
@@ -333,8 +270,9 @@ const Rooms = () => {
                   onChange={handleInputChange}
                   required
                 >
-                  <option value="available">Available</option>
-                  <option value="occupied">Occupied</option>
+                  <option value="">Select Any Option</option>
+                  <option value="under construction">Under Construction</option>
+                  <option value="ready">Ready</option>
                   <option value="maintenance">Maintenance</option>
                 </select>
               </div>
@@ -361,17 +299,17 @@ const Rooms = () => {
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-filter"></i>
-            Filter Rooms
+            Filter Blocks
           </h4>
           <div className="filters-row">
             <div className="filter-group">
-              <label htmlFor="room_no" className="form-label">Search Room</label>
+              <label htmlFor="block_no" className="form-label">Search Block</label>
               <input
                 type="text"
-                id="room_no"
-                name="room_no"
+                id="block_no"
+                name="block_no"
                 className="form-control"
-                value={InputVal.room_no}
+                value={InputVal.block_no}
                 onChange={handleFilterChange}
                 placeholder="Search by room number"
               />
@@ -386,13 +324,12 @@ const Rooms = () => {
                 value={InputVal.status}
                 onChange={handleFilterChange}
               >
-                <option value="">All Status</option>
-                <option value="available">Available</option>
-                <option value="occupied">Occupied</option>
+                <option value="">Select Any Option</option>
+                <option value="under construction">Under Construction</option>
+                <option value="ready">Ready</option>
                 <option value="maintenance">Maintenance</option>
               </select>
             </div>
-
             <div className="filter-group">
               <label className="form-label invisible">Actions</label>
               <button className="btn btn-outline-secondary w-100" onClick={clearFilters}>
@@ -419,52 +356,31 @@ const Rooms = () => {
 
           <div className="table-container">
             <div className="table-responsive">
-              <table className="rooms-table">
-                <thead>
+              <table className="rooms-table text-center">
+                    <thead>
                   <tr>
-                    <th>Room No</th>
-                    <th>Total Beds</th>
-                    <th className="beds-column">Available Beds</th>
-                    <th className="occupancy-column">Occupancy</th>
-                    <th className="status-column">Status</th>
-                    <th className="actions-column">Actions</th>
+                    <th style={{ textAlign: 'center' }}>Block No</th>
+                    <th style={{ textAlign: 'center' }}>Total Rooms</th>
+                    <th className="status-column" style={{ textAlign: 'center' }}>Status</th>
+                    <th className="actions-column" style={{ textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.length > 0 ? (
+                  {data && data.length>0? (
                     data?.map((room, index) => (
                       <tr key={index} className="room-row">
                         <td className="room-no-cell">
                           <div className="room-info">
-                            <div className="room-number">{room.room_no}</div>
+                            <div className="room-number">{room?.block_no}</div>
                             <div className="room-floor">
-                              Floor {room.room_no.charAt(0)}
+                              Floor {room?.block_no.charAt(0)}
                             </div>
                           </div>
                         </td>
-                        <td className="beds-cell">
-                          <div className="beds-display">
-                            <i className="fas fa-bed"></i>
-                            {room.total_beds} beds
-                          </div>
+                        <td className="beds-cell" style={{fontWeight:"bold"}}>
+                            {room.total_rooms}
                         </td>
-                        <td className="available-beds-cell">
-                          <div className={`available-beds ${room.available_beds === 0 ? 'full' : 'available'}`}>
-                            {room.available_beds} available
-                          </div>
-                        </td>
-                        <td className="occupancy-cell">
-                          <div className="occupancy-display">
-                            <div className="occupancy-bar">
-                              <div 
-                                className={`occupancy-fill ${getOccupancyLevel(room.available_beds,room.total_beds)}`}
-                                style={{ width: calculateOccupancy(room.total_beds,room.available_beds) }}
-                              ></div>
-                            </div>
-                            <span className="occupancy-text">{calculateOccupancy(room.total_beds,room.available_beds)}</span>
-                          </div>
-                        </td>
-                        <td className="status-cell">
+                        <td className="status-cell" >
                           {getStatusBadge(room.status)}
                         </td>
                         <td className="actions-cell">
@@ -512,4 +428,4 @@ const Rooms = () => {
   );
 };
 
-export default Rooms;
+export default Blocks;
