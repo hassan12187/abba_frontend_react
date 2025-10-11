@@ -6,8 +6,12 @@ import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
 import useBlockQuery from '../../components/hooks/useBlockQuery';
 import { useBlockRoomsQuery } from '../../components/hooks/useRoomQuery';
+import useSpecificQuery from '../../components/hooks/useSpecificQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { PatchService } from '../../Services/Services';
 
 const Students = () => {
+  const queryClient=useQueryClient();
   const {token}=useCustom();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -19,19 +23,32 @@ const Students = () => {
     status: '',
     room: ''
   });
+  const [instantVal,setInstantVal]=useState({
+    search:"",
+    status:'',
+    room:''
+  });
   const [roomAssignment, setRoomAssignment] = useState({
     block_id: '',
     room_no: ''
   });
-  console.log(roomAssignment);
   const [currentPage, setCurrentPage] = useState(1);
 
   const {data,isLoading}=useStudentQuery(currentPage-1,filters.search,filters.status,filters.room,token);
   const {data:BlockData}=useBlockQuery(token);
   const {data:roomData,isLoading:isLoadingRoomData}=useBlockRoomsQuery(roomAssignment.block_id,token);
-  console.log(roomData);
-  console.log(roomAssignment);
-  console.log(BlockData);  
+  const {data:specificStudent,isLoading:isSpecificLoading}=useSpecificQuery(selectedStudent,token);
+  console.log(specificStudent);
+  // console.log(roomData);
+  // console.log(roomAssignment);
+  // console.log(BlockData);  
+  const mutate=useMutation({
+    mutationFn:async({url,data})=>await PatchService(url,data,token),
+    onSuccess:()=>{
+      queryClient.invalidateQueries({queryKey:["student"]});
+      setRoomAssignment({block_id:"",room_no:""});
+    }
+  })
   const updateFilters=useDebounce(
     (name,value)=>{
       setFilters((prev)=>{
@@ -41,6 +58,9 @@ const Students = () => {
   );
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    setInstantVal((prev)=>{
+      return {...prev,[name]:value};
+    })
     updateFilters(name,value);
   };
 
@@ -52,36 +72,37 @@ const Students = () => {
       [name]: value
     }));
   };
-  const handleViewDetails = (student) => {
-    setSelectedStudent(student);
-    setRoomAssignment({
-      block_id: student.roomAllocated ? student.room.split('-')[1] : '',
-      room_no: student.roomAllocated ? student.room : ''
-    });
+  const handleViewDetails = (student_id) => {
+    setSelectedStudent(student_id);
+    // setRoomAssignment({
+    //   block_id: student.roomAllocated ? student.room.split('-')[1] : '',
+    //   room_no: student.roomAllocated ? student.room : ''
+    // });
     setShowModal(true);
   };
-
+console.log(roomAssignment);
   const handleAssignRoom = () => {
-    if (!roomAssignment.block_id || !roomAssignment.room_no) {
-      alert('Please select both hostel block and room number');
-      return;
-    }
-
-    if (window.confirm(`Assign room ${roomAssignment.room_no} to ${selectedStudent.fullName}?`)) {
-      const updatedStudents = students.map(student =>
-        student.id === selectedStudent.id 
-          ? { 
-              ...student, 
-              room: roomAssignment.room_no,
-              roomAllocated: true,
-              status: 'active'
-            }
-          : student
-      );
-      setStudents(updatedStudents);
+    // if (!roomAssignment.block_id || !roomAssignment.room_no) {
+    //   alert('Please select both hostel block and room number');
+    //   return;
+    // }
+    mutate.mutate({url:`/api/student/${specificStudent._id}`,data:{room_id:roomAssignment.room_no}});
+    console.log(specificStudent.room_id,roomAssignment.room_no);
+    // if (window.confirm(`Assign room ${roomAssignment.room_no} to ${selectedStudent.fullName}?`)) {
+    //   // const updatedStudents = students.map(student =>
+    //   //   student.id === selectedStudent.id 
+    //   //     ? { 
+    //   //         ...student, 
+    //   //         room: roomAssignment.room_no,
+    //   //         roomAllocated: true,
+    //   //         status: 'active'
+    //   //       }
+    //   //     : student
+    //   // );
+    //   setStudents(updatedStudents);
       setShowModal(false);
-      alert(`Room ${roomAssignment.room_no} assigned successfully to ${selectedStudent.fullName}!`);
-    }
+    //   alert(`Room ${roomAssignment.room_no} assigned successfully to ${selectedStudent.fullName}!`);
+    // }
   };
 
   const handleReject = (studentId) => {
@@ -101,24 +122,6 @@ const Students = () => {
       status: '',
       room: ''
     });
-  };
-
-  // Pagination logic
-
-  const goToPage = (page) => {
-    setCurrentPage(page);
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
   };
 
   const getStatusBadge = (status) => {
@@ -229,7 +232,7 @@ const Students = () => {
                 id="searchStudents"
                 name="search"
                 className="form-control"
-                value={filters.search}
+                value={instantVal.search}
                 onChange={handleFilterChange}
                 placeholder="Search by reg no, name, or mobile..."
               />
@@ -241,13 +244,12 @@ const Students = () => {
                 id="filterStatus"
                 name="status"
                 className="form-control"
-                value={filters.status}
+                value={instantVal.status}
                 onChange={handleFilterChange}
               >
                 <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-                <option value="rejected">Rejected</option>
+                <option value="approved">Approved</option>
+                <option value="accepted">Accepted</option>
               </select>
             </div>
 
@@ -333,7 +335,7 @@ const Students = () => {
                           <div className="action-buttons">
                             <button
                               className="btn btn-sm btn-view"
-                              onClick={() => handleViewDetails(student)}
+                              onClick={() => handleViewDetails(student._id)}
                               title="View Details"
                             >
                               <i className="fas fa-eye"></i>
@@ -341,7 +343,7 @@ const Students = () => {
                             {!student?.room_id && (
                               <button
                                 className="btn btn-sm btn-assign"
-                                onClick={() => handleViewDetails(student)}
+                                onClick={() => handleViewDetails(student._id)}
                                 title="Assign Room"
                               >
                                 <i className="fas fa-door-open"></i>
@@ -392,7 +394,7 @@ const Students = () => {
                   <h4>Registration No: <span>{selectedStudent.regNumber}</span></h4>
                 </div>
                 <div className="student-status">
-                  {getStatusBadge(selectedStudent.status)}
+                  {getStatusBadge(specificStudent?.status)}
                 </div>
               </div>
 
@@ -405,27 +407,27 @@ const Students = () => {
                   <div className="detail-row">
                     <div className="detail-group">
                       <label>Full Name</label>
-                      <p>{selectedStudent.fullName}</p>
+                      <p>{specificStudent?.student_name}</p>
                     </div>
                     <div className="detail-group">
                       <label>Father's Name</label>
-                      <p>{selectedStudent.fatherName}</p>
+                      <p>{specificStudent?.father_name}</p>
                     </div>
                     <div className="detail-group">
                       <label>CNIC</label>
-                      <p>{selectedStudent.cnic}</p>
+                      <p>{specificStudent?.cnic_no}</p>
                     </div>
                     <div className="detail-group">
                       <label>Email</label>
-                      <p>{selectedStudent.email}</p>
+                      <p>{specificStudent?.student_email}</p>
                     </div>
                     <div className="detail-group">
                       <label>Mobile</label>
-                      <p>{selectedStudent.cellphone}</p>
+                      <p>{specificStudent?.student_cellphone}</p>
                     </div>
                     <div className="detail-group full-width">
                       <label>Address</label>
-                      <p>{selectedStudent.address}</p>
+                      <p>{specificStudent?.postal_address}</p>
                     </div>
                   </div>
                 </div>
@@ -438,23 +440,23 @@ const Students = () => {
                   <div className="detail-row">
                     <div className="detail-group">
                       <label>Academic Year</label>
-                      <p>{selectedStudent.academicYear}</p>
+                      <p>{specificStudent?.academic_year}</p>
                     </div>
                     <div className="detail-group">
                       <label>Registration Date</label>
-                      <p>{new Date(selectedStudent.registrationDate).toLocaleDateString()}</p>
+                      <p>{new Date(specificStudent?.application_submit_date).toLocaleDateString()}</p>
                     </div>
                     <div className="detail-group">
                       <label>Current Room</label>
-                      <p className={selectedStudent.roomAllocated ? 'room-assigned' : 'room-not-assigned'}>
-                        {selectedStudent.room}
+                      <p className={specificStudent?.room_id ? 'room-assigned' : 'room-not-assigned'}>
+                        {specificStudent?.room_id.room_no}
                       </p>
                     </div>
                   </div>
                 </div>
                 {/* below condition we will check later */}
         {/* selectedStudent.status === 'pending' */}
-                {selectedStudent?.room_id == null && (
+                {specificStudent?.room_id == null && (
                   <div className="detail-section">
                     <h5 className="section-title">
                       <i className="fas fa-door-open"></i>
@@ -471,6 +473,7 @@ const Students = () => {
                           onChange={handleRoomAssignmentChange}
                         >
                           <option value="">Select Block</option>
+                          {/* <option value={}></option> */}
                           {
                             BlockData?.map(block=>(
                                  <option value={block._id} key={block._id}>Block {block.block_no}</option>
@@ -523,7 +526,7 @@ const Students = () => {
                 Close
               </button>
               <div className="action-buttons">
-                {selectedStudent.status === 'pending' && (
+                {!specificStudent?.room_id && (
                   <button 
                     className="btn btn-success"
                     onClick={handleAssignRoom}
