@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Settings, User, Lock, Bell, Moon, Database, Eye, EyeOff, Save, CheckCircle } from 'lucide-react';
 import './SettingsPage.css'; // Import the CSS file
+import { useGetUserInfo } from '../../components/hooks/useSpecificQuery';
+import { useCustom } from '../../Store/Store';
 
 export default function SettingsPage() {
+  const {token}=useCustom();
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [saved, setSaved] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  
   const [formData, setFormData] = useState({
-    fullName: 'John Doe',
+    username: 'John Doe',
     email: 'john.doe@university.edu',
     phone: '+92 300 1234567',
-    currentPassword: '',
+    password: '',
     newPassword: '',
     confirmPassword: '',
     emailNotifications: true,
@@ -23,7 +25,8 @@ export default function SettingsPage() {
     autoBackup: true,
     twoFactorAuth: false
   });
-
+  const {data:adminData}=useGetUserInfo('/api/admin/settings/profile-information',token);
+  console.log(adminData);
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -91,8 +94,8 @@ export default function SettingsPage() {
                   <label className="label">Full Name</label>
                   <input
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="username"
+                    value={formData.username}
                     onChange={handleInputChange}
                     className="input"
                   />
@@ -120,7 +123,7 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="formGroup">
+                {/* <div className="formGroup">
                   <label className="label">Department</label>
                   <select className="input">
                     <option>Computer Science</option>
@@ -128,7 +131,7 @@ export default function SettingsPage() {
                     <option>Business</option>
                     <option>Arts</option>
                   </select>
-                </div>
+                </div> */}
               </div>
             </div>
           )}

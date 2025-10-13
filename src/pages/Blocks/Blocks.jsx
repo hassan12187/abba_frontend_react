@@ -68,7 +68,7 @@ const Blocks = () => {
   const handleSubmit = async(e) => {
     e.preventDefault();
     console.log(formData);
-    mutate.mutate({url:"/api/block",data:formData});
+    mutate.mutate({url:"/api/admin/block",data:formData});
   };
 
   const handleEdit = (index) => {

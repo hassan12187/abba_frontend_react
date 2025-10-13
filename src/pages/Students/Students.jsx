@@ -37,7 +37,7 @@ const Students = () => {
   const {data,isLoading}=useStudentQuery(currentPage-1,filters.search,filters.status,filters.room,token);
   const {data:BlockData}=useBlockQuery(token);
   const {data:roomData,isLoading:isLoadingRoomData}=useBlockRoomsQuery(roomAssignment.block_id,token);
-  const {data:specificStudent,isLoading:isSpecificLoading}=useSpecificQuery(selectedStudent,token);
+  const {data:specificStudent,isLoading:isSpecificLoading}=useSpecificQuery(`/api/admin/student/${selectedStudent}`,selectedStudent,token);
   console.log(specificStudent);
   // console.log(roomData);
   // console.log(roomAssignment);
@@ -86,7 +86,7 @@ console.log(roomAssignment);
     //   alert('Please select both hostel block and room number');
     //   return;
     // }
-    mutate.mutate({url:`/api/student/${specificStudent._id}`,data:{room_id:roomAssignment.room_no}});
+    mutate.mutate({url:`/api/admin/student/${specificStudent._id}`,data:{room_id:roomAssignment.room_no}});
     console.log(specificStudent.room_id,roomAssignment.room_no);
     // if (window.confirm(`Assign room ${roomAssignment.room_no} to ${selectedStudent.fullName}?`)) {
     //   // const updatedStudents = students.map(student =>
@@ -449,7 +449,7 @@ console.log(roomAssignment);
                     <div className="detail-group">
                       <label>Current Room</label>
                       <p className={specificStudent?.room_id ? 'room-assigned' : 'room-not-assigned'}>
-                        {specificStudent?.room_id.room_no}
+                        {specificStudent?.room_id?.room_no}
                       </p>
                     </div>
                   </div>

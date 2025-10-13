@@ -33,7 +33,7 @@ const Rooms = () => {
   const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
   const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
   const mutate=useMutation({
-    mutationFn:async(data)=>await PostService('/api/room',data,token),
+    mutationFn:async(data)=>await PostService('/api/admin/room',data,token),
     onSuccess:()=>{
       queryClient.invalidateQueries({
         queryKey:['rooms'],

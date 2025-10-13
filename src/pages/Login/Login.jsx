@@ -61,6 +61,7 @@ const Login = () => {
         const result = await Axios.post('/static/login',formData,{
           withCredentials:true
         });
+        console.log(result);
         if(result.status==200){
           setToken(result?.data.token);
           return navigate("/");

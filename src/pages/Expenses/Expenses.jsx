@@ -113,7 +113,7 @@ const Expenses = () => {
     //   };
     //   setExpenses(prev => [...prev, newExpense]);
     // }
-    PostService("/api/expense",formData,token);
+    PostService("/api/admin/expense",formData,token);
     // Reset form
     setFormData({
       expense_type: '',

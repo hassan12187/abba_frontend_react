@@ -36,7 +36,7 @@ const handleInputChange = (e) => {
   };
   const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_registration_no,filters.date);
   const mutate = useMutation({
-    mutationFn:async(fmData)=>await PostService("/api/payment",fmData,token),
+    mutationFn:async(fmData)=>await PostService("/api/admin/payment",fmData,token),
     // mutationKey:["page"],
     onSuccess:()=>{
       queryClient.invalidateQueries({
