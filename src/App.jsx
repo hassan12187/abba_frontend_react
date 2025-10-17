@@ -19,6 +19,7 @@ import CheckAuth from './components/CheckAuth';
 import AdmissionForm from './pages/AdmissionForm/AdmissionForm';
 import Settings from './pages/Settings/Settings';
 import Blocks from './pages/Blocks/Blocks';
+import ForgotPasswordPage from './pages/ForgotPassword/ForgotPassword';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -76,6 +77,10 @@ const App=()=>{
     {
       path:'/admission-form',
       element:<AdmissionForm />
+    },
+    {
+      path:"/forgot-password",
+      element:<ForgotPasswordPage/>
     }
   ]);
   return <RouterProvider router={router}/>

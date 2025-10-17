@@ -39,9 +39,11 @@ export const PatchService=async(route,data,token)=>{
             withCredentials:true,
         });
         if(result.status==200){
-            console.log(result);
+            console.log("Password Updated");
         };
+        
     } catch (error) {
+        console.log(error.response.data);
         console.log(`patch error ${error}`);
     }
 };

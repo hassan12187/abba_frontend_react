@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import Axios from '../../Services/Axios';
 import { useCustom } from '../../Store/Store';
@@ -10,7 +10,7 @@ const Login = () => {
     email: '',
     password: ''
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -23,12 +23,12 @@ const Login = () => {
     }));
 
     // Clear error when user starts typing
-    if (errors[id]) {
-      setErrors(prev => ({
-        ...prev,
-        [id]: ''
-      }));
-    }
+    // if (errors[id]) {
+    //   setErrors(prev => ({
+    //     ...prev,
+    //     [id]: ''
+    //   }));
+    // }
   };
 
   const validateForm = () => {
@@ -44,7 +44,6 @@ const Login = () => {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -66,7 +65,7 @@ const Login = () => {
           setToken(result?.data.token);
           return navigate("/");
         };
-        if(result.status==429){
+        if(result.status==401){
           window.alert(result.config);
         }
       // // Mock authentication - in real app, this would be an API call
@@ -81,9 +80,9 @@ const Login = () => {
       //   throw new Error('Invalid credentials');
       // }
     } catch (error) {
+      console.log(error);
       if(error.status==401){
-        const {data}=error.response.data;
-        setErrors({password:data});
+        setErrors(error.response.data);
       }
       // setErrors({
       //   submit: error.message || 'Login failed. Please check your credentials.'
@@ -131,13 +130,13 @@ const Login = () => {
               <input
                 type="email"
                 id="email"
-                className={`form-control ${errors.email ? 'error' : ''}`}
+                name='email'
+                className={`form-control`}
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Enter your email"
                 disabled={isLoading}
               />
-              {errors.email && <span className="error-message">{errors.email}</span>}
             </div>
 
             <div className="form-group">
@@ -149,7 +148,8 @@ const Login = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
-                  className={`form-control ${errors.password ? 'error' : ''}`}
+                  name='password'
+                  className={`form-control`}
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Enter your password"
@@ -164,26 +164,25 @@ const Login = () => {
                   <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                 </button>
               </div>
-              {errors.password && <span className="error-message">{errors.password}</span>}
+              {errors && <span className="error-message">{errors}</span>}
             </div>
-
             {/* Remember Me & Forgot Password */}
             <div className="form-options">
               <label className="remember-me">
                 <input type="checkbox" />
                 <span>Remember me</span>
               </label>
-              <a href="#forgot" className="forgot-password">
+              <NavLink to={'/forgot-password'} className="forgot-password">
                 Forgot password?
-              </a>
+              </NavLink>
             </div>
 
-            {errors.submit && (
+            {/* {errors.submit && (
               <div className="alert alert-error">
                 <i className="fas fa-exclamation-circle"></i>
                 {errors.submit}
               </div>
-            )}
+            )} */}
 
             <button 
               type="submit" 

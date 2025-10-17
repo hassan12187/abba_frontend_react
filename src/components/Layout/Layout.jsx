@@ -5,6 +5,7 @@ import Footer from './Footer';
 import './Layout.css';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './SideBar';
+import { useCustom } from '../../Store/Store';
 
 // // In Layout.jsx, update the logout button in Sidebar.jsx
 // const handleLogout = () => {
@@ -27,9 +28,13 @@ import Sidebar from './SideBar';
 //     window.location.href = '/login';
 //   }
 // };
-
+const style={
+  backgroundColor:"black",
+  color:"#fff"
+};
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const {toggleDarkMode}=useCustom();
 
   const toggleSidebar = () => {
     if(sidebarOpen){
@@ -41,7 +46,7 @@ const Layout = () => {
   };
 
   return (
-    <div className={`layout-wrapper ${sidebarOpen ? '' : 'sidebar-collapsed'}`}>
+    <div className={`layout-wrapper ${sidebarOpen ? '' : 'sidebar-collapsed'}`} style={toggleDarkMode ? style : null}>
       <Sidebar isOpen={sidebarOpen} />
       <div className="main-content-wrapper">
         <Header onToggleSidebar={toggleSidebar} />

@@ -449,7 +449,7 @@ console.log(roomAssignment);
                     <div className="detail-group">
                       <label>Current Room</label>
                       <p className={specificStudent?.room_id ? 'room-assigned' : 'room-not-assigned'}>
-                        {specificStudent?.room_id?.room_no}
+                        {specificStudent?.room_id?.room_no||"-"}
                       </p>
                     </div>
                   </div>
