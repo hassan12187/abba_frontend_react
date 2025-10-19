@@ -7,6 +7,12 @@ import Pagination from '../../components/Layout/Pagination';
 import { useDebounce } from '../../components/hooks/useDebounce';
 import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 import useBlockQuery from '../../components/hooks/useBlockQuery';
+import FilterSection from '../../components/reusable/FilterSection';
+import InputField from '../../components/reusable/InputField';
+import SelectField from '../../components/reusable/SelectField';
+import Modal from '../../components/reusable/Modal';
+import DetailedInfo from '../../components/reusable/DetailedInfo';
+import useSpecificQuery from '../../components/hooks/useSpecificQuery';
 
 const Rooms = () => {
   const {token}=useCustom();
@@ -16,7 +22,9 @@ const Rooms = () => {
     room_no:"",
     status:""
   });
-  // const [filteredRooms, setFilteredRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  
   const [formData, setFormData] = useState({
     room_no: '',
     total_beds: '',
@@ -31,6 +39,8 @@ const Rooms = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
+  const {data:specificData}=useSpecificQuery(`/api/admin/room/${selectedRoom}`,selectedRoom,token,'room_id');
+  console.log(specificData);
   const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
   const mutate=useMutation({
     mutationFn:async(data)=>await PostService('/api/admin/room',data,token),
@@ -48,6 +58,7 @@ const Rooms = () => {
     },
     onError:(err)=>{console.log(err);}
   });
+
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({
@@ -55,7 +66,7 @@ const Rooms = () => {
       [id]: value
     }));
   };
-  console.log(formData);
+
   const updateFilters=useDebounce(
     (name,value)=>{
       setFilters((prev)=>{
@@ -63,6 +74,7 @@ const Rooms = () => {
       })
     },500
   );
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setInputVal((prev)=>{
@@ -80,9 +92,6 @@ const Rooms = () => {
     e.preventDefault();
     console.log(formData);
     mutate.mutate(formData);
-
-    // Reset form
-    
   };
 
   const handleEdit = (index) => {
@@ -103,6 +112,16 @@ const Rooms = () => {
     }
   };
 
+  const handleViewRoom = (rid) => {
+    setSelectedRoom(rid);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedRoom(null);
+  };
+
   const cancelEdit = () => {
     setEditIndex(null);
     setFormData({
@@ -111,34 +130,6 @@ const Rooms = () => {
       available_beds: '',
       status: 'available'
     });
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      status: '',
-      search: ''
-    });
-  };
-
-  // Pagination logic
-  // const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
-  // const startIndex = (currentPage - 1) * itemsPerPage;
-  // const currentRooms = filteredRooms.slice(startIndex, startIndex + itemsPerPage);
-
-  const goToPage = (page) => {
-    setCurrentPage(page);
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
   };
 
   const getStatusBadge = (status) => {
@@ -168,6 +159,7 @@ const Rooms = () => {
   const maintenanceRooms = data?.filter(room => room.status === 'maintenance').length;
   const totalBeds = data?.reduce((sum, room) => sum + room.total_beds, 0);
   const availableBeds = data?.reduce((sum, room) => sum + room.available_beds, 0);
+
   return (
     <div className="rooms-page">
       <div className="page-header">
@@ -237,8 +229,6 @@ const Rooms = () => {
           </div>
         </div>
         </div>
-
-     
       </div>
 
       {/* Room Form */}
@@ -250,94 +240,24 @@ const Rooms = () => {
           </h4>
           <form onSubmit={handleSubmit} className="room-form">
             <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="room_no" className="form-label">
-                  Room Number <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="room_no"
-                  name='room_no'
-                  className="form-control"
-                  value={formData.room_no}
-                  onChange={handleInputChange}
-                  placeholder="Enter room number"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="total_beds" className="form-label">
-                  Total Beds <span className="required">*</span>
-                </label>
-                <input
-                  type="number"
-                  id="total_beds"
-                  name="total_beds"
-                  className="form-control"
-                  value={formData.total_beds}
-                  onChange={handleInputChange}
-                  placeholder="Enter total beds"
-                  min="1"
-                  max="10"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="available_beds" className="form-label">
-                  Available Beds <span className="required">*</span>
-                </label>
-                <input
-                  type="number"
-                  id="available_beds"
-                  name='available_beds'
-                  className="form-control"
-                  value={formData.available_beds}
-                  onChange={handleInputChange}
-                  placeholder="Enter available beds"
-                  min="0"
-                  max={formData.total_beds || 10}
-                  required
-                />
-              </div>
-                 <div className="form-group">
-                <label htmlFor="block_id" className="form-label">
-                  Block Number <span className="required">*</span>
-                </label>
-                <select
-                  id="block_id"
-                  className="form-control"
-                  name="block_id"
-                  value={formData.block_id}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="" defaultValue hidden>Select Any Block</option>
-                    {
+              <InputField id={'room_no'} name={'room_no'} value={formData.room_no} onChange={handleInputChange} placeholder={'Enter Room Number'} label={'Room Number'} />
+              <InputField id={'total_beds'} name={'total_beds'} value={formData.total_beds} onChange={handleInputChange} placeholder={'Enter Total Beds'} label={'Total Beds'} />
+              <InputField id={'available_beds'} name={'available_beds'} value={formData.available_beds} onChange={handleInputChange} placeholder={'Enter Available Beds'} label={'Available Beds'} min={0} max={formData.total_beds||10} />
+              <SelectField id={'block_id'} name={'block_id'} value={formData.block_id} onChange={handleInputChange} label={'Block Number'}>
+                <option value="" defaultValue hidden>Select Any Block</option>
+                   {
                       blockData?.map(block=>(
                         <option value={block?._id} key={block?._id}>{`Block ${block?.block_no}`}</option>
                       ))
                     }
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="status" className="form-label">
-                  Status <span className="required">*</span>
-                </label>
-                <select
-                  id="status"
-                  className="form-control"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="available">Available</option>
+              </SelectField>
+           <SelectField id={'status'} name={'status'} value={formData.status} onChange={handleInputChange} label={'Status'}>
+                <option value="" defaultValue hidden>Select Any Status</option>
+                 <option value="available">Available</option>
                   <option value="occupied">Occupied</option>
                   <option value="maintenance">Maintenance</option>
-                </select>
-              </div>
+              </SelectField>
+         
             </div>
 
             <div className="form-actions">
@@ -357,52 +277,15 @@ const Rooms = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="filters-section">
-        <div className="section-card">
-          <h4 className="section-title">
-            <i className="fas fa-filter"></i>
-            Filter Rooms
-          </h4>
-          <div className="filters-row">
-            <div className="filter-group">
-              <label htmlFor="room_no" className="form-label">Search Room</label>
-              <input
-                type="text"
-                id="room_no"
-                name="room_no"
-                className="form-control"
-                value={InputVal.room_no}
-                onChange={handleFilterChange}
-                placeholder="Search by room number"
-              />
-            </div>
-
-            <div className="filter-group">
-              <label htmlFor="status" className="form-label">Status</label>
-              <select
-                id="status"
-                name="status"
-                className="form-control"
-                value={InputVal.status}
-                onChange={handleFilterChange}
-              >
-                <option value="">All Status</option>
+      <FilterSection heading={'Filter Rooms'}>
+              <InputField type={'text'} id={'room_no'} name={'room_no'} className={'form-control'} value={InputVal.room_no} onChange={handleFilterChange} placeholder={'Search by room number'} />
+              <SelectField id={'status'} name={'status'} className={'form-control'} value={InputVal.status} onChange={handleFilterChange} >
+                   <option value="">All Status</option>
                 <option value="available">Available</option>
                 <option value="occupied">Occupied</option>
                 <option value="maintenance">Maintenance</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label className="form-label invisible">Actions</label>
-              <button className="btn btn-outline-secondary w-100" onClick={clearFilters}>
-                <i className="fas fa-times"></i>
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+              </SelectField>
+      </FilterSection>
 
       {/* Rooms Table */}
       <div className="rooms-table-section">
@@ -472,6 +355,7 @@ const Rooms = () => {
                             <button
                               className="btn btn-sm btn-view"
                               title="View Details"
+                              onClick={() => handleViewRoom(room._id)}
                             >
                               <i className="fas fa-eye"></i>
                             </button>
@@ -508,6 +392,16 @@ const Rooms = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal for Room Details */}
+      {showModal && selectedRoom && (
+        <Modal setShowModal={setShowModal} headings={[
+          <DetailedInfo heading={'Room Number'} desc={specificData?.room_no} />,
+          <DetailedInfo heading={'Total Beds'} desc={specificData?.total_beds} />,
+          <DetailedInfo heading={'Available Beds'} desc={specificData?.available_beds} />,
+          <DetailedInfo heading={'Block No.'} desc={`Block ${specificData?.block_id?.block_no || '-'}`} />,
+        ]} />
+      )}
     </div>
   );
 };

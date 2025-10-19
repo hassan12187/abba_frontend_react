@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { GetService } from "../../Services/Services";
 
-const useSpecificQuery=(route,student_id,token)=>{
+const useSpecificQuery=(route,id,token,queryKey="student_id")=>{
     return useQuery({
-        queryKey:["student_id",student_id],
+        queryKey:[queryKey,id],
         queryFn:async()=>await GetService(route,token),
-        enabled:!!student_id,
+        enabled:!!id,
         staleTime:1000*60*60,
         cacheTime:1000*60*60
     });

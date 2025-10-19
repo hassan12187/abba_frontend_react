@@ -9,6 +9,9 @@ import { useBlockRoomsQuery } from '../../components/hooks/useRoomQuery';
 import useSpecificQuery from '../../components/hooks/useSpecificQuery';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PatchService } from '../../Services/Services';
+import FilterSection from '../../components/reusable/FilterSection';
+import InputField from '../../components/reusable/InputField';
+import SelectField from '../../components/reusable/SelectField';
 
 const Students = () => {
   const queryClient=useQueryClient();
@@ -38,10 +41,6 @@ const Students = () => {
   const {data:BlockData}=useBlockQuery(token);
   const {data:roomData,isLoading:isLoadingRoomData}=useBlockRoomsQuery(roomAssignment.block_id,token);
   const {data:specificStudent,isLoading:isSpecificLoading}=useSpecificQuery(`/api/admin/student/${selectedStudent}`,selectedStudent,token);
-  console.log(specificStudent);
-  // console.log(roomData);
-  // console.log(roomAssignment);
-  // console.log(BlockData);  
   const mutate=useMutation({
     mutationFn:async({url,data})=>await PatchService(url,data,token),
     onSuccess:()=>{
@@ -74,37 +73,16 @@ const Students = () => {
   };
   const handleViewDetails = (student_id) => {
     setSelectedStudent(student_id);
-    // setRoomAssignment({
-    //   block_id: student.roomAllocated ? student.room.split('-')[1] : '',
-    //   room_no: student.roomAllocated ? student.room : ''
-    // });
     setShowModal(true);
   };
-console.log(roomAssignment);
   const handleAssignRoom = () => {
-    // if (!roomAssignment.block_id || !roomAssignment.room_no) {
-    //   alert('Please select both hostel block and room number');
-    //   return;
-    // }
-    mutate.mutate({url:`/api/admin/student/${specificStudent._id}`,data:{room_id:roomAssignment.room_no}});
-    console.log(specificStudent.room_id,roomAssignment.room_no);
-    // if (window.confirm(`Assign room ${roomAssignment.room_no} to ${selectedStudent.fullName}?`)) {
-    //   // const updatedStudents = students.map(student =>
-    //   //   student.id === selectedStudent.id 
-    //   //     ? { 
-    //   //         ...student, 
-    //   //         room: roomAssignment.room_no,
-    //   //         roomAllocated: true,
-    //   //         status: 'active'
-    //   //       }
-    //   //     : student
-    //   // );
-    //   setStudents(updatedStudents);
-      setShowModal(false);
-    //   alert(`Room ${roomAssignment.room_no} assigned successfully to ${selectedStudent.fullName}!`);
-    // }
-  };
+    mutate.mutate({url:`/api/admin/student-room/${specificStudent._id}`,data:{room_id:roomAssignment.room_no}});
 
+      setShowModal(false);
+  };
+const removeRoom=(id)=>{
+mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
+};
   const handleReject = (studentId) => {
     if (window.confirm('Are you sure you want to reject this student?')) {
       const updatedStudents = students.map(student =>
@@ -217,7 +195,20 @@ console.log(roomAssignment);
       </div>
 
       {/* Filters Section */}
-      <div className="filters-section">
+      <FilterSection heading={'Filter Students'}>
+      <InputField type={'text'} label={'Search by reg no, name, or mobile...z'} id={'searchStudents'} name={'search'} className={'form-control'} value={instantVal.search} onChange={handleFilterChange} placeholder={'Search by reg no, name, or mobile...z'} />
+      <SelectField label={'Status'} id={'filterStatus'} name={'status'} className={'form-control'} value={instantVal.status} onChange={handleFilterChange}>
+           <option value="">All Status</option>
+                <option value="approved">Approved</option>
+                <option value="accepted">Accepted</option>
+      </SelectField>
+        <SelectField label={'Room Assignment'} id={'filterRoom'} name={'room'} className={'form-control'} value={filters.room} onChange={handleFilterChange}>
+          <option value="">All Students</option>
+                <option value="assigned">Room Assigned</option>
+                <option value="not-assigned">No Room Assigned</option>
+      </SelectField>
+      </FilterSection>
+      {/* <div className="filters-section">
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-filter"></i>
@@ -277,7 +268,7 @@ console.log(roomAssignment);
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Students Table */}
       <div className="students-table-section">
@@ -349,6 +340,16 @@ console.log(roomAssignment);
                                 <i className="fas fa-door-open"></i>
                               </button>
                             )}
+                            {
+                              student?.room_id && (
+                                <button className="btn btn-sm btn-reject"
+                                title="Remove Room"
+                                onClick={()=>removeRoom(student._id)}
+                                >
+                                  <i className="fa-solid fa-rotate-left"></i>
+                                </button>
+                              )
+                            }
                           </div>
                         </td>
                       </tr>
@@ -497,7 +498,7 @@ console.log(roomAssignment);
                           {roomAssignment.block_id && roomData?.length <=0 ? <option value="" aria-readonly>No Room Found</option>:null}
                           {roomAssignment.block_id && 
                             roomData?.map(room => (
-                              <option key={room._id} value={room._id}>{room.room_no}</option>
+                              <option key={room._id} value={room._id}>{`${room.room_no} ${room.available_beds >= room.total_beds ? '(No Beds Available)' : ""}`}</option>
                             ))
                           }
                         </select>
