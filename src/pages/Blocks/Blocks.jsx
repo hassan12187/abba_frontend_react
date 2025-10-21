@@ -1,20 +1,63 @@
 import { useState } from 'react';
-import '../Rooms/Room.css';
+// import '../Rooms/Room.css';
 import { useCustom } from '../../Store/Store';
 import { PostService } from '../../Services/Services';
 import Pagination from '../../components/Layout/Pagination';
 import { useDebounce } from '../../components/hooks/useDebounce';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import usePagedBlockQuery from '../../components/hooks/usePagedBlockQuery';
+import FilterSection from '../../components/reusable/FilterSection';
+import InputField from '../../components/reusable/InputField';
+import SelectField from '../../components/reusable/SelectField';
+import Modal from '../../components/reusable/Modal';
+import useSpecificQuery from '../../components/hooks/useSpecificQuery';
+import { useMemo } from 'react';
 
+  const blockFields=[
+    {
+      type:"text",
+      name:"block_no",
+      id:"block_no",
+      placeholder:"block number",
+      label:"Block Number"
+    },
+    {
+      type:"text",
+      name:"total_rooms",
+      id:"total_rooms",
+      placeholder:"Total Rooms",
+      label:"Total Rooms"
+    },
+    {
+      type:"text",
+      name:"description",
+      id:"description",
+      label:"Block Description",
+    },
+    {
+      type:"select",
+      name:"status",
+      id:"status",
+      label:"Select Any Status",
+      options:<>
+        <option>Select Any Status</option>
+        <option value={'under construction'}>Under Construction</option>
+        <option value={'ready'}>Ready</option>
+        <option value={'maintenance'}>Maintenance</option>
+      </>
+    }
+  ]
 const Blocks = () => {
     const queryClient=useQueryClient();
   const {token}=useCustom();
   const [rooms, setBlocks] = useState([]);
+  const [showModal, setShowModal] = useState({show:false,mode:""});
+  const [blockId,setBlockId]=useState("");
   const [InputVal,setInputVal]=useState({
     block_no:"",
     status:""
   });
+  console.log(blockId);
   const [formData, setFormData] = useState({
     block_no: '',
     total_rooms: '',
@@ -28,7 +71,9 @@ const Blocks = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const {data} = usePagedBlockQuery(token,currentPage-1,filters.block_no,filters.status);
-  console.log(data);
+  const {data:specificData,isLoading}=useSpecificQuery(`/api/admin/block/${blockId}`,blockId,token,`block_id:${blockId}`)
+  console.log(specificData);
+  const memoizedBlock=useMemo(()=> specificData || {}  ,[specificData])
   const mutate=useMutation({
     mutationFn:async({url,data})=>await PostService(url,data,token),
     onSuccess:()=>{
@@ -295,7 +340,16 @@ const Blocks = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="filters-section">
+      <FilterSection heading={'Filter Blocks'}>
+              <InputField type={'text'} id={'block_no'} name={'block_no'} value={InputVal.block_no} onChange={handleFilterChange} placeholder={'Search by Block Number'} />
+              <SelectField id={'status'} name={'status'} value={InputVal.status} onChange={handleFilterChange}>
+  <option value="">Select Any Option</option>
+                <option value="under construction">Under Construction</option>
+                <option value="ready">Ready</option>
+                <option value="maintenance">Maintenance</option>
+              </SelectField>
+      </FilterSection>
+      {/* <div className="filters-section">
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-filter"></i>
@@ -324,10 +378,7 @@ const Blocks = () => {
                 value={InputVal.status}
                 onChange={handleFilterChange}
               >
-                <option value="">Select Any Option</option>
-                <option value="under construction">Under Construction</option>
-                <option value="ready">Ready</option>
-                <option value="maintenance">Maintenance</option>
+              
               </select>
             </div>
             <div className="filter-group">
@@ -339,7 +390,7 @@ const Blocks = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Rooms Table */}
       <div className="rooms-table-section">
@@ -347,7 +398,7 @@ const Blocks = () => {
           <div className="card-header-enhanced">
             <h3 className="card-title">
               <i className="fas fa-list"></i>
-              Rooms List
+              Blocks List
             </h3>
             <div className="rooms-summary">
               {/* Showing {filteredRooms.length} of {rooms.length} rooms */}
@@ -388,12 +439,15 @@ const Blocks = () => {
                             <button
                               className="btn btn-sm btn-view"
                               title="View Details"
+                              onClick={()=>{
+                                setBlockId(room._id);
+                                setShowModal({show:true,mode:"view"})}}
                             >
                               <i className="fas fa-eye"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(data?.findIndex(r => r._id === room._id))}
+                              onClick={() => setShowModal({show:true,mode:"edit"})}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
@@ -424,6 +478,30 @@ const Blocks = () => {
           </div>
         </div>
       </div>
+     { showModal?.show && (<Modal 
+        data={memoizedBlock}
+        modalTitle={"Block"}
+        setShowModal={setShowModal}
+        mode={showModal?.mode}
+        fields={blockFields}
+        actionButtons={
+          <>
+              <button 
+                    className="btn btn-success"
+                  >
+                    <i className="fas fa-edit"></i>
+                    Edit
+                  </button>
+                  {/* <button 
+                    className="btn btn-danger"
+                  >
+                    <i className="fas fa-times"></i>
+                    Reject
+                  </button> */}
+          </>
+        }
+        
+      />)}
     </div>
   );
 };
