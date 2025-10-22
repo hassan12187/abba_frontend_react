@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
+import {NavLink, useNavigate} from "react-router-dom";
 
 const AdminDashboard = () => {
+  const navigate=useNavigate();
   const [stats, setStats] = useState({
     totalStudents: 0,
     occupiedRooms: 0,
@@ -135,19 +137,19 @@ const AdminDashboard = () => {
           <h3>Quick Actions</h3>
         </div>
         <div className="quick-actions-grid">
-          <button className="quick-action-btn">
+          <button className="quick-action-btn" onClick={()=>navigate('/applications')}>
             <i className="fas fa-user-plus"></i>
-            <span>Add New Student</span>
+            <span>  Add New Student</span>
           </button>
-          <button className="quick-action-btn">
+          <button className="quick-action-btn" onClick={()=>navigate('/rooms')}>
             <i className="fas fa-bed"></i>
             <span>Manage Rooms</span>
           </button>
-          <button className="quick-action-btn">
+          <button className="quick-action-btn" onClick={()=>navigate('/payments')}>
             <i className="fas fa-file-invoice-dollar"></i>
             <span>Process Payments</span>
           </button>
-          <button className="quick-action-btn">
+          <button className="quick-action-btn" onClick={()=>navigate('/reports')}>
             <i className="fas fa-chart-bar"></i>
             <span>View Reports</span>
           </button>

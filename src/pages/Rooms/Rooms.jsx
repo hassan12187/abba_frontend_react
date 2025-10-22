@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './Room.css';
 import { useRoomsQuery } from '../../components/hooks/useRoomQuery';
 import { useCustom } from '../../Store/Store';
@@ -14,6 +14,49 @@ import Modal from '../../components/reusable/Modal';
 import DetailedInfo from '../../components/reusable/DetailedInfo';
 import useSpecificQuery from '../../components/hooks/useSpecificQuery';
 
+const roomData=[
+  {
+    type:"text",
+    id:"room_no",
+    name:"room_no",
+    placeholder:"Room Number",
+    label:"Room Number"
+  },
+  {
+    type:"number",
+    id:"total_beds",
+    name:"total_beds",
+    label:"Total Beds",
+    placeholder:"Total Beds"
+  },
+  {
+    type:"number",
+    id:"available_beds",
+    name:"available_beds",
+    label:"Available Beds",
+    placeholder:"Available Beds"
+  },
+  {
+    type:"text",
+    id:"block_no",
+    name:"block_no",
+    label:"Block Number",
+    placeholder:"Block Number"
+  },
+  {
+    type:"select",
+    id:"status",
+    name:"status",
+    label:"Room Status",
+    options:<>
+      <option>Select Any Status</option>
+      <option value={'available'}>Available</option>
+      <option value={'occupied'}>Occupied</option>
+      <option value={'maintenance'}>Maintenance</option>
+    </>
+  }
+]
+
 const Rooms = () => {
   const {token}=useCustom();
   const queryClient=useQueryClient();
@@ -23,7 +66,7 @@ const Rooms = () => {
     status:""
   });
   const [selectedRoom, setSelectedRoom] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState({show:false,mode:"view"});
   
   const [formData, setFormData] = useState({
     room_no: '',
@@ -32,16 +75,16 @@ const Rooms = () => {
     block_id:'',
     status: 'available'
   });
-  const [editIndex, setEditIndex] = useState(null);
   const [filters, setFilters] = useState({
     room_no: '',
     status: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
   const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
+  console.log(data);
   const {data:specificData}=useSpecificQuery(`/api/admin/room/${selectedRoom}`,selectedRoom,token,'room_id');
-  console.log(specificData);
-  const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
+  // const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
+  const memoizedSpecificData=useMemo(()=>specificData || {},[specificData]);
   const mutate=useMutation({
     mutationFn:async(data)=>await PostService('/api/admin/room',data,token),
     onSuccess:()=>{
@@ -94,32 +137,13 @@ const Rooms = () => {
     mutate.mutate(formData);
   };
 
-  const handleEdit = (index) => {
-    const roomToEdit = data?.[index];
-    setFormData({
-      room_no: roomToEdit.room_no,
-      total_beds: roomToEdit.total_beds.toString(),
-      available_beds: roomToEdit.available_beds.toString(),
-      status: roomToEdit.status
-    });
-    setEditIndex(index);
-  };
-
-  const handleDelete = (index) => {
-    if (window.confirm('Are you sure you want to delete this room?')) {
-      const updatedRooms = rooms.filter((_, i) => i !== index);
-      setRooms(updatedRooms);
-    }
-  };
-
+  const handleEdit = (rid)=> {
+    setSelectedRoom(rid);
+    setShowModal({show:true,mode:"edit"});
+  } ;
   const handleViewRoom = (rid) => {
     setSelectedRoom(rid);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedRoom(null);
+    setShowModal({show:true,mode:"view"});
   };
 
   const cancelEdit = () => {
@@ -152,14 +176,6 @@ const Rooms = () => {
     return 'high';
   };
 
-  // Statistics
-  const totalRooms = data?.length;
-  const availableRooms = data?.filter(room => room.status === 'available').length;
-  const occupiedRooms = data?.filter(room => room.status === 'occupied').length;
-  const maintenanceRooms = data?.filter(room => room.status === 'maintenance').length;
-  const totalBeds = data?.reduce((sum, room) => sum + room.total_beds, 0);
-  const availableBeds = data?.reduce((sum, room) => sum + room.available_beds, 0);
-
   return (
     <div className="rooms-page">
       <div className="page-header">
@@ -179,7 +195,7 @@ const Rooms = () => {
             </div>
             <div className="stat-content">
               <h3>Total Rooms</h3>
-              <div className="stat-value">{totalRooms}</div>
+              <div className="stat-value">{data?.stats?.totalRooms}</div>
               <p className="stat-description">All rooms</p>
             </div>
           </div>
@@ -190,7 +206,7 @@ const Rooms = () => {
             </div>
             <div className="stat-content">
               <h3>Available Rooms</h3>
-              <div className="stat-value">{availableRooms}</div>
+              <div className="stat-value">{data?.stats?.availableRooms}</div>
               <p className="stat-description">Ready for occupancy</p>
             </div>
           </div>
@@ -201,7 +217,7 @@ const Rooms = () => {
             </div>
             <div className="stat-content">
               <h3>Occupied Rooms</h3>
-              <div className="stat-value">{occupiedRooms}</div>
+              <div className="stat-value">{data?.stats?.occupiedRooms}</div>
               <p className="stat-description">Currently occupied</p>
             </div>
           </div>
@@ -212,7 +228,7 @@ const Rooms = () => {
             </div>
             <div className="stat-content">
               <h3>Under Maintenance</h3>
-              <div className="stat-value">{maintenanceRooms}</div>
+              <div className="stat-value">{data?.stats?.maintenanceRooms}</div>
               <p className="stat-description">Being serviced</p>
             </div>
           </div>
@@ -221,11 +237,11 @@ const Rooms = () => {
             <div className="stat-icon">
               <i className="fas fa-bed"></i>
             </div>
-            <div className="stat-content">
+            {/* <div className="stat-content">
               <h3>Total Beds</h3>
               <div className="stat-value">{totalBeds}</div>
               <p className="stat-description">{availableBeds} beds available</p>
-            </div>
+            </div> */}
           </div>
         </div>
         </div>
@@ -236,7 +252,7 @@ const Rooms = () => {
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-plus-circle"></i>
-            {editIndex !== null ? 'Edit Room' : 'Add New Room'}
+            Add New Room
           </h4>
           <form onSubmit={handleSubmit} className="room-form">
             <div className="form-row">
@@ -244,12 +260,12 @@ const Rooms = () => {
               <InputField id={'total_beds'} name={'total_beds'} value={formData.total_beds} onChange={handleInputChange} placeholder={'Enter Total Beds'} label={'Total Beds'} />
               <InputField id={'available_beds'} name={'available_beds'} value={formData.available_beds} onChange={handleInputChange} placeholder={'Enter Available Beds'} label={'Available Beds'} min={0} max={formData.total_beds||10} />
               <SelectField id={'block_id'} name={'block_id'} value={formData.block_id} onChange={handleInputChange} label={'Block Number'}>
-                <option value="" defaultValue hidden>Select Any Block</option>
+                {/* <option value="" defaultValue hidden>Select Any Block</option>
                    {
                       blockData?.map(block=>(
                         <option value={block?._id} key={block?._id}>{`Block ${block?.block_no}`}</option>
                       ))
-                    }
+                    } */}
               </SelectField>
            <SelectField id={'status'} name={'status'} value={formData.status} onChange={handleInputChange} label={'Status'}>
                 <option value="" defaultValue hidden>Select Any Status</option>
@@ -258,19 +274,6 @@ const Rooms = () => {
                   <option value="maintenance">Maintenance</option>
               </SelectField>
          
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn btn-primary">
-                <i className="fas fa-save"></i>
-                {editIndex !== null ? 'Update Room' : 'Add Room'}
-              </button>
-              {editIndex !== null && (
-                <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-                  <i className="fas fa-times"></i>
-                  Cancel Edit
-                </button>
-              )}
             </div>
           </form>
         </div>
@@ -314,8 +317,8 @@ const Rooms = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.length > 0 ? (
-                    data?.map((room, index) => (
+                  {data?.data?.length > 0 ? (
+                    data?.data?.map((room, index) => (
                       <tr key={index} className="room-row">
                         <td className="room-no-cell">
                           <div className="room-info">
@@ -361,7 +364,7 @@ const Rooms = () => {
                             </button>
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(data?.findIndex(r => r._id === room._id))}
+                              onClick={() => handleEdit(room._id)}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
@@ -394,13 +397,15 @@ const Rooms = () => {
       </div>
 
       {/* Modal for Room Details */}
-      {showModal && selectedRoom && (
-        <Modal setShowModal={setShowModal} headings={[
-          <DetailedInfo heading={'Room Number'} desc={specificData?.room_no} />,
-          <DetailedInfo heading={'Total Beds'} desc={specificData?.total_beds} />,
-          <DetailedInfo heading={'Available Beds'} desc={specificData?.available_beds} />,
-          <DetailedInfo heading={'Block No.'} desc={`Block ${specificData?.block_id?.block_no || '-'}`} />,
-        ]} />
+      {showModal.show  && (
+        <Modal setShowModal={setShowModal} modalTitle={"Room"} data={{...memoizedSpecificData,block_no:memoizedSpecificData?.block_id?.block_no}} fields={roomData} mode={showModal.mode} actionButtons={<>
+          <button 
+                    className="btn btn-success"
+                  >
+                    <i className="fas fa-edit"></i>
+                    Edit
+                  </button>
+        </>} />
       )}
     </div>
   );

@@ -8,12 +8,11 @@ export const GetService=async(route,token)=>{
         },
         withCredentials:true
     });    
-    console.log(result);
     if(result.status==200){
-        return result.data.data;
+        const obj = {data:result.data.data,stats:result.data.stats};
+        return obj;
     };
     if(result.status==204){
-        console.log(result);
         return [];
     }
 };

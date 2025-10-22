@@ -30,6 +30,7 @@ const Modal = memo(({ data = {}, setShowModal, mode, fields = [], modalTitle, ac
       case "email":
       case "text":
       case "password":
+      case "number":
         return (
           <InputField
             key={name}
@@ -43,12 +44,18 @@ const Modal = memo(({ data = {}, setShowModal, mode, fields = [], modalTitle, ac
             placeholder={field.placeholder}
           />
         );
+   
       case "select":
         return (
           <SelectField key={name} id={field.id} onChange={handleChange} label={field.label} value={value} name={name}>
             {field.options}
           </SelectField>
         );
+      case "textarea":
+        return <div className="filter-group">
+          <label htmlFor={field.id}>{field.label}</label>
+        <textarea name={name} value={value} id={field.id} onChange={handleChange} placeholder={field.placeholder} className="form-control" ></textarea>
+        </div>
       default:
         return null;
     }

@@ -29,7 +29,7 @@ import { useMemo } from 'react';
       label:"Total Rooms"
     },
     {
-      type:"text",
+      type:"textarea",
       name:"description",
       id:"description",
       label:"Block Description",
@@ -114,33 +114,6 @@ const Blocks = () => {
     e.preventDefault();
     console.log(formData);
     mutate.mutate({url:"/api/admin/block",data:formData});
-  };
-
-  const handleEdit = (index) => {
-    const roomToEdit = data?.[index];
-    setFormData({
-      block_no: roomToEdit.block_no,
-      total_beds: roomToEdit.total_beds.toString(),
-      available_beds: roomToEdit.available_beds.toString(),
-      status: roomToEdit.status
-    });
-    setEditIndex(index);
-  };
-  const cancelEdit = () => {
-    setEditIndex(null);
-    setFormData({
-        block_no: '',
-    total_rooms: '',
-    description: '',
-    status: ''
-    });
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      status: '',
-      search: ''
-    });
   };
 
   const getStatusBadge = (status) => {
@@ -326,14 +299,9 @@ const Blocks = () => {
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
                 <i className="fas fa-save"></i>
-                {editIndex !== null ? 'Update Room' : 'Add Room'}
+                 Add Block
               </button>
-              {editIndex !== null && (
-                <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-                  <i className="fas fa-times"></i>
-                  Cancel Edit
-                </button>
-              )}
+        
             </div>
           </form>
         </div>

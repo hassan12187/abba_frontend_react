@@ -5,9 +5,11 @@ import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
 import { PostService } from '../../Services/Services';
 import { useDebounce } from '../../components/hooks/useDebounce';
+import Modal from '../../components/reusable/Modal';
 
 const Expenses = () => {
   const {token}=useCustom();
+  const [showModal,setShowModal]=useState({show:false,mode:"view"});
   const [formData, setFormData] = useState({
     expense_type: '',
     description: '',
@@ -24,50 +26,7 @@ const Expenses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const {data,isLoading}=useExpenseQuery(currentPage-1,token,filters.type,filters.date);
   console.log(data);
-  // // Sample initial data
-  // useEffect(() => {
-  //   const sampleExpenses = [
-  //     {
-  //       id: 1,
-  //       expense_type: 'salary',
-  //       description: 'Staff salaries for January',
-  //       amount: 50000,
-  //       date: '2024-01-15'
-  //     },
-  //     {
-  //       id: 2,
-  //       expense_type: 'normal expense',
-  //       description: 'Electricity bill',
-  //       amount: 15000,
-  //       date: '2024-01-10'
-  //     },
-  //     {
-  //       id: 3,
-  //       expense_type: 'asset',
-  //       description: 'New furniture purchase',
-  //       amount: 75000,
-  //       date: '2024-01-05'
-  //     }
-  //   ];
-  //   setExpenses(sampleExpenses);
-  //   setFilteredExpenses(sampleExpenses);
-  // }, []);
 
-  // // Filter expenses when filters change
-  // useEffect(() => {
-  //   let filtered = expenses;
-
-  //   if (filters.type) {
-  //     filtered = filtered.filter(expense => expense.expense_type === filters.type);
-  //   }
-
-  //   if (filters.date) {
-  //     filtered = filtered.filter(expense => expense.date === filters.date);
-  //   }
-
-  //   setFilteredExpenses(filtered);
-  //   setCurrentPage(1);
-  // }, [filters, expenses]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -123,29 +82,8 @@ const Expenses = () => {
   };
 
   const handleEdit = (index) => {
-    const expenseToEdit = expenses[index];
-    setFormData({
-      expense_type: expenseToEdit.expense_type,
-      description: expenseToEdit.description,
-      amount: expenseToEdit.amount.toString()
-    });
+    setShow
     setEditIndex(index);
-  };
-
-  const handleDelete = (index) => {
-    if (window.confirm('Are you sure you want to delete this expense?')) {
-      const updatedExpenses = expenses.filter((_, i) => i !== index);
-      setExpenses(updatedExpenses);
-    }
-  };
-
-  const cancelEdit = () => {
-    setEditIndex(null);
-    setFormData({
-      expense_type: '',
-      description: '',
-      amount: ''
-    });
   };
 
   const clearFilters = () => {
@@ -160,9 +98,7 @@ const Expenses = () => {
     alert('Export to Excel functionality would be implemented here');
     console.log('Exporting expenses:', filteredExpenses);
   };
-  const goToPage = (page) => {
-    setCurrentPage(page);
-  };
+
   // Calculate total expenses
   const totalExpenses = data?.reduce((sum, expense) => sum + expense.amount, 0);
 
@@ -397,6 +333,9 @@ const Expenses = () => {
           </div>
         </div>
       </div>
+      {
+        showModal.show && <Modal  />
+      }
     </div>
   );
 };
