@@ -84,10 +84,10 @@ const StudentApplications = () => {
 
   const getStatusStats = () => {
     const stats = {
-      total: data?.length,
-      pending: data?.filter(app => app.status === 'pending').length,
-      approved: data?.filter(app => app.status === 'approved').length,
-      rejected: data?.filter(app => app.status === 'rejected').length
+      total: data?.data?.length,
+      pending: data?.data?.filter(app => app.status === 'pending').length,
+      approved: data?.data?.filter(app => app.status === 'approved').length,
+      rejected: data?.data?.filter(app => app.status === 'rejected').length
     };
     return stats;
   };
@@ -238,8 +238,8 @@ const StudentApplications = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.length > 0 ? (
-                    data?.map((application,index) => (
+                  {data?.data?.length > 0 ? (
+                    data?.data?.map((application,index) => (
                       <tr key={index} className="application-row">
                         <td className="roll-no-cell">
                           <div className="roll-no">{application.student_roll_no}</div>

@@ -367,8 +367,8 @@ const handleInputChange = (e) => {
                   </tr>
                 </thead>
                 <tbody>
-                   {data?.length > 0 ? (
-                    data?.map((payment, index) => (
+                   {data?.data?.length > 0 ? (
+                    data?.data?.map((payment, index) => (
                       <tr key={index} className="payment-row">
                         <td className="reg-no-cell">
                           <div className="student-info">

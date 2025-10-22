@@ -73,7 +73,7 @@ const Blocks = () => {
   const {data} = usePagedBlockQuery(token,currentPage-1,filters.block_no,filters.status);
   const {data:specificData,isLoading}=useSpecificQuery(`/api/admin/block/${blockId}`,blockId,token,`block_id:${blockId}`)
   console.log(specificData);
-  const memoizedBlock=useMemo(()=> specificData || {}  ,[specificData])
+  const memoizedBlock=useMemo(()=> specificData?.data || {}  ,[specificData?.data])
   const mutate=useMutation({
     mutationFn:async({url,data})=>await PostService(url,data,token),
     onSuccess:()=>{
@@ -141,10 +141,10 @@ const Blocks = () => {
 //   };
 
   // Statistics
-  const totalRooms = data?.length;
-  const availableRooms = data?.filter(room => room.status === 'available').length;
-  const occupiedRooms = data?.filter(room => room.status === 'occupied').length;
-  const maintenanceRooms = data?.filter(room => room.status === 'maintenance').length;
+  const totalRooms =0;
+  const availableRooms =0;
+  const occupiedRooms =0;
+  const maintenanceRooms =0;
   return (
     <div className="rooms-page">
       <div className="page-header">
@@ -385,8 +385,8 @@ const Blocks = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data && data.length>0? (
-                    data?.map((room, index) => (
+                  {data?.data && data?.data?.length>0? (
+                    data?.data?.map((room, index) => (
                       <tr key={index} className="room-row">
                         <td className="room-no-cell">
                           <div className="room-info">

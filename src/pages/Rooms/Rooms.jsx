@@ -81,10 +81,9 @@ const Rooms = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
-  console.log(data);
   const {data:specificData}=useSpecificQuery(`/api/admin/room/${selectedRoom}`,selectedRoom,token,'room_id');
   // const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
-  const memoizedSpecificData=useMemo(()=>specificData || {},[specificData]);
+  const memoizedSpecificData=useMemo(()=>specificData?.data || {},[specificData?.data]);
   const mutate=useMutation({
     mutationFn:async(data)=>await PostService('/api/admin/room',data,token),
     onSuccess:()=>{

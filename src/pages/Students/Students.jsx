@@ -38,9 +38,10 @@ const Students = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const {data,isLoading}=useStudentQuery(currentPage-1,filters.search,filters.status,filters.room,token);
-  const {data:BlockData}=useBlockQuery(token);
+  const {data:BlockData}=useBlockQuery(token,selectedStudent);
   const {data:roomData,isLoading:isLoadingRoomData}=useBlockRoomsQuery(roomAssignment.block_id,token);
   const {data:specificStudent,isLoading:isSpecificLoading}=useSpecificQuery(`/api/admin/student/${selectedStudent}`,selectedStudent,token);
+  console.log(BlockData);
   const mutate=useMutation({
     mutationFn:async({url,data})=>await PatchService(url,data,token),
     onSuccess:()=>{
@@ -76,7 +77,7 @@ const Students = () => {
     setShowModal(true);
   };
   const handleAssignRoom = () => {
-    mutate.mutate({url:`/api/admin/student-room/${specificStudent._id}`,data:{room_id:roomAssignment.room_no}});
+    mutate.mutate({url:`/api/admin/student-room/${specificStudent?.data._id}`,data:{room_id:roomAssignment.room_no}});
 
       setShowModal(false);
   };
@@ -298,8 +299,8 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.length > 0 ? (
-                    data?.map((student) => (
+                  {data?.data?.length > 0 ? (
+                    data?.data?.map((student) => (
                       <tr key={student._id} className="student-row">
                         <td className="reg-number-cell">
                           <div className="reg-number">{student.student_reg_no||"-"}</div>
@@ -395,7 +396,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                   <h4>Registration No: <span>{selectedStudent.regNumber}</span></h4>
                 </div>
                 <div className="student-status">
-                  {getStatusBadge(specificStudent?.status)}
+                  {getStatusBadge(specificStudent?.data?.status)}
                 </div>
               </div>
 
@@ -408,27 +409,27 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                   <div className="detail-row">
                     <div className="detail-group">
                       <label>Full Name</label>
-                      <p>{specificStudent?.student_name}</p>
+                      <p>{specificStudent?.data?.student_name}</p>
                     </div>
                     <div className="detail-group">
                       <label>Father's Name</label>
-                      <p>{specificStudent?.father_name}</p>
+                      <p>{specificStudent?.data?.father_name}</p>
                     </div>
                     <div className="detail-group">
                       <label>CNIC</label>
-                      <p>{specificStudent?.cnic_no}</p>
+                      <p>{specificStudent?.data?.cnic_no}</p>
                     </div>
                     <div className="detail-group">
                       <label>Email</label>
-                      <p>{specificStudent?.student_email}</p>
+                      <p>{specificStudent?.data?.student_email}</p>
                     </div>
                     <div className="detail-group">
                       <label>Mobile</label>
-                      <p>{specificStudent?.student_cellphone}</p>
+                      <p>{specificStudent?.data?.student_cellphone}</p>
                     </div>
                     <div className="detail-group full-width">
                       <label>Address</label>
-                      <p>{specificStudent?.postal_address}</p>
+                      <p>{specificStudent?.data?.postal_address}</p>
                     </div>
                   </div>
                 </div>
@@ -441,23 +442,23 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                   <div className="detail-row">
                     <div className="detail-group">
                       <label>Academic Year</label>
-                      <p>{specificStudent?.academic_year}</p>
+                      <p>{specificStudent?.data?.academic_year}</p>
                     </div>
                     <div className="detail-group">
                       <label>Registration Date</label>
-                      <p>{new Date(specificStudent?.application_submit_date).toLocaleDateString()}</p>
+                      <p>{new Date(specificStudent?.data?.application_submit_date).toLocaleDateString()}</p>
                     </div>
                     <div className="detail-group">
                       <label>Current Room</label>
-                      <p className={specificStudent?.room_id ? 'room-assigned' : 'room-not-assigned'}>
-                        {specificStudent?.room_id?.room_no||"-"}
+                      <p className={specificStudent?.data?.room_id ? 'room-assigned' : 'room-not-assigned'}>
+                        {specificStudent?.data?.room_id?.room_no||"-"}
                       </p>
                     </div>
                   </div>
                 </div>
                 {/* below condition we will check later */}
         {/* selectedStudent.status === 'pending' */}
-                {specificStudent?.room_id == null && (
+                {specificStudent?.data?.room_id == null && (
                   <div className="detail-section">
                     <h5 className="section-title">
                       <i className="fas fa-door-open"></i>
@@ -476,7 +477,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                           <option value="">Select Block</option>
                           {/* <option value={}></option> */}
                           {
-                            BlockData?.map(block=>(
+                            BlockData?.data?.map(block=>(
                                  <option value={block._id} key={block._id}>Block {block.block_no}</option>
                             )
                               
@@ -497,7 +498,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                           <option value="" defaultValue hidden>Select Room</option>
                           {roomAssignment.block_id && roomData?.length <=0 ? <option value="" aria-readonly>No Room Found</option>:null}
                           {roomAssignment.block_id && 
-                            roomData?.map(room => (
+                            roomData?.data?.map(room => (
                               <option key={room._id} value={room._id}>{`${room.room_no} ${room.available_beds >= room.total_beds ? '(No Beds Available)' : ""}`}</option>
                             ))
                           }
@@ -527,7 +528,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                 Close
               </button>
               <div className="action-buttons">
-                {!specificStudent?.room_id && (
+                {!specificStudent?.data?.room_id && (
                   <button 
                     className="btn btn-success"
                     onClick={handleAssignRoom}

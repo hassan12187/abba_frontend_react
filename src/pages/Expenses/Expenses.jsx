@@ -100,7 +100,7 @@ const Expenses = () => {
   };
 
   // Calculate total expenses
-  const totalExpenses = data?.reduce((sum, expense) => sum + expense.amount, 0);
+  // const totalExpenses = data?.reduce((sum, expense) => sum + expense.amount, 0);
 
   const getExpenseTypeBadge = (type) => {
     const typeConfig = {
@@ -281,8 +281,8 @@ const Expenses = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.length > 0 ? (
-                    data?.map((expense, index) => (
+                  {data?.data?.length > 0 ? (
+                    data?.data?.map((expense, index) => (
                       <tr key={index} className="expense-row">
                         <td>
                           {getExpenseTypeBadge(expense?.expense_type)}

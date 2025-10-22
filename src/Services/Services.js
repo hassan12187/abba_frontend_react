@@ -9,8 +9,7 @@ export const GetService=async(route,token)=>{
         withCredentials:true
     });    
     if(result.status==200){
-        const obj = {data:result.data.data,stats:result.data.stats};
-        return obj;
+        return result.data;
     };
     if(result.status==204){
         return [];
