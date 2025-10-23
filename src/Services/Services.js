@@ -8,6 +8,7 @@ export const GetService=async(route,token)=>{
         },
         withCredentials:true
     });    
+    console.log(result);
     if(result.status==200){
         return result.data;
     };

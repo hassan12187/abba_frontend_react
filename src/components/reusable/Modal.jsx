@@ -25,12 +25,13 @@ const Modal = memo(({ data = {}, setShowModal, mode, fields = [], modalTitle, ac
   const renderField = (field) => {
     const name = field?.name;
     const value = formData[name] || "";
-
+    console.log(name , value);
     switch (field.type) {
       case "email":
       case "text":
       case "password":
       case "number":
+      case "date":
         return (
           <InputField
             key={name}
@@ -44,7 +45,6 @@ const Modal = memo(({ data = {}, setShowModal, mode, fields = [], modalTitle, ac
             placeholder={field.placeholder}
           />
         );
-   
       case "select":
         return (
           <SelectField key={name} id={field.id} onChange={handleChange} label={field.label} value={value} name={name}>

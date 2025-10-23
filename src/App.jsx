@@ -20,6 +20,7 @@ import AdmissionForm from './pages/AdmissionForm/AdmissionForm';
 import Settings from './pages/Settings/Settings';
 import Blocks from './pages/Blocks/Blocks';
 import ForgotPasswordPage from './pages/ForgotPassword/ForgotPassword';
+import Complaints from './pages/Complaints/Complaints';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -63,6 +64,10 @@ const App=()=>{
       {
         path:"/blocks",
         element:<CheckAuth><Blocks /></CheckAuth>
+      },
+      {
+        path:"/complaints",
+        element:<CheckAuth><Complaints /></CheckAuth>
       }
       ]
     },

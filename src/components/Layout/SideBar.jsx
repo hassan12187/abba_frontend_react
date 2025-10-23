@@ -13,6 +13,7 @@ const Sidebar = ({ isOpen }) => {
     { path: '/applications', icon: 'fas fa-file-alt', label: 'Applications' },
     { path: '/expenses', icon: 'fas fa-money-bill-wave', label: 'Expenses' },
     {path:'/blocks',icon: 'fa-solid fa-building', label: 'Blocks'},
+    {path:'/complaints',icon:'fa-solid fa-exclamation-circle',label:'Complaints'},
     {path:'/settings',icon: 'fa-solid fa-gear', label: 'Settings'}
   ];
 

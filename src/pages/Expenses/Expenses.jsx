@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import './Expenses.css';
 import useExpenseQuery from '../../components/hooks/useExpenseQuery';
 import { useCustom } from '../../Store/Store';
@@ -6,10 +6,50 @@ import Pagination from '../../components/Layout/Pagination';
 import { PostService } from '../../Services/Services';
 import { useDebounce } from '../../components/hooks/useDebounce';
 import Modal from '../../components/reusable/Modal';
+import FilterSection from '../../components/reusable/FilterSection';
+import SelectField from '../../components/reusable/SelectField';
+import InputField from '../../components/reusable/InputField';
+import useSpecificQuery from '../../components/hooks/useSpecificQuery';
+
+const expenseFields=[
+  {
+    type:"select",
+    id:"expense_type",
+    name:"expense_type",
+    label:"Expense Type",
+    options:<>
+      <option hidden>Select Any Status</option>
+        <option value="salary">Salary</option>
+        <option value="normal expense">Normal Expense</option>
+        <option value="asset">Asset</option>
+    </>
+  },
+   {
+    type:"text",
+    id:"description",
+    name:"description",
+    placeholder:"Expense Description",
+    label:"Expense Description"
+  },
+  {
+    type:"text",
+    id:"amount",
+    name:"amount",
+    placeholder:"Expense Amount",
+    label:"Expense Amount"
+  },
+  {
+    type:"date",
+    id:"date",
+    name:"date",
+    label:"Date"
+  },
+]
 
 const Expenses = () => {
   const {token}=useCustom();
   const [showModal,setShowModal]=useState({show:false,mode:"view"});
+  const [expenseId,setExpenseId]=useState(null);
   const [formData, setFormData] = useState({
     expense_type: '',
     description: '',
@@ -25,8 +65,9 @@ const Expenses = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const {data,isLoading}=useExpenseQuery(currentPage-1,token,filters.type,filters.date);
-  console.log(data);
-
+  const {data:specificData}=useSpecificQuery(`/api/admin/expense/${expenseId}`,expenseId,token,'expense_id');
+  console.log(specificData);
+  const memoizedData=useMemo(()=>specificData||{},[specificData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -49,29 +90,8 @@ const Expenses = () => {
     })
     updateFilters(name,value);
   };
-  console.log(filters);
   const handleSubmit = async(e) => {
     e.preventDefault();
-
-    // if (editIndex !== null) {
-    //   // Update existing expense
-    //   const updatedExpenses = expenses.map((expense, index) =>
-    //     index === editIndex 
-    //       ? { ...expense, ...formData, amount: parseFloat(formData.amount) }
-    //       : expense
-    //   );
-    //   setExpenses(updatedExpenses);
-    //   setEditIndex(null);
-    // } else {
-    //   // Add new expense
-    //   const newExpense = {
-    //     id: expenses.length + 1,
-    //     ...formData,
-    //     amount: parseFloat(formData.amount),
-    //     date: new Date().toISOString().split('T')[0]
-    //   };
-    //   setExpenses(prev => [...prev, newExpense]);
-    // }
     PostService("/api/admin/expense",formData,token);
     // Reset form
     setFormData({
@@ -81,9 +101,9 @@ const Expenses = () => {
     });
   };
 
-  const handleEdit = (index) => {
-    setShow
-    setEditIndex(index);
+  const handleEdit = (eid) => {
+    setExpenseId(eid)
+    setShowModal({show:true,mode:"edit"});
   };
 
   const clearFilters = () => {
@@ -201,7 +221,16 @@ const Expenses = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="filters-section">
+      <FilterSection heading={'Filter Expenses'}>
+                <SelectField name={'type'} id={'type'} value={instantVals.type} onChange={handleFilterChange}>
+                  <option value="">All Types</option>
+                  <option value="salary">Salary</option>
+                  <option value="normal expense">Normal Expense</option>
+                  <option value="asset">Asset</option>
+                </SelectField>
+                <InputField type={'date'} id={'date'} name={'date'} value={instantVals.date} onChange={handleFilterChange}/>
+      </FilterSection>
+      {/* <div className="filters-section">
         <div className="section-card">
           <h4 className="section-title">
             <i className="fas fa-filter"></i>
@@ -253,7 +282,7 @@ const Expenses = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Expenses Table */}
       <div className="expenses-table-section">
@@ -300,7 +329,7 @@ const Expenses = () => {
                           <div className="action-buttons">
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(data?.findIndex(e => e.id === expense?._id))}
+                              onClick={() => handleEdit(expense._id)}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
@@ -334,7 +363,14 @@ const Expenses = () => {
         </div>
       </div>
       {
-        showModal.show && <Modal  />
+        showModal.show && <Modal setShowModal={setShowModal} mode={"edit"} modalTitle={"Expenses Info"} fields={expenseFields} data={memoizedData} actionButtons={
+             <button 
+                    className="btn btn-success"
+                  >
+                    <i className="fas fa-edit"></i>
+                    Edit
+                  </button>
+        } />
       }
     </div>
   );
