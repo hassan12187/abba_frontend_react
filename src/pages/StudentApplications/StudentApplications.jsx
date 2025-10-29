@@ -4,6 +4,8 @@ import useApplicationQuery from '../../components/hooks/useApplicationQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
 import { useDebounce } from '../../components/hooks/useDebounce';
+import { useMutation } from '@tanstack/react-query';
+import { PatchService } from '../../Services/Services';
 
 const StudentApplications = () => {
   const {token}=useCustom();
@@ -36,13 +38,12 @@ const StudentApplications = () => {
     setSelectedApplication(application);
     setShowModal(true);
   };
-
+  const mutate=useMutation({
+    mutationFn:async({url,data={}})=> await PatchService(url,data,token),
+  })
   const handleApprove = (applicationId) => {
     if (window.confirm('Are you sure you want to approve this application?')) {
-      const updatedApplications = applications.map(app =>
-        app.id === applicationId ? { ...app, status: 'approved' } : app
-      );
-      setApplications(updatedApplications);
+      mutate.mutate({url:`/api/admin/student/approve-application/${applicationId}`})
       setShowModal(false);
       alert('Application approved successfully!');
     }

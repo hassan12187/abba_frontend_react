@@ -101,18 +101,19 @@ const AdmissionForm = () => {
       }
     })
        console.log(validateForm());
-//     if (validateForm()) {
-//       // Form submission logic here
-//      try {
-//         const result = await Axios.post('/static/admission-form',formData,{
-//           withCredentials:true
-//         });
-//         if(result.status==200){
-//           toast.success(result.data.data);
-//         }
-//       } catch (error) {
-//         console.log(error);
-//       }  
+    
+      console.log("im herebroo");
+      // Form submission logic here
+     try {
+        const result = await Axios.post('/static/admission-form',formData,{
+        });
+        console.log(result);
+        if(result.status==200){
+          toast.success(result.data.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }  
 //       // Reset form after submission
 // setFormData({
 //   student_roll_no: '',
