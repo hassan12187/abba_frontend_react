@@ -82,6 +82,7 @@ const Rooms = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const {data,isLoading}=useRoomsQuery(token,currentPage-1,filters.room_no,filters.status);
   const {data:specificData}=useSpecificQuery(`/api/admin/room/${selectedRoom}`,selectedRoom,token,'room_id');
+  console.log(specificData);
   // const {data:blockData,isLoading:blockLoading}=useBlockQuery(token);
   const memoizedSpecificData=useMemo(()=>specificData?.data || {},[specificData?.data]);
   const mutate=useMutation({

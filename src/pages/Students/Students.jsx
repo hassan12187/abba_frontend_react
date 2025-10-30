@@ -41,7 +41,6 @@ const Students = () => {
   const {data:BlockData}=useBlockQuery(token,selectedStudent);
   const {data:roomData,isLoading:isLoadingRoomData}=useBlockRoomsQuery(roomAssignment.block_id,token);
   const {data:specificStudent,isLoading:isSpecificLoading}=useSpecificQuery(`/api/admin/student/${selectedStudent}`,selectedStudent,token);
-  console.log(BlockData);
   const mutate=useMutation({
     mutationFn:async({url,data})=>await PatchService(url,data,token),
     onSuccess:()=>{

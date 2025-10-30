@@ -43,7 +43,8 @@ export const PatchService=async(route,data,token)=>{
         };
         
     } catch (error) {
-        console.log(error.response.data);
+        // console.log(error.response.data);
+        console.log(error);
         console.log(`patch error ${error}`);
     }
 };
