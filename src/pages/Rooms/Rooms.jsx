@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './Room.css';
 import { useRoomsQuery } from '../../components/hooks/useRoomQuery';
 import { useCustom } from '../../Store/Store';
-import { PostService } from '../../Services/Services';
+import { PatchService, PostService } from '../../Services/Services';
 import Pagination from '../../components/Layout/Pagination';
 import { useDebounce } from '../../components/hooks/useDebounce';
 import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -100,6 +100,15 @@ const Rooms = () => {
     });
     },
     onError:(err)=>{console.log(err);}
+  });
+
+  const removeMutate=useMutation({
+    mutationFn:async(id)=> PatchService(`/api/admin/student-room/${id}`,{},token),
+    // onSuccess:()=>{
+    //   queryClient.invalidateQueries({
+    //     queryKey:['rooms']
+    //   });
+    // }
   });
 
   const handleInputChange = (e) => {
@@ -398,7 +407,7 @@ const Rooms = () => {
 
       {/* Modal for Room Details */}
       {showModal.show  && (
-        <Modal setShowModal={setShowModal} modalTitle={"Room"} data={{...memoizedSpecificData,block_no:memoizedSpecificData?.block_id?.block_no}} fields={roomData} mode={showModal.mode} actionButtons={<>
+        <Modal removeMutate={removeMutate} setShowModal={setShowModal} modalTitle={"Room"} data={{...memoizedSpecificData,block_no:memoizedSpecificData?.block_id?.block_no}} fields={roomData} mode={showModal.mode} actionButtons={<>
           <button 
                     className="btn btn-success"
                   >

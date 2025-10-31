@@ -2,8 +2,10 @@ import { useEffect, useState, memo } from "react";
 import InputField from "./InputField";
 import SelectField from "./SelectField";
 
-const Modal = memo(({ data = {}, setShowModal, mode, fields = [], modalTitle, actionButtons }) => {
+const Modal = memo(({ data = {},removeMutate, setShowModal, mode, fields = [], modalTitle, actionButtons }) => {
   const [formData, setFormData] = useState({});
+  const [occupantsVisible, setOccupantsVisible] = useState(true);
+
   const handleChange=()=>{};
   useEffect(() => {
     if (data && fields.length > 0) {
@@ -84,6 +86,63 @@ const Modal = memo(({ data = {}, setShowModal, mode, fields = [], modalTitle, ac
               </h5>
               <div className="detail-row">{fields?.map(renderField)}</div>
             </div>
+         {/* ✅ Modern Occupants Section */}
+{Array.isArray(data?.occupants) && (
+  <div className="detail-section occupants-section">
+    <div className="occupants-header" onClick={() => setOccupantsVisible((prev) => !prev)}>
+      <h5 className="section-title">
+        <i className="fas fa-users"></i> Occupants
+        <span className="occupant-count">
+          {data.occupants.length} {data.occupants.length === 1 ? "Person" : "People"}
+        </span>
+      </h5>
+      <i
+        className={`fas fa-chevron-${occupantsVisible ? "up" : "down"} toggle-icon`}
+      ></i>
+    </div>
+
+    {occupantsVisible && (
+      <>
+        {data.occupants.length === 0 ? (
+          <div className="no-occupants">
+            <i className="fas fa-user-slash"></i>
+            <p>No occupants currently assigned.</p>
+          </div>
+        ) : (
+          <div className="occupants-grid">
+            {data.occupants.map((student, index) => (
+              <div className="occupant-card" key={index}>
+                <div className="occupant-avatar">
+                  <i className="fas fa-user-circle"></i>
+                </div>
+                <div className="occupant-info">
+                  <h4 className="occupant-name">{student.student_name || "Unnamed"}</h4>
+                  <p className="occupant-meta">
+                    <i className="fas fa-id-badge"></i> {student.student_roll_no || "N/A"}
+                  </p>
+                  {student.department && (
+                    <p className="occupant-meta">
+                      <i className="fas fa-building"></i> {student.department}
+                    </p>
+                  )}
+                </div>
+                <div className="occupant-actions">
+                  <button className="btn-view" title="View Student">
+                    <i className="fas fa-eye"></i>
+                  </button>
+                  <button className="btn-remove" title="Remove from Room" onClick={()=>removeMutate.mutate(student._id)}>
+                    <i className="fas fa-user-minus"></i>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
+
           </div>
         </div>
 

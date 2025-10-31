@@ -686,6 +686,167 @@
   display: flex;
   gap: 1rem;
 }
+/* ===== Occupants Section ===== */
+.occupants-section {
+  margin-top: 20px;
+  background: #f9fafc;
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: inset 0 0 0 1px #e0e6ed;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Header row for collapsible section */
+.occupants-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  background: #eef2ff;
+  border-bottom: 1px solid #dbe4ff;
+  transition: background 0.3s ease;
+}
+
+.occupants-header:hover {
+  background: #e1e7ff;
+}
+
+.toggle-icon {
+  color: #3b5bdb;
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.occupant-count {
+  background: #dee2ff;
+  color: #3b5bdb;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Content area */
+.no-occupants {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+}
+
+.no-occupants i {
+  font-size: 2rem;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+
+.occupants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  background: #fff;
+}
+
+/* Card styling */
+.occupant-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid #e0e6ed;
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+
+.occupant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.occupant-avatar i {
+  font-size: 2rem;
+  color: #3b5bdb;
+}
+
+.occupant-info {
+  flex-grow: 1;
+  margin-left: 10px;
+  overflow: hidden;
+}
+
+.occupant-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.occupant-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 2px 0;
+}
+
+.occupant-meta i {
+  margin-right: 6px;
+  color: #999;
+}
+
+/* Action buttons */
+.occupant-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.occupant-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.btn-view:hover {
+  color: #1e90ff;
+}
+
+.btn-remove:hover {
+  color: #e03131;
+}
+
+/* ✅ Responsive adjustments */
+@media (max-width: 600px) {
+  .occupants-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .occupant-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .occupant-actions {
+    align-self: flex-end;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .rooms-page {
