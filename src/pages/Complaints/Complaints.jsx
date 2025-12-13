@@ -6,6 +6,7 @@ import FilterSection from "../../components/reusable/FilterSection";
 import InputField from "../../components/reusable/InputField";
 import SelectField from "../../components/reusable/SelectField";
 import { useDebounce } from "../../components/hooks/useDebounce";
+import { useMemo } from "react";
 
 const Complaints=()=>{
     const {token}=useCustom();
@@ -20,6 +21,7 @@ const Complaints=()=>{
       status:""});
       const [currentPage, setCurrentPage] = useState(1);
       const {data}=useCustomQuery(`/api/admin/complaint?room_no=${filterVal.room_no}&category=${filterVal.category}&status=${filterVal.status}`,token,filterVal.room_no,filterVal.category,filterVal.status);
+      const memoizedData=useMemo(()=>data?.data || [{}],[data]);
       const updateFilter=useDebounce((name,value)=>{
         setFilterVal((prev)=>{
           return {...prev,[name]:value};
@@ -32,7 +34,16 @@ const Complaints=()=>{
         });
         updateFilter(name,value);
       };
-      console.log(data);
+       const getStatusBadge = (status) => {
+    const statusConfig = {
+      Pending: { label: 'Pending', class: 'badge-pending' },
+      Approved: { label: 'Approved', class: 'badge-approved' },
+      Rejected: { label: 'Rejected', class: 'badge-rejected' }
+    };
+
+    const config = statusConfig[status] || { label: status, class: 'badge-default' };
+    return <span className={`status-badge ${config.class}`}>{config.label}</span>;
+  };
     return <div className="expenses-page">
            <div className="page-header">
         <h2>
@@ -84,32 +95,39 @@ const Complaints=()=>{
                 </thead>
                 <tbody>
                   {data?.data?.length > 0 ? (
-                    data?.data?.map((expense, index) => (
+                    data?.data?.map((complaint, index) => (
                       <tr key={index} className="expense-row">
-                        <td>
-                          {getExpenseTypeBadge(expense?.expense_type)}
+                        <td className="description-cell">
+                          {complaint?.room_id?.room_no}
                         </td>
                         <td className="description-cell">
-                          {expense?.description}
+                          {`${complaint?.title}`}
                         </td>
-                        <td className="amount-cell">
-                          PKR {expense.amount.toLocaleString()}
+                        <td className="description-cell">
+                            {complaint?.category}
                         </td>
-                        <td className="date-cell">
-                          {new Date(expense.date).toLocaleDateString()}
+                        <td className="description-cell">
+                          {getStatusBadge(complaint?.status)}
                         </td>
                         <td className="actions-cell">
                           <div className="action-buttons">
+                             <button
+                              className="btn btn-sm btn-view"
+                              title="View Details"
+                              onClick={() => handleViewRoom(complaint._id)}
+                            >
+                              <i className="fas fa-eye"></i>
+                            </button>
                             <button
                               className="btn btn-sm btn-edit"
-                              onClick={() => handleEdit(expense._id)}
+                              onClick={() => handleEdit(complaint._id)}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
                               className="btn btn-sm btn-delete"
-                              onClick={() => handleDelete(data?.findIndex(e => e.id === expense?._id))}
+                              onClick={() => handleDelete(data?.findIndex(e => e.id === complaint?._id))}
                               title="Delete"
                             >
                               <i className="fas fa-trash"></i>

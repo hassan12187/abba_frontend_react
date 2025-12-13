@@ -82,8 +82,8 @@ export default function ForgotPasswordPage() {
       status=200;
       }
     } catch (error) {
-      if(error.status==403){
-     status=403;
+      if(error.status==404){
+     status=404;
       }
     }
      setTimeout(() => {
