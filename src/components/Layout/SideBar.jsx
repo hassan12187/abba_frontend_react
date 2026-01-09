@@ -14,7 +14,9 @@ const Sidebar = ({ isOpen }) => {
     { path: '/expenses', icon: 'fas fa-money-bill-wave', label: 'Expenses' },
     {path:'/blocks',icon: 'fa-solid fa-building', label: 'Blocks'},
     {path:'/complaints',icon:'fa-solid fa-exclamation-circle',label:'Complaints'},
-    {path:'/settings',icon: 'fa-solid fa-gear', label: 'Settings'}
+    {path:'/settings',icon: 'fa-solid fa-gear', label: 'Settings'},
+    {path:"/fee-template",icon:'fa-solid fa-gear',label:"Fee Template"},
+    {path:"/fee-invoice",icon:'fa-solid fa-gear' ,label:"Fee Invoice"}
   ];
 
   const isActive = (path) => {

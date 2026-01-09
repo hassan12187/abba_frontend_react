@@ -21,6 +21,8 @@ import Settings from './pages/Settings/Settings';
 import Blocks from './pages/Blocks/Blocks';
 import ForgotPasswordPage from './pages/ForgotPassword/ForgotPassword';
 import Complaints from './pages/Complaints/Complaints';
+import FeeTemplateAdmin from './pages/FeeTemplate/FeeTemplate';
+import FeeInvoiceUI from './pages/FeeInvoice/FeeInvoice';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -68,6 +70,14 @@ const App=()=>{
       {
         path:"/complaints",
         element:<CheckAuth><Complaints /></CheckAuth>
+      },
+      {
+        path:"/fee-template",
+        element:<CheckAuth><FeeTemplateAdmin /></CheckAuth>
+      },
+        {
+        path:"/fee-invoice",
+        element:<CheckAuth><FeeInvoiceUI /></CheckAuth>
       }
       ]
     },
