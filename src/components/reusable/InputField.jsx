@@ -1,4 +1,4 @@
-const InputField=({label,type,name,value,onChange,id,placeholder,className='form-control',style,min,max})=>{
+const InputField=({label,type,name,value,onChange,id,placeholder,className='form-control',style,min,max,readonly=false})=>{
     return    <div className="filter-group" style={style}>
                   <label className="label">{label}</label>
                   <input
@@ -11,6 +11,7 @@ const InputField=({label,type,name,value,onChange,id,placeholder,className='form
                     className={className}
                     min={min}
                     max={max}
+                    readOnly={readonly}
                   />
                 </div>
 };

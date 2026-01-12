@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { Search, Eye, Plus, Calendar, DollarSign, CreditCard, X, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import InputField from '../../components/reusable/InputField';
+import SelectField from '../../components/reusable/SelectField';
+import useCustomQuery from '../../components/hooks/useCustomQuery';
+import { useCustom } from '../../Store/Store';
 
 const FeeInvoiceUI = () => {
   const [userRole, setUserRole] = useState('admin'); // 'admin' or 'student'
   const [view, setView] = useState('list'); // 'list' or 'detail'
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const {token}=useCustom();
+
+  // const {data:feeTemplates,isLoading}=useCustomQuery('/api/admin/fee/templates',token,'fee-templates');
 
   // Sample data
   const [invoices, setInvoices] = useState([
@@ -132,15 +139,6 @@ const FeeInvoiceUI = () => {
     }
   };
 
-  const filteredInvoices = invoices.filter(inv => {
-    const matchesSearch = inv.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         inv.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesMonth = !monthFilter || inv.billingMonth === monthFilter;
-    const matchesStatus = !statusFilter || inv.status === statusFilter;
-    const matchesRoom = !roomTypeFilter || inv.roomType === roomTypeFilter;
-    return matchesSearch && matchesMonth && matchesStatus && matchesRoom;
-  });
-
   const handleAddPayment = () => {
     if (!paymentForm.amount || parseFloat(paymentForm.amount) <= 0) return;
 
@@ -192,7 +190,7 @@ const FeeInvoiceUI = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200 px-6 py-4">
+          {/* <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h1 className="text-2xl font-semibold text-gray-800">Fee Invoices</h1>
               <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
@@ -200,95 +198,88 @@ const FeeInvoiceUI = () => {
                 Generate Monthly Invoices
               </button>
             </div>
-          </div>
+          </div> */}
 
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search student or invoice..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <select
-                value={monthFilter}
-                onChange={(e) => setMonthFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Months</option>
-                <option value="January 2025">January 2025</option>
-                <option value="December 2024">December 2024</option>
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Statuses</option>
-                <option value="Paid">Paid</option>
-                <option value="Partially Paid">Partially Paid</option>
-                <option value="Pending">Pending</option>
-                <option value="Overdue">Overdue</option>
-              </select>
-              <select
-                value={roomTypeFilter}
-                onChange={(e) => setRoomTypeFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Room Types</option>
-                <option value="Standard">Standard</option>
-                <option value="Deluxe">Deluxe</option>
-              </select>
+             <div className="room-form-section">
+        <div className="section-card">
+          <h4 className="section-title">
+            <Calendar  color='#3498db'/>
+            Generate Montly Invoice
+          </h4>
+          <form className="room-form">
+            <div className="form-row">
+              <InputField id={'student'} name={'student_id'} placeholder={'Search Student'} label={'Student'} />
+              <InputField id={'room'} name={'room_id'} placeholder={'Room No'} label={'Room'} readonly={true} />
+              <InputField type={'date'} id={'billingMonth'} name={'billingMonth'} placeholder={"Billing Month"} label={'Billing Month'} />
+              <SelectField id={'feeTemplate'} name={'feeTemplate'} label={'Fees Template'}>
+                  <option value={""} hidden>Select Any Template</option>
+                  {
+                    []?.map((temp,index)=>(
+                      <option key={index} value={temp._id}>{temp.name}</option>
+                    ))
+                  }
+              </SelectField>
+              <InputField type={'text'} id={'lineItems'} name={'lineItems'} label={'Items'} />
+              <InputField type={'number'} id={'totalAmount'} name={'totalAmount'} label={'Amount'} placeholder={'Enter the amount'} min={0}/>
             </div>
+          </form>
+        </div>
+      </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+               <table className="expenses-table">
+                <thead>
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Invoice #</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Student</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Room</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Billing Month</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Total</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Paid</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Balance</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Due Date</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">Actions</th>
+                    <th>Invoice No.</th>
+                    <th>Student</th>
+                    <th>Room</th>
+                    <th>Billing Month</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{invoice.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{invoice.studentName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{invoice.room}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{invoice.billingMonth}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">
+                      <tbody>
+                  {invoices.map((invoice) => (
+                    <tr key={invoice.id}>
+                      <td className="roll-no-cell">{invoice.invoiceNumber}</td>
+                      <td className='roll-no-cell'>{invoice.studentName}</td>
+                      <td>{invoice.room}</td>
+                      <td>{invoice.billingMonth}</td>
+                      <td className='roll-no-cell'>
                         ₹{invoice.totalAmount.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                      <td className='roll-no-cell'>
                         ₹{invoice.paidAmount.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-sm text-right">
+                      <td className='roll-no-cell'>
                         <span className={invoice.balanceDue > 0 ? 'text-red-600 font-medium' : 'text-gray-600'}>
                           ₹{invoice.balanceDue.toLocaleString()}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm">
+                      <td>
                         <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getStatusColor(invoice.status)}`}>
                           {getStatusIcon(invoice.status)}
                           {invoice.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{invoice.dueDate}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex justify-center gap-2">
-                          <button
+                      <td className="roll-no-cell">{invoice.dueDate}</td>
+                      <td className="actions-cell">
+                        <div className="action-buttons">
+                             <button
+                              className="btn btn-sm btn-view"
+                              onClick={() => {setSelectedInvoice(invoice);
+                              setView('detail');
+                              }}
+                              title="View Details"
+                            >
+                              <i className="fas fa-eye"></i>
+                            </button>
+                          {/* <button
                             onClick={() => {
                               setSelectedInvoice(invoice);
                               setView('detail');
@@ -297,14 +288,14 @@ const FeeInvoiceUI = () => {
                             title="View"
                           >
                             <Eye size={18} />
-                          </button>
+                          </button> */}
                           {invoice.status !== 'Paid' && (
                             <button
                               onClick={() => {
                                 setSelectedInvoice(invoice);
                                 setShowPaymentModal(true);
                               }}
-                              className="p-1 text-green-600 hover:text-green-700"
+                              className="btn btn-sm btn-approve"
                               title="Add Payment"
                             >
                               <Plus size={18} />
@@ -317,7 +308,7 @@ const FeeInvoiceUI = () => {
                 </tbody>
               </table>
 
-              {filteredInvoices.length === 0 && (
+              {invoices.length === 0 && (
                 <div className="text-center py-12">
                   <DollarSign size={48} className="mx-auto text-gray-300 mb-4" />
                   <p className="text-gray-500 text-lg">No invoices found</p>
