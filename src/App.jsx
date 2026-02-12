@@ -23,6 +23,7 @@ import ForgotPasswordPage from './pages/ForgotPassword/ForgotPassword';
 import Complaints from './pages/Complaints/Complaints';
 import FeeTemplateAdmin from './pages/FeeTemplate/FeeTemplate';
 import FeeInvoiceUI from './pages/FeeInvoice/FeeInvoice';
+import CreateFeeInvoice from './pages/FeeInvoice/createFeeInvoice';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -78,6 +79,10 @@ const App=()=>{
         {
         path:"/fee-invoice",
         element:<CheckAuth><FeeInvoiceUI /></CheckAuth>
+      },
+       {
+        path:"/create/fee-invoice",
+        element:<CheckAuth><CreateFeeInvoice /></CheckAuth>
       }
       ]
     },

@@ -4,6 +4,8 @@ import InputField from '../../components/reusable/InputField';
 import SelectField from '../../components/reusable/SelectField';
 import useCustomQuery from '../../components/hooks/useCustomQuery';
 import { useCustom } from '../../Store/Store';
+import CreateFeeInvoice from './createFeeInvoice';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const FeeInvoiceUI = () => {
   const [userRole, setUserRole] = useState('admin'); // 'admin' or 'student'
@@ -11,9 +13,9 @@ const FeeInvoiceUI = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const {token}=useCustom();
-
-  // const {data:feeTemplates,isLoading}=useCustomQuery('/api/admin/fee/templates',token,'fee-templates');
-
+  const navigate=useNavigate();
+  const {data:feeInvoice,isLoading}=useCustomQuery('/api/admin/fee',token,'fee-invoice');
+console.log(feeInvoice);
   // Sample data
   const [invoices, setInvoices] = useState([
     {
@@ -187,47 +189,23 @@ const FeeInvoiceUI = () => {
 
   // Admin Invoice List View
   const AdminListView = () => (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm">
-          {/* <div className="border-b border-gray-200 px-6 py-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h1 className="text-2xl font-semibold text-gray-800">Fee Invoices</h1>
-              <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+    <div>
+      <div>
+        <div>
+          <div className='room-form-section'>
+            <div className='section-card'>
+              <h4 className='section-title'>Create New Invoice</h4>
+              <button className='btn btn-primary' onClick={()=>{
+                navigate("/create/fee-invoice");
+              }}>
                 <Calendar size={20} />
-                Generate Monthly Invoices
+                Create New Invoices
               </button>
             </div>
-          </div> */}
+          </div>
 
           <div className="p-6">
-             <div className="room-form-section">
-        <div className="section-card">
-          <h4 className="section-title">
-            <Calendar  color='#3498db'/>
-            Generate Montly Invoice
-          </h4>
-          <form className="room-form">
-            <div className="form-row">
-              <InputField id={'student'} name={'student_id'} placeholder={'Search Student'} label={'Student'} />
-              <InputField id={'room'} name={'room_id'} placeholder={'Room No'} label={'Room'} readonly={true} />
-              <InputField type={'date'} id={'billingMonth'} name={'billingMonth'} placeholder={"Billing Month"} label={'Billing Month'} />
-              <SelectField id={'feeTemplate'} name={'feeTemplate'} label={'Fees Template'}>
-                  <option value={""} hidden>Select Any Template</option>
-                  {
-                    []?.map((temp,index)=>(
-                      <option key={index} value={temp._id}>{temp.name}</option>
-                    ))
-                  }
-              </SelectField>
-              <InputField type={'text'} id={'lineItems'} name={'lineItems'} label={'Items'} />
-              <InputField type={'number'} id={'totalAmount'} name={'totalAmount'} label={'Amount'} placeholder={'Enter the amount'} min={0}/>
-            </div>
-          </form>
-        </div>
-      </div>
-
-            <div className="overflow-x-auto">
+            <div>
                <table className="expenses-table">
                 <thead>
                   <tr>
@@ -394,8 +372,9 @@ const FeeInvoiceUI = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         <button
+        type='button'
           onClick={() => setView(userRole === 'admin' ? 'list' : 'dashboard')}
-          className="mb-4 text-blue-600 hover:text-blue-700 flex items-center gap-2"
+          className="btn btn-primary mb-4"
         >
           ← Back to {userRole === 'admin' ? 'Invoices' : 'Dashboard'}
         </button>
@@ -419,7 +398,7 @@ const FeeInvoiceUI = () => {
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 bg bg-dark">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Charges</h3>
               <div className="border border-gray-200 rounded-md overflow-hidden">
@@ -485,11 +464,11 @@ const FeeInvoiceUI = () => {
             )}
 
             {userRole === 'admin' && (
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="d-flex">
                 <button
                   onClick={() => setShowPaymentModal(true)}
                   disabled={selectedInvoice.status === 'Paid'}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-primary"
                 >
                   <Plus size={18} />
                   Add Payment
@@ -497,7 +476,7 @@ const FeeInvoiceUI = () => {
                 <button
                   onClick={handleMarkAsPaid}
                   disabled={selectedInvoice.balanceDue === 0}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-success"
                 >
                   <CheckCircle size={18} />
                   Mark as Paid
@@ -513,9 +492,9 @@ const FeeInvoiceUI = () => {
   return (
     <div>
       {/* Role Switcher for Demo */}
-      <div className="bg-gray-800 text-white p-4">
+      {/* <div className="bg-gray-800 text-white p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Hostel Management System</h1>
+          <h1 className="text-xl font-semibold">Fee Invoices</h1>
           <div className="flex gap-2">
             <button
               onClick={() => {
@@ -537,8 +516,14 @@ const FeeInvoiceUI = () => {
             </button>
           </div>
         </div>
+      </div> */}
+   <div className="page-header">
+        <h2>
+          <i className="fas fa-bed"></i>
+          Fee Invoices
+        </h2>
+        <p>Manage student invoices, fees</p>
       </div>
-
       {/* Main Content */}
       {view === 'list' && userRole === 'admin' && <AdminListView />}
       {view === 'dashboard' && userRole === 'student' && <StudentDashboardView />}

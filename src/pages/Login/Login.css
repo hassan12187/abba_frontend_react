@@ -128,16 +128,18 @@
   transform: translateY(-50%);
   background: none;
   border: none;
+  outline: none;
   color: #6c757d;
+  box-shadow: none;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
-.password-toggle:hover {
-  background: #f8f9fa;
-  color: #495057;
+.password-toggle:hover:not(:disabled) {
+  box-shadow: none;
+  transform: translateY(-50%);
 }
 
 .password-toggle:disabled {

@@ -351,111 +351,174 @@ const FeeTemplateAdmin = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200 px-6 py-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* create fee template button */}
+            <div className="page-header">
               <h1 className="text-2xl font-semibold text-gray-800">Fee Templates</h1>
               <button
                 onClick={() => setView('form')}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="btn btn-primary"
               >
                 <Plus size={20} />
                 Create Fee Template
               </button>
             </div>
-          </div>
 
           <div className="p-6">
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            {/* Template Form */}
+            <div className="room-form-section">
+              <div className="section-card">
+
+                <h4 className='section-title'>
+                  Create Fee Template
+                </h4>
+                <div className='form-row'>
+   <div className='form-group'>
+        <label htmlFor='search-template' className='form-label' >Search Templates</label>
+                {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} /> */}
                 <input
                   type="text"
                   placeholder="Search templates..."
+                  id='search-template'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                  className="form-control"
+                  />
+                  </div>
+                  <div className='form-group'>
+      <label htmlFor='category' className='form-label'>Category</label>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+                className="form-control"
+                id='category'
+                >
                 <option value="">All Categories</option>
                 <option value="Room">Room</option>
                 <option value="Mess">Mess</option>
               </select>
+                </div>
+                <div className='form-group'>
+      <label htmlFor='frequency' className='form-label'>Frequency</label>
               <select
                 value={frequencyFilter}
                 onChange={(e) => setFrequencyFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+                className="form-control"
+                id='frequency'
+                >
                 <option value="">All Frequencies</option>
                 <option value="OneTime">One Time</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Quarterly">Quarterly</option>
                 <option value="Yearly">Yearly</option>
               </select>
+                </div>
+                </div>
+             
+              </div>
+
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+            <div className="table-container">
+              <div className='table-responsive'>
+              <table className="rooms-table text-center">
+                <thead >
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Template Name</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Category</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Frequency</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Room Type</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Total Amount</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">Actions</th>
+                    <th>Template Name</th>
+                    <th>Category</th>
+                    <th>Frequency</th>
+                    <th>Room Type</th>
+                    <th>Total Amount</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredTemplates.map((template) => (
-                    <tr key={template.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{template.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                          template.category === 'Room' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                        }`}>
+                <tbody>
+                  {filteredTemplates.map((template,index) => (
+                    // <tr key={template.id} className="hover:bg-gray-50">
+                    //   <td className="px-4 py-3 text-sm font-medium text-gray-900">{template.name}</td>
+                    //   <td className="px-4 py-3 text-sm text-gray-600">
+                    //     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                    //       template.category === 'Room' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                    //     }`}>
+                    //       {template.category}
+                    //     </span>
+                    //   </td>
+                    //   <td className="px-4 py-3 text-sm text-gray-600">{template.frequency}</td>
+                    //   <td className="px-4 py-3 text-sm text-gray-600">{template.roomType}</td>
+                    //   <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">
+                    //     ₹{template.total.toLocaleString()}
+                    //   </td>
+                    //   <td className="px-4 py-3 text-sm text-center">
+                    //     <div className="flex justify-center gap-2">
+                    //       <button
+                    //         onClick={() => setViewTemplate(template)}
+                    //         className="p-1 text-gray-600 hover:text-blue-600"
+                    //         title="View"
+                    //       >
+                    //         <Eye size={18} />
+                    //       </button>
+                    //       <button
+                    //         onClick={() => handleEdit(template)}
+                    //         className="p-1 text-gray-600 hover:text-blue-600"
+                    //         title="Edit"
+                    //       >
+                    //         <Edit2 size={18} />
+                    //       </button>
+                    //       <button
+                    //         onClick={() => setDeleteConfirm(template)}
+                    //         className="p-1 text-gray-600 hover:text-red-600"
+                    //         title="Delete"
+                    //       >
+                    //         <Trash2 size={18} />
+                    //       </button>
+                    //     </div>
+                    //   </td>
+                    // </tr>
+                        <tr key={index} className="room-row">
+                        <td className="room-no-cell">
+                          {template.name}
+                        </td>
+                        <td className="beds-cell" style={{fontWeight:"bold"}}>
                           {template.category}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{template.frequency}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{template.roomType}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">
-                        ₹{template.total.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-center">
-                        <div className="flex justify-center gap-2">
-                          <button
-                            onClick={() => setViewTemplate(template)}
-                            className="p-1 text-gray-600 hover:text-blue-600"
-                            title="View"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(template)}
-                            className="p-1 text-gray-600 hover:text-blue-600"
-                            title="Edit"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(template)}
-                            className="p-1 text-gray-600 hover:text-red-600"
-                            title="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="status-cell" >
+                          {template.frequency}
+                        </td>
+                          <td className="status-cell" >
+                          {template.roomType}
+                        </td>
+                          <td className="beds-cell" style={{fontWeight:"bold"}}>
+                          Rs. {template.total.toString()}
+                        </td>
+                        <td className="actions-cell">
+                          <div className="action-buttons">
+                            <button
+                              className="btn btn-sm btn-view"
+                              title="View"
+                              onClick={()=>setViewTemplate(template)}
+                            >
+                              <i className="fas fa-eye"></i>
+                            </button>
+                            <button
+                              className="btn btn-sm btn-edit"
+                              title="Edit"
+                              onClick={()=>handleEdit(template)}
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button
+                              className="btn btn-sm btn-delete"
+                              title="Delete"
+                              onClick={()=>setDeleteConfirm(template)}
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
                   ))}
                 </tbody>
               </table>
-
+</div>
               {filteredTemplates.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
                   No fee templates found

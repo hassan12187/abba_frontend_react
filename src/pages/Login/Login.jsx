@@ -61,13 +61,11 @@ const Login = () => {
           withCredentials:true
         });
         console.log(result);
-        if(result.status==200){
+        if(result.status==200 && result.data.role=="ADMIN"){
           setToken(result?.data.token);
           return navigate("/");
         };
-        if(result.status==401){
-          window.alert(result.config);
-        }
+        return;
       // // Mock authentication - in real app, this would be an API call
       // if (formData.email === 'admin' && formData.password === 'password') {
       //   // Store authentication state (in real app, use context or redux)
@@ -144,7 +142,7 @@ const Login = () => {
                 <i className="fas fa-lock"></i>
                 Password
               </label>
-              <div className="password-input-container">
+              <div className="password-input-container form-group">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
