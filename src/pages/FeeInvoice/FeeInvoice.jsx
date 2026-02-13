@@ -195,7 +195,7 @@ console.log(feeInvoice);
           <div className='room-form-section'>
             <div className='section-card'>
               <h4 className='section-title'>Create New Invoice</h4>
-              <button className='btn btn-primary' onClick={()=>{
+              <button className='action btn btn-view active' onClick={()=>{
                 navigate("/create/fee-invoice");
               }}>
                 <Calendar size={20} />
@@ -249,7 +249,7 @@ console.log(feeInvoice);
                       <td className="actions-cell">
                         <div className="action-buttons">
                              <button
-                              className="btn btn-sm btn-view"
+                              className="action btn btn-sm btn-view"
                               onClick={() => {setSelectedInvoice(invoice);
                               setView('detail');
                               }}
@@ -273,7 +273,7 @@ console.log(feeInvoice);
                                 setSelectedInvoice(invoice);
                                 setShowPaymentModal(true);
                               }}
-                              className="btn btn-sm btn-approve"
+                              className="action btn btn-sm btn-assign"
                               title="Add Payment"
                             >
                               <Plus size={18} />
@@ -369,124 +369,135 @@ console.log(feeInvoice);
 
   // Invoice Detail View
   const InvoiceDetailView = () => (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-4xl mx-auto">
-        <button
-        type='button'
-          onClick={() => setView(userRole === 'admin' ? 'list' : 'dashboard')}
-          className="btn btn-primary mb-4"
-        >
-          ← Back to {userRole === 'admin' ? 'Invoices' : 'Dashboard'}
-        </button>
+   <div className="container-fluid bg-light min-vh-100 py-4 py-md-5">
+  <div className="container" style={{ maxWidth: '850px' }}>
+    {/* Back Button */}
+    <button
+      type="button"
+      onClick={() => setView(userRole === 'admin' ? 'list' : 'dashboard')}
+      className="btn btn-outline-secondary mb-4 d-flex align-items-center gap-2"
+    >
+      ← Back to {userRole === 'admin' ? 'Invoices' : 'Dashboard'}
+    </button>
 
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-2">{selectedInvoice.invoiceNumber}</h2>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <p><span className="font-medium">Student:</span> {selectedInvoice.studentName}</p>
-                  <p><span className="font-medium">Room:</span> {selectedInvoice.room}</p>
-                  <p><span className="font-medium">Billing Month:</span> {selectedInvoice.billingMonth}</p>
-                  <p><span className="font-medium">Due Date:</span> {selectedInvoice.dueDate}</p>
-                </div>
-              </div>
-              <span className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded ${getStatusColor(selectedInvoice.status)}`}>
-                {getStatusIcon(selectedInvoice.status)}
-                {selectedInvoice.status}
-              </span>
+    <div className="card shadow-sm border-0">
+      {/* Header Section */}
+      <div className="card-header bg-light border-bottom py-4 px-4">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+          <div>
+            <h2 className="h4 fw-bold text-dark mb-2">{selectedInvoice.invoiceNumber}</h2>
+            <div className="text-muted small">
+              <p className="mb-1"><span className="fw-bold">Student:</span> {selectedInvoice.studentName}</p>
+              <p className="mb-1"><span className="fw-bold">Room:</span> {selectedInvoice.room}</p>
+              <p className="mb-1"><span className="fw-bold">Billing Month:</span> {selectedInvoice.billingMonth}</p>
+              <p className="mb-0"><span className="fw-bold">Due Date:</span> {selectedInvoice.dueDate}</p>
             </div>
           </div>
-
-          <div className="p-6 space-y-6 bg bg-dark">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Charges</h3>
-              <div className="border border-gray-200 rounded-md overflow-hidden">
-                {selectedInvoice.lineItems.map((item, idx) => (
-                  <div key={idx} className="flex justify-between px-4 py-3 border-b last:border-b-0 hover:bg-gray-50">
-                    <span className="text-gray-700">{item.description}</span>
-                    <span className="font-medium text-gray-900">₹{item.amount.toLocaleString()}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between px-4 py-3 bg-blue-50 font-semibold">
-                  <span className="text-gray-900">Total Amount</span>
-                  <span className="text-blue-700">₹{selectedInvoice.totalAmount.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Total Amount</p>
-                  <p className="text-2xl font-bold text-gray-900">₹{selectedInvoice.totalAmount.toLocaleString()}</p>
-                </div>
-                <div className="bg-green-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Total Paid</p>
-                  <p className="text-2xl font-bold text-green-700">₹{selectedInvoice.paidAmount.toLocaleString()}</p>
-                </div>
-                <div className={`rounded-lg p-4 ${selectedInvoice.balanceDue > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
-                  <p className="text-sm text-gray-600 mb-1">Balance Due</p>
-                  <p className={`text-2xl font-bold ${selectedInvoice.balanceDue > 0 ? 'text-red-700' : 'text-green-700'}`}>
-                    ₹{selectedInvoice.balanceDue.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {selectedInvoice.payments.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment History</h3>
-                <div className="border border-gray-200 rounded-md overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Date</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Payment Method</th>
-                        <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {selectedInvoice.payments.map((payment, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-900">{payment.date}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{payment.method}</td>
-                          <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">
-                            ₹{payment.amount.toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {userRole === 'admin' && (
-              <div className="d-flex">
-                <button
-                  onClick={() => setShowPaymentModal(true)}
-                  disabled={selectedInvoice.status === 'Paid'}
-                  className="btn-primary"
-                >
-                  <Plus size={18} />
-                  Add Payment
-                </button>
-                <button
-                  onClick={handleMarkAsPaid}
-                  disabled={selectedInvoice.balanceDue === 0}
-                  className="btn-success"
-                >
-                  <CheckCircle size={18} />
-                  Mark as Paid
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Ensure getStatusColor returns Bootstrap classes like 'bg-success text-white' */}
+          <span className={`badge d-inline-flex align-items-center gap-2 p-2 px-3 fw-medium ${getStatusColor(selectedInvoice.status)}`}>
+            {getStatusIcon(selectedInvoice.status)}
+            {selectedInvoice.status}
+          </span>
         </div>
       </div>
+
+      <div className="card-body p-4">
+        {/* Charges Section */}
+        <div className="mb-5">
+          <h3 className="h6 fw-bold text-uppercase text-muted mb-3">Charges</h3>
+          <div className="list-group border rounded shadow-none">
+            {selectedInvoice.lineItems.map((item, idx) => (
+              <div key={idx} className="list-group-item d-flex justify-content-between align-items-center py-3">
+                <span className="text-secondary">{item.description}</span>
+                <span className="fw-bold text-dark">₹{item.amount.toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="list-group-item d-flex justify-content-between align-items-center bg-primary bg-opacity-10 py-3 fw-bold">
+              <span className="text-dark">Total Amount</span>
+              <span className="text-primary">₹{selectedInvoice.totalAmount.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Summary Grid */}
+        <div className="mb-5">
+          <h3 className="h6 fw-bold text-uppercase text-muted mb-3">Payment Summary</h3>
+          <div className="row g-3">
+            <div className="col-md-4">
+              <div className="bg-light rounded p-3 h-100">
+                <p className="small text-muted mb-1">Total Amount</p>
+                <p className="h4 fw-bold mb-0 text-dark">₹{selectedInvoice.totalAmount.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="bg-success bg-opacity-10 rounded p-3 h-100 border border-success border-opacity-10">
+                <p className="small text-muted mb-1 text-success">Total Paid</p>
+                <p className="h4 fw-bold mb-0 text-success">₹{selectedInvoice.paidAmount.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className={`rounded p-3 h-100 border ${selectedInvoice.balanceDue > 0 ? 'bg-danger bg-opacity-10 border-danger border-opacity-10' : 'bg-success bg-opacity-10 border-success border-opacity-10'}`}>
+                <p className="small text-muted mb-1">Balance Due</p>
+                <p className={`h4 fw-bold mb-0 ${selectedInvoice.balanceDue > 0 ? 'text-danger' : 'text-success'}`}>
+                  ₹{selectedInvoice.balanceDue.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment History Table */}
+        {selectedInvoice.payments.length > 0 && (
+          <div className="mb-5">
+            <h3 className="h6 fw-bold text-uppercase text-muted mb-3">Payment History</h3>
+            <div className="table-responsive border rounded">
+              <table className="table table-hover align-middle mb-0">
+                <thead className="table-light">
+                  <tr>
+                    <th className="ps-4 fw-bold small text-uppercase">Date</th>
+                    <th className="fw-bold small text-uppercase">Method</th>
+                    <th className="pe-4 text-end fw-bold small text-uppercase">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedInvoice.payments.map((payment, idx) => (
+                    <tr key={idx}>
+                      <td className="ps-4 text-dark">{payment.date}</td>
+                      <td className="text-muted">{payment.method}</td>
+                      <td className="pe-4 text-end fw-bold text-dark">₹{payment.amount.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Actions */}
+        {userRole === 'admin' && (
+          <div className="d-flex flex-wrap gap-3 pt-3 border-top">
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              disabled={selectedInvoice.status === 'Paid'}
+              className="action btn btn-view active d-flex align-items-center gap-2 px-4 shadow-sm"
+            >
+              <Plus size={18} />
+              Add Payment
+            </button>
+            <button
+              onClick={handleMarkAsPaid}
+              disabled={selectedInvoice.balanceDue === 0}
+              className="action btn btn-assign active d-flex align-items-center gap-2 px-4"
+            >
+              <CheckCircle size={18} />
+              Mark as Paid
+            </button>
+          </div>
+        )}
+      </div>
     </div>
+  </div>
+</div>
   );
 
   return (
@@ -531,90 +542,109 @@ console.log(feeInvoice);
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add Payment</h3>
-              <button
-                onClick={() => {
-                  setShowPaymentModal(false);
-                  setPaymentForm({ amount: '', method: 'Cash', date: new Date().toISOString().split('T')[0] });
-                }}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={24} />
-              </button>
+      <div 
+  className="modal d-block" 
+  style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }} 
+  tabIndex="-1"
+>
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content shadow">
+      {/* Modal Header */}
+      <div className="modal-header border-0 pb-0">
+        <h5 className="modal-title fw-bold text-light">Add Payment</h5>
+        <button
+          type="button"
+          className="btn-close shadow-none"
+          onClick={() => {
+            setShowPaymentModal(false);
+            setPaymentForm({ 
+              amount: '', 
+              method: 'Cash', 
+              date: new Date().toISOString().split('T')[0] 
+            });
+          }}
+          aria-label="Close"
+        ></button>
+      </div>
+
+      {/* Modal Body */}
+      <div className="modal-body p-4">
+        <div className="mb-3">
+          <label className="form-label small fw-bold text-secondary">
+            Amount *
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            value={paymentForm.amount}
+            onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+            placeholder="0.00"
+          />
+          {selectedInvoice && (
+            <div className="form-text text-muted mt-1">
+              Remaining balance: ₹{selectedInvoice.balanceDue.toLocaleString()}
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount *
-                </label>
-                <input
-                  type="number"
-                  value={paymentForm.amount}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.00"
-                />
-                {selectedInvoice && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    Remaining balance: ₹{selectedInvoice.balanceDue.toLocaleString()}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Method
-                </label>
-                <select
-                  value={paymentForm.method}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Cash">Cash</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Card">Card</option>
-                  <option value="Cheque">Cheque</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Date
-                </label>
-                <input
-                  type="date"
-                  value={paymentForm.date}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowPaymentModal(false);
-                  setPaymentForm({ amount: '', method: 'Cash', date: new Date().toISOString().split('T')[0] });
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddPayment}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-              >
-                <CreditCard size={18} />
-                Add Payment
-              </button>
-            </div>
-          </div>
+          )}
         </div>
+
+        <div className="mb-3">
+          <label className="form-label small fw-bold text-secondary">
+            Payment Method
+          </label>
+          <select
+            className="form-select"
+            value={paymentForm.method}
+            onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
+          >
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div className="mb-0">
+          <label className="form-label small fw-bold text-secondary">
+            Payment Date
+          </label>
+          <input
+            type="date"
+            className="form-control"
+            value={paymentForm.date}
+            onChange={(e) => setPaymentForm({ ...paymentForm, date: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {/* Modal Footer */}
+      <div className="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setShowPaymentModal(false);
+            setPaymentForm({ 
+              amount: '', 
+              method: 'Cash', 
+              date: new Date().toISOString().split('T')[0] 
+            });
+          }}
+          className="btn btn-outline-secondary flex-grow-1"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleAddPayment}
+          className="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+        >
+          <CreditCard size={18} />
+          Add Payment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
       )}
     </div>
   );

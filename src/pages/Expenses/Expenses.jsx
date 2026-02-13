@@ -328,14 +328,14 @@ const Expenses = () => {
                         <td className="actions-cell">
                           <div className="action-buttons">
                             <button
-                              className="btn btn-sm btn-edit"
+                              className="action btn btn-sm btn-edit"
                               onClick={() => handleEdit(expense._id)}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
-                              className="btn btn-sm btn-delete"
+                              className="action btn btn-sm btn-delete"
                               onClick={() => handleDelete(data?.findIndex(e => e.id === expense?._id))}
                               title="Delete"
                             >

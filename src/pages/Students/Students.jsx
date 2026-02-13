@@ -325,7 +325,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                         <td className="actions-cell">
                           <div className="action-buttons">
                             <button
-                              className="btn btn-sm btn-view"
+                              className="action btn btn-sm btn-view"
                               onClick={() => handleViewDetails(student._id)}
                               title="View Details"
                             >
@@ -333,7 +333,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                             </button>
                             {!student?.room_id && (
                               <button
-                                className="btn btn-sm btn-assign"
+                                className="action btn btn-sm btn-assign"
                                 onClick={() => handleViewDetails(student._id)}
                                 title="Assign Room"
                               >
@@ -342,7 +342,7 @@ mutate.mutate({url:`/api/admin/student-room/${id}`,data:{}})
                             )}
                             {
                               student?.room_id && (
-                                <button className="btn btn-sm btn-reject"
+                                <button className="action btn btn-sm btn-delete"
                                 title="Remove Room"
                                 onClick={()=>removeRoom(student._id)}
                                 >

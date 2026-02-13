@@ -269,7 +269,7 @@ const StudentApplications = () => {
                         <td className="actions-cell">
                           <div className="action-buttons">
                             <button
-                              className="btn btn-sm btn-view"
+                              className="action btn btn-sm btn-view"
                               onClick={() => handleViewDetails(application)}
                               title="View Details"
                             >
@@ -278,14 +278,14 @@ const StudentApplications = () => {
                             {application.status === 'pending' && (
                               <>
                                 <button
-                                  className="btn btn-sm btn-approve"
+                                  className="action btn btn-sm btn-assign"
                                   onClick={() => handleApprove(application._id)}
                                   title="Approve"
                                 >
                                   <i className="fas fa-check"></i>
                                 </button>
                                 <button
-                                  className="btn btn-sm btn-reject"
+                                  className="action btn btn-sm btn-delete"
                                   onClick={() => handleReject(application._id)}
                                   title="Reject"
                                 >

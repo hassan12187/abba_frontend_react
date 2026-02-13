@@ -15,7 +15,7 @@ import Students from './pages/Students/Students';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Unauthorized from './pages/Unauthorized/Unauthorized';
 import CheckAuth from './components/CheckAuth';
-// import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.css';
 import AdmissionForm from './pages/AdmissionForm/AdmissionForm';
 import Settings from './pages/Settings/Settings';
 import Blocks from './pages/Blocks/Blocks';

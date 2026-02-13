@@ -405,7 +405,7 @@ const Blocks = () => {
                         <td className="actions-cell">
                           <div className="action-buttons">
                             <button
-                              className="btn btn-sm btn-view"
+                              className="action btn btn-sm btn-view"
                               title="View Details"
                               onClick={()=>{
                                 setBlockId(room._id);
@@ -414,14 +414,14 @@ const Blocks = () => {
                               <i className="fas fa-eye"></i>
                             </button>
                             <button
-                              className="btn btn-sm btn-edit"
+                              className="action btn btn-sm btn-edit"
                               onClick={() => setShowModal({show:true,mode:"edit"})}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
-                              className="btn btn-sm btn-delete"
+                              className="action btn btn-sm btn-delete"
                               onClick={() => handleDelete(data?.findIndex(r => r._id === room._id))}
                               title="Delete"
                             >

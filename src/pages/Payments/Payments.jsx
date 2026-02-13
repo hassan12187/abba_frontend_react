@@ -274,7 +274,7 @@ const handleInputChange = (e) => {
             </div>
 
             <div className="form-actions">
-              <button type="submit" className="btn btn-primary">
+              <button type="submit" className="action btn btn-view active">
                 <i className="fas fa-save"></i>
                 {editIndex !== null ? 'Update Payment' : 'Save Payment'}
               </button>
@@ -391,21 +391,21 @@ const handleInputChange = (e) => {
                         <td className="actions-cell">
                           <div className="action-buttons">
                             <button
-                              className="btn btn-sm btn-print"
+                              className="action btn btn-sm btn-view"
                               onClick={() => printReceipt(payment)}
                               title="Print Receipt"
                             >
                               <i className="fas fa-print"></i>
                             </button>
                             <button
-                              className="btn btn-sm btn-edit"
+                              className="action btn btn-sm btn-edit"
                               onClick={() => handleEdit(data?.findIndex(p => p.id === payment.id))}
                               title="Edit"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
                             <button
-                              className="btn btn-sm btn-delete"
+                              className="action btn btn-sm btn-delete"
                               onClick={() => handleDelete(data?.findIndex(p => p.id === payment.id))}
                               title="Delete"
                             >
