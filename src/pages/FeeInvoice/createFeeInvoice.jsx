@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, Save, User, FileText, Search, X, CheckCircle, AlertCircle } from 'lucide-react';
 import InputField from '../../components/reusable/InputField'; 
 import { useNavigate } from 'react-router-dom';
-import { GetService } from '../../Services/Services';
+import { GetService, PostService } from '../../Services/Services';
 import { useCustom } from '../../Store/Store';
 
 const CreateFeeInvoice = ({ onBack, onSave }) => {
@@ -45,7 +45,7 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
     setFoundStudent(null);
 
     try {
-      const response = await GetService(`/api/admin/fee/student?q=${searchTerm}`, token);
+      const response = await GetService(`/api/admin/fee-invoice/student?q=${searchTerm}`, token);
       console.log(response);
       if (response) {
         setFoundStudent(response); 
@@ -115,7 +115,7 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
 
   // --- Handlers: Submit ---
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     
     if (!formData.student_id) {
@@ -123,14 +123,15 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
       return;
     }
     
-    const payload = { 
-      ...formData, 
-      totalAmount, 
-      status: 'Pending',
-      createdAt: new Date().toISOString()
-    };
-    
-    console.log("Submitting Invoice:", payload);
+    // const payload = { 
+    //   ...formData, 
+    //   totalAmount, 
+    //   status: 'Pending',
+    //   createdAt: new Date().toISOString()
+    // };
+    console.log(formData);
+    const result = await PostService("/api/admin/fee-invoice",formData,token);
+    console.log(result);
     if (onSave) onSave(payload);
   };
 
@@ -236,7 +237,7 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
                   </div>
 
                   {/* Date & Room Fields */}
-                     <div className="col-md-6 mt-3">
+                     {/* <div className="col-md-6 mt-3">
                     <InputField 
                     type={"text"}
                       label="Student Name" 
@@ -245,7 +246,7 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
                       readonly={true} 
                       placeholder="Auto-filled on selection" 
                     />
-                  </div>
+                  </div> */}
                   <div className="col-md-6 mt-3">
                     <InputField 
                     type={"text"}

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Search, Eye, Plus, Calendar, DollarSign, CreditCard, X, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import InputField from '../../components/reusable/InputField';
-import SelectField from '../../components/reusable/SelectField';
+// import InputField from '../../components/reusable/InputField';
+// import SelectField from '../../components/reusable/SelectField';
 import useCustomQuery from '../../components/hooks/useCustomQuery';
 import { useCustom } from '../../Store/Store';
-import CreateFeeInvoice from './createFeeInvoice';
+// import CreateFeeInvoice from './createFeeInvoice';
 import { Navigate, useNavigate } from 'react-router-dom';
+import Pagination from '../../components/Layout/Pagination';
 
 const FeeInvoiceUI = () => {
   const [userRole, setUserRole] = useState('admin'); // 'admin' or 'student'
@@ -13,8 +14,9 @@ const FeeInvoiceUI = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const {token}=useCustom();
+   const [currentPage, setCurrentPage] = useState(1);
   const navigate=useNavigate();
-  const {data:feeInvoice,isLoading}=useCustomQuery('/api/admin/fee',token,'fee-invoice');
+  const {data:feeInvoice,isLoading}=useCustomQuery('/api/admin/fee-invoice',token,'fee-invoice');
 console.log(feeInvoice);
   // Sample data
   const [invoices, setInvoices] = useState([
@@ -99,11 +101,6 @@ console.log(feeInvoice);
       payments: []
     }
   ]);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [monthFilter, setMonthFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [roomTypeFilter, setRoomTypeFilter] = useState('');
 
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
@@ -293,6 +290,7 @@ console.log(feeInvoice);
                   <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
                 </div>
               )}
+              <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} length={[]} />
             </div>
           </div>
         </div>
