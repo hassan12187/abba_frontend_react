@@ -219,30 +219,30 @@ console.log(feeInvoice);
                   </tr>
                 </thead>
                       <tbody>
-                  {invoices.map((invoice) => (
-                    <tr key={invoice.id}>
-                      <td className="roll-no-cell">{invoice.invoiceNumber}</td>
-                      <td className='roll-no-cell'>{invoice.studentName}</td>
-                      <td>{invoice.room}</td>
-                      <td>{invoice.billingMonth}</td>
+                  {feeInvoice?.map((invoice,index) => (
+                    <tr key={index}>
+                      <td className="roll-no-cell">{invoice?.invoiceNumber}</td>
+                      <td className='roll-no-cell'>{invoice?.student_name}</td>
+                      <td>{invoice?.room_no||"-"}</td>
+                      <td>{invoice?.billingMonth}</td>
                       <td className='roll-no-cell'>
-                        ₹{invoice.totalAmount.toLocaleString()}
+                        ₹{invoice?.totalAmount?.toLocaleString()}
                       </td>
                       <td className='roll-no-cell'>
-                        ₹{invoice.paidAmount.toLocaleString()}
+                        ₹{invoice?.totalPaid?.toLocaleString()}
                       </td>
                       <td className='roll-no-cell'>
-                        <span className={invoice.balanceDue > 0 ? 'text-red-600 font-medium' : 'text-gray-600'}>
-                          ₹{invoice.balanceDue.toLocaleString()}
+                        <span className={invoice?.balanceDue > 0 ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                          ₹{invoice?.balanceDue?.toLocaleString() || 0}
                         </span>
                       </td>
                       <td>
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getStatusColor(invoice.status)}`}>
-                          {getStatusIcon(invoice.status)}
-                          {invoice.status}
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getStatusColor(invoice?.status)}`}>
+                          {getStatusIcon(invoice?.status)}
+                          {invoice?.status}
                         </span>
                       </td>
-                      <td className="roll-no-cell">{invoice.dueDate}</td>
+                      <td className="roll-no-cell">{new Date(invoice?.dueDate).toLocaleDateString()}</td>
                       <td className="actions-cell">
                         <div className="action-buttons">
                              <button
@@ -283,7 +283,7 @@ console.log(feeInvoice);
                 </tbody>
               </table>
 
-              {invoices.length === 0 && (
+              {feeInvoice?.length === 0 && (
                 <div className="text-center py-12">
                   <DollarSign size={48} className="mx-auto text-gray-300 mb-4" />
                   <p className="text-gray-500 text-lg">No invoices found</p>
