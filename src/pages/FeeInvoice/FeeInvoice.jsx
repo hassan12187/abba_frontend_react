@@ -19,88 +19,88 @@ const FeeInvoiceUI = () => {
   const {data:feeInvoice,isLoading}=useCustomQuery('/api/admin/fee-invoice',token,'fee-invoice');
 console.log(feeInvoice);
   // Sample data
-  const [invoices, setInvoices] = useState([
-    {
-      id: 1,
-      invoiceNumber: 'INV-2025-001',
-      studentName: 'Aisha Khan',
-      room: 'A-101',
-      roomType: 'Standard',
-      billingMonth: 'January 2025',
-      totalAmount: 8500,
-      paidAmount: 8500,
-      balanceDue: 0,
-      status: 'Paid',
-      dueDate: '2025-01-10',
-      lineItems: [
-        { description: 'Room Rent', amount: 5000 },
-        { description: 'Maintenance', amount: 500 },
-        { description: 'Mess Charges', amount: 3000 }
-      ],
-      payments: [
-        { date: '2025-01-05', amount: 8500, method: 'Bank Transfer' }
-      ]
-    },
-    {
-      id: 2,
-      invoiceNumber: 'INV-2025-002',
-      studentName: 'Bilal Ahmed',
-      room: 'B-205',
-      roomType: 'Deluxe',
-      billingMonth: 'January 2025',
-      totalAmount: 11800,
-      paidAmount: 5000,
-      balanceDue: 6800,
-      status: 'Partially Paid',
-      dueDate: '2025-01-10',
-      lineItems: [
-        { description: 'Room Rent', amount: 8000 },
-        { description: 'Maintenance', amount: 800 },
-        { description: 'Mess Charges', amount: 3000 }
-      ],
-      payments: [
-        { date: '2025-01-03', amount: 5000, method: 'Cash' }
-      ]
-    },
-    {
-      id: 3,
-      invoiceNumber: 'INV-2025-003',
-      studentName: 'Sara Malik',
-      room: 'A-203',
-      roomType: 'Standard',
-      billingMonth: 'January 2025',
-      totalAmount: 8500,
-      paidAmount: 0,
-      balanceDue: 8500,
-      status: 'Overdue',
-      dueDate: '2025-01-05',
-      lineItems: [
-        { description: 'Room Rent', amount: 5000 },
-        { description: 'Maintenance', amount: 500 },
-        { description: 'Mess Charges', amount: 3000 }
-      ],
-      payments: []
-    },
-    {
-      id: 4,
-      invoiceNumber: 'INV-2025-004',
-      studentName: 'Hassan Ali',
-      room: 'C-101',
-      roomType: 'Standard',
-      billingMonth: 'January 2025',
-      totalAmount: 8500,
-      paidAmount: 0,
-      balanceDue: 8500,
-      status: 'Pending',
-      dueDate: '2025-01-15',
-      lineItems: [
-        { description: 'Room Rent', amount: 5000 },
-        { description: 'Maintenance', amount: 500 },
-        { description: 'Mess Charges', amount: 3000 }
-      ],
-      payments: []
-    }
-  ]);
+  // const [invoices, setInvoices] = useState([
+  //   {
+  //     id: 1,
+  //     invoiceNumber: 'INV-2025-001',
+  //     studentName: 'Aisha Khan',
+  //     room: 'A-101',
+  //     roomType: 'Standard',
+  //     billingMonth: 'January 2025',
+  //     totalAmount: 8500,
+  //     totalPaid: 8500,
+  //     balanceDue: 0,
+  //     status: 'Paid',
+  //     dueDate: '2025-01-10',
+  //     lineItems: [
+  //       { description: 'Room Rent', amount: 5000 },
+  //       { description: 'Maintenance', amount: 500 },
+  //       { description: 'Mess Charges', amount: 3000 }
+  //     ],
+  //     payments: [
+  //       { date: '2025-01-05', amount: 8500, method: 'Bank Transfer' }
+  //     ]
+  //   },
+  //   {
+  //     id: 2,
+  //     invoiceNumber: 'INV-2025-002',
+  //     studentName: 'Bilal Ahmed',
+  //     room: 'B-205',
+  //     roomType: 'Deluxe',
+  //     billingMonth: 'January 2025',
+  //     totalAmount: 11800,
+  //     totalPaid: 5000,
+  //     balanceDue: 6800,
+  //     status: 'Partially Paid',
+  //     dueDate: '2025-01-10',
+  //     lineItems: [
+  //       { description: 'Room Rent', amount: 8000 },
+  //       { description: 'Maintenance', amount: 800 },
+  //       { description: 'Mess Charges', amount: 3000 }
+  //     ],
+  //     payments: [
+  //       { date: '2025-01-03', amount: 5000, method: 'Cash' }
+  //     ]
+  //   },
+  //   {
+  //     id: 3,
+  //     invoiceNumber: 'INV-2025-003',
+  //     studentName: 'Sara Malik',
+  //     room: 'A-203',
+  //     roomType: 'Standard',
+  //     billingMonth: 'January 2025',
+  //     totalAmount: 8500,
+  //     totalPaid: 0,
+  //     balanceDue: 8500,
+  //     status: 'Overdue',
+  //     dueDate: '2025-01-05',
+  //     lineItems: [
+  //       { description: 'Room Rent', amount: 5000 },
+  //       { description: 'Maintenance', amount: 500 },
+  //       { description: 'Mess Charges', amount: 3000 }
+  //     ],
+  //     payments: []
+  //   },
+  //   {
+  //     id: 4,
+  //     invoiceNumber: 'INV-2025-004',
+  //     studentName: 'Hassan Ali',
+  //     room: 'C-101',
+  //     roomType: 'Standard',
+  //     billingMonth: 'January 2025',
+  //     totalAmount: 8500,
+  //     totalPaid: 0,
+  //     balanceDue: 8500,
+  //     status: 'Pending',
+  //     dueDate: '2025-01-15',
+  //     lineItems: [
+  //       { description: 'Room Rent', amount: 5000 },
+  //       { description: 'Maintenance', amount: 500 },
+  //       { description: 'Mess Charges', amount: 3000 }
+  //     ],
+  //     payments: []
+  //   }
+  // ]);
 
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
@@ -149,19 +149,19 @@ console.log(feeInvoice);
 
     const updatedInvoices = invoices.map(inv => {
       if (inv.id === selectedInvoice.id) {
-        const newPaidAmount = inv.paidAmount + payment.amount;
-        const newBalanceDue = inv.totalAmount - newPaidAmount;
+        const newtotalPaid = inv.totalPaid + payment.amount;
+        const newBalanceDue = inv.totalAmount - newtotalPaid;
         let newStatus = 'Pending';
         
         if (newBalanceDue === 0) {
           newStatus = 'Paid';
-        } else if (newPaidAmount > 0) {
+        } else if (newtotalPaid > 0) {
           newStatus = 'Partially Paid';
         }
 
         return {
           ...inv,
-          paidAmount: newPaidAmount,
+          totalPaid: newtotalPaid,
           balanceDue: newBalanceDue,
           status: newStatus,
           payments: [...inv.payments, payment]
@@ -223,7 +223,7 @@ console.log(feeInvoice);
                     <tr key={index}>
                       <td className="roll-no-cell">{invoice?.invoiceNumber}</td>
                       <td className='roll-no-cell'>{invoice?.student_name}</td>
-                      <td>{invoice?.room_no||"-"}</td>
+                      <td>{invoice?.room_no||"No Room"}</td>
                       <td>{invoice?.billingMonth}</td>
                       <td className='roll-no-cell'>
                         ₹{invoice?.totalAmount?.toLocaleString()}
@@ -285,7 +285,6 @@ console.log(feeInvoice);
 
               {feeInvoice?.length === 0 && (
                 <div className="text-center py-12">
-                  <DollarSign size={48} className="mx-auto text-gray-300 mb-4" />
                   <p className="text-gray-500 text-lg">No invoices found</p>
                   <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
                 </div>
@@ -336,7 +335,7 @@ console.log(feeInvoice);
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Paid Amount</span>
-                      <span className="text-sm text-green-600">₹{invoice.paidAmount.toLocaleString()}</span>
+                      <span className="text-sm text-green-600">₹{invoice.totalPaid.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                       <span className="text-sm font-medium text-gray-700">Balance Due</span>
@@ -385,8 +384,8 @@ console.log(feeInvoice);
           <div>
             <h2 className="h4 fw-bold text-dark mb-2">{selectedInvoice.invoiceNumber}</h2>
             <div className="text-muted small">
-              <p className="mb-1"><span className="fw-bold">Student:</span> {selectedInvoice.studentName}</p>
-              <p className="mb-1"><span className="fw-bold">Room:</span> {selectedInvoice.room}</p>
+              <p className="mb-1"><span className="fw-bold">Student:</span> {selectedInvoice.student_name}</p>
+              <p className="mb-1"><span className="fw-bold">Room:</span> {selectedInvoice.room_no || "No Room"}</p>
               <p className="mb-1"><span className="fw-bold">Billing Month:</span> {selectedInvoice.billingMonth}</p>
               <p className="mb-0"><span className="fw-bold">Due Date:</span> {selectedInvoice.dueDate}</p>
             </div>
@@ -404,7 +403,7 @@ console.log(feeInvoice);
         <div className="mb-5">
           <h3 className="h6 fw-bold text-uppercase text-muted mb-3">Charges</h3>
           <div className="list-group border rounded shadow-none">
-            {selectedInvoice.lineItems.map((item, idx) => (
+            {selectedInvoice?.lineItems?.map((item, idx) => (
               <div key={idx} className="list-group-item d-flex justify-content-between align-items-center py-3">
                 <span className="text-secondary">{item.description}</span>
                 <span className="fw-bold text-dark">₹{item.amount.toLocaleString()}</span>
@@ -412,7 +411,7 @@ console.log(feeInvoice);
             ))}
             <div className="list-group-item d-flex justify-content-between align-items-center bg-primary bg-opacity-10 py-3 fw-bold">
               <span className="text-dark">Total Amount</span>
-              <span className="text-primary">₹{selectedInvoice.totalAmount.toLocaleString()}</span>
+              <span className="text-primary">₹{selectedInvoice?.totalAmount?.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -424,28 +423,28 @@ console.log(feeInvoice);
             <div className="col-md-4">
               <div className="bg-light rounded p-3 h-100">
                 <p className="small text-muted mb-1">Total Amount</p>
-                <p className="h4 fw-bold mb-0 text-dark">₹{selectedInvoice.totalAmount.toLocaleString()}</p>
+                <p className="h4 fw-bold mb-0 text-dark">₹{selectedInvoice?.totalAmount.toLocaleString()}</p>
               </div>
             </div>
             <div className="col-md-4">
               <div className="bg-success bg-opacity-10 rounded p-3 h-100 border border-success border-opacity-10">
                 <p className="small text-muted mb-1 text-success">Total Paid</p>
-                <p className="h4 fw-bold mb-0 text-success">₹{selectedInvoice.paidAmount.toLocaleString()}</p>
+                <p className="h4 fw-bold mb-0 text-success">₹{selectedInvoice?.totalPaid?.toLocaleString()}</p>
               </div>
             </div>
             <div className="col-md-4">
-              <div className={`rounded p-3 h-100 border ${selectedInvoice.balanceDue > 0 ? 'bg-danger bg-opacity-10 border-danger border-opacity-10' : 'bg-success bg-opacity-10 border-success border-opacity-10'}`}>
+              <div className={`rounded p-3 h-100 border ${selectedInvoice?.balanceDue > 0 ? 'bg-danger bg-opacity-10 border-danger border-opacity-10' : 'bg-success bg-opacity-10 border-success border-opacity-10'}`}>
                 <p className="small text-muted mb-1">Balance Due</p>
-                <p className={`h4 fw-bold mb-0 ${selectedInvoice.balanceDue > 0 ? 'text-danger' : 'text-success'}`}>
-                  ₹{selectedInvoice.balanceDue.toLocaleString()}
+                <p className={`h4 fw-bold mb-0 ${selectedInvoice?.balanceDue > 0 ? 'text-danger' : 'text-success'}`}>
+                  ₹{selectedInvoice?.balanceDue?.toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Payment History Table */}
-        {selectedInvoice.payments.length > 0 && (
+        {/* Payment History Table
+        {selectedInvoice?.payments?.length > 0 && (
           <div className="mb-5">
             <h3 className="h6 fw-bold text-uppercase text-muted mb-3">Payment History</h3>
             <div className="table-responsive border rounded">
@@ -458,7 +457,7 @@ console.log(feeInvoice);
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedInvoice.payments.map((payment, idx) => (
+                  {selectedInvoice?.payments?.map((payment, idx) => (
                     <tr key={idx}>
                       <td className="ps-4 text-dark">{payment.date}</td>
                       <td className="text-muted">{payment.method}</td>
@@ -469,14 +468,14 @@ console.log(feeInvoice);
               </table>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Admin Actions */}
         {userRole === 'admin' && (
           <div className="d-flex flex-wrap gap-3 pt-3 border-top">
             <button
               onClick={() => setShowPaymentModal(true)}
-              disabled={selectedInvoice.status === 'Paid'}
+              disabled={selectedInvoice?.status === 'Paid'}
               className="action btn btn-view active d-flex align-items-center gap-2 px-4 shadow-sm"
             >
               <Plus size={18} />
@@ -484,7 +483,7 @@ console.log(feeInvoice);
             </button>
             <button
               onClick={handleMarkAsPaid}
-              disabled={selectedInvoice.balanceDue === 0}
+              disabled={selectedInvoice?.balanceDue === 0}
               className="action btn btn-assign active d-flex align-items-center gap-2 px-4"
             >
               <CheckCircle size={18} />
@@ -580,7 +579,7 @@ console.log(feeInvoice);
           />
           {selectedInvoice && (
             <div className="form-text text-muted mt-1">
-              Remaining balance: ₹{selectedInvoice.balanceDue.toLocaleString()}
+              Remaining balance: ₹{selectedInvoice?.balanceDue.toLocaleString()}
             </div>
           )}
         </div>

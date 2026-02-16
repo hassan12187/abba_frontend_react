@@ -20,7 +20,8 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
   const [formData, setFormData] = useState({
     student_id: '',
     student_name: '',
-    room_no: '', 
+    room_no: '',
+    room_id:'',
     billingMonth: new Date().toISOString().slice(0, 7), 
     dueDate: '',
     lineItems: [{ description: 'Room Rent', amount: 0 }],
@@ -67,7 +68,8 @@ const CreateFeeInvoice = ({ onBack, onSave }) => {
       {...prev,
         student_id: foundStudent?.student_id,
         student_name: foundStudent?.student_name,
-        room_no: foundStudent?.room_no
+        room_no: foundStudent?.room_no,
+        room_id:foundStudent?.room_id
       }
     ));
     
