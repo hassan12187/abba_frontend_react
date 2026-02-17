@@ -37,15 +37,10 @@ export const PatchService=async(route,data,token)=>{
             },
             withCredentials:true,
         });
-        console.log(result);
-        if(result.status==200){
-            console.log("Password Updated");
-        };
+    console.log(result.data.message)
         
     } catch (error) {
-        // console.log(error.response.data);
-        console.log(error);
-        console.log(`patch error ${error}`);
+        console.log(error.response.data.message);
     }
 };
 export const DeleteService=(route)=>{};

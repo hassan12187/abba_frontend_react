@@ -7,6 +7,7 @@ import { useCustom } from '../../Store/Store';
 // import CreateFeeInvoice from './createFeeInvoice';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Pagination from '../../components/Layout/Pagination';
+import { PatchService } from '../../Services/Services';
 
 const FeeInvoiceUI = () => {
   const [userRole, setUserRole] = useState('admin'); // 'admin' or 'student'
@@ -17,7 +18,7 @@ const FeeInvoiceUI = () => {
    const [currentPage, setCurrentPage] = useState(1);
   const navigate=useNavigate();
   const {data:feeInvoice,isLoading}=useCustomQuery('/api/admin/fee-invoice',token,'fee-invoice');
-console.log(feeInvoice);
+console.log(selectedInvoice);
   // Sample data
   // const [invoices, setInvoices] = useState([
   //   {
@@ -105,7 +106,7 @@ console.log(feeInvoice);
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
     method: 'Cash',
-    date: new Date().toISOString().split('T')[0]
+    // date: new Date().toISOString().split('T')[0]
   });
 
   const getStatusColor = (status) => {
@@ -138,40 +139,22 @@ console.log(feeInvoice);
     }
   };
 
-  const handleAddPayment = () => {
+  const handleAddPayment = async() => {
     if (!paymentForm.amount || parseFloat(paymentForm.amount) <= 0) return;
 
     const payment = {
-      date: paymentForm.date,
-      amount: parseFloat(paymentForm.amount),
+      amount: parseInt(paymentForm.amount),
       method: paymentForm.method
     };
+    try {
+      const result = await PatchService(`/api/admin/fee-invoice/${selectedInvoice._id}`,payment,token);
+      console.log(result);
+      
+    } catch (error) {
+      console.log("hassan");
+      console.log(error.response.data.message);
+    }
 
-    const updatedInvoices = invoices.map(inv => {
-      if (inv.id === selectedInvoice.id) {
-        const newtotalPaid = inv.totalPaid + payment.amount;
-        const newBalanceDue = inv.totalAmount - newtotalPaid;
-        let newStatus = 'Pending';
-        
-        if (newBalanceDue === 0) {
-          newStatus = 'Paid';
-        } else if (newtotalPaid > 0) {
-          newStatus = 'Partially Paid';
-        }
-
-        return {
-          ...inv,
-          totalPaid: newtotalPaid,
-          balanceDue: newBalanceDue,
-          status: newStatus,
-          payments: [...inv.payments, payment]
-        };
-      }
-      return inv;
-    });
-
-    setInvoices(updatedInvoices);
-    setSelectedInvoice(updatedInvoices.find(inv => inv.id === selectedInvoice.id));
     setShowPaymentModal(false);
     setPaymentForm({ amount: '', method: 'Cash', date: new Date().toISOString().split('T')[0] });
   };
@@ -579,7 +562,7 @@ console.log(feeInvoice);
           />
           {selectedInvoice && (
             <div className="form-text text-muted mt-1">
-              Remaining balance: ₹{selectedInvoice?.balanceDue.toLocaleString()}
+              Remaining balance: ₹{selectedInvoice?.balanceDue?.toLocaleString()}
             </div>
           )}
         </div>
