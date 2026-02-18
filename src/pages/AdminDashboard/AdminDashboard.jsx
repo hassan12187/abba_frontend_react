@@ -1,58 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import {NavLink, useNavigate} from "react-router-dom";
+import useCustomQuery from '../../components/hooks/useCustomQuery';
+import { useCustom } from '../../Store/Store';
 
 const AdminDashboard = () => {
   const navigate=useNavigate();
-  const [stats, setStats] = useState({
-    totalStudents: 0,
-    occupiedRooms: 0,
-    paymentsDone: 0,
-    pendingApplications: 0
-  });
-
+  // const [stats, setStats] = useState({
+  //   dashboardData.totalStudents: 0,
+  //   dashboardData.occupiedRooms: 0,
+  //   dashboardData.paymentsDone: 0,
+  //   dashboardData.pendingApplications: 0
+  // });
   const [recentActivities, setRecentActivities] = useState([]);
+  const {token}=useCustom();
 
-  useEffect(() => {
-    // Mock data - replace with API calls
-    const loadDashboardData = () => {
-      setStats({
-        totalStudents: 156,
-        occupiedRooms: 42,
-        paymentsDone: 128,
-        pendingApplications: 18
-      });
+  const {data:dashboardData}=useCustomQuery("/api/admin/report/home-dashboard",token,"dashboard");
+console.log(dashboardData);
+  // useEffect(() => {
+  //   // Mock data - replace with API calls
+  //   const loadDashboardData = () => {
+  //     setStats({
+  //       dashboardData.totalStudents: 156,
+  //       dashboardData.occupiedRooms: 42,
+  //       dashboardData.paymentsDone: 128,
+  //       dashboardData.pendingApplications: 18
+  //     });
 
-      setRecentActivities([
-        {
-          id: 1,
-          type: 'application',
-          message: 'New student application received',
-          time: '2 hours ago',
-          icon: 'fas fa-file-alt',
-          color: 'info'
-        },
-        {
-          id: 2,
-          type: 'payment',
-          message: 'Payment received from Student #123',
-          time: '5 hours ago',
-          icon: 'fas fa-credit-card',
-          color: 'success'
-        },
-        {
-          id: 3,
-          type: 'room',
-          message: 'Room 204 has been allocated',
-          time: '1 day ago',
-          icon: 'fas fa-bed',
-          color: 'warning'
-        }
-      ]);
-    };
+  //     setRecentActivities([
+  //       {
+  //         id: 1,
+  //         type: 'application',
+  //         message: 'New student application received',
+  //         time: '2 hours ago',
+  //         icon: 'fas fa-file-alt',
+  //         color: 'info'
+  //       },
+  //       {
+  //         id: 2,
+  //         type: 'payment',
+  //         message: 'Payment received from Student #123',
+  //         time: '5 hours ago',
+  //         icon: 'fas fa-credit-card',
+  //         color: 'success'
+  //       },
+  //       {
+  //         id: 3,
+  //         type: 'room',
+  //         message: 'Room 204 has been allocated',
+  //         time: '1 day ago',
+  //         icon: 'fas fa-bed',
+  //         color: 'warning'
+  //       }
+  //     ]);
+  //   };
 
-    loadDashboardData();
-  }, []);
+  //   loadDashboardData();
+  // }, []);
 
   const StatCard = ({ title, value, icon, color, description }) => (
     <div className={`stat-card ${color}`}>
@@ -79,28 +83,28 @@ const AdminDashboard = () => {
       <div className="stats-grid">
         <StatCard
           title="Total Students"
-          value={stats.totalStudents}
+          value={dashboardData?.totalStudents}
           icon="fas fa-users"
           color="primary"
           description="Currently enrolled"
         />
         <StatCard
           title="Occupied Rooms"
-          value={stats.occupiedRooms}
+          value={dashboardData?.occupiedRooms}
           icon="fas fa-bed"
           color="success"
           description="72% occupancy rate"
         />
         <StatCard
           title="Payments Done"
-          value={stats.paymentsDone}
+          value={dashboardData?.paymentsDone}
           icon="fas fa-credit-card"
           color="warning"
           description="This month"
         />
         <StatCard
           title="Pending Applications"
-          value={stats.pendingApplications}
+          value={dashboardData?.pendingApplications}
           icon="fas fa-file-alt"
           color="danger"
           description="Require review"

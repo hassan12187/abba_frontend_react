@@ -13,17 +13,17 @@ const Payments = () => {
   const queryClient=useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [inputVal,setInputVal]=useState({
-    student_registration_no:"",
-    date:""
+    student_roll_no:"",
+    paymentDate:""
   });
   const [formData, setFormData] = useState({
-    student_registration_no: '',
-    amount: '',
-    payment_method: 'cash'
+    student_roll_no: '',
+    totalAmount: '',
+    paymentMethod: 'cash'
   });
   const [filters, setFilters] = useState({
-    student_registration_no: '',
-    date: ''
+    student_roll_no: '',
+    paymentDate: ''
   });
   const [editIndex, setEditIndex] = useState(null);
 const handleInputChange = (e) => {
@@ -34,7 +34,7 @@ const handleInputChange = (e) => {
     }));
     
   };
-  const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_registration_no,filters.date);
+  const {data,isLoading}=usePaymentQuery(currentPage-1,token,filters.student_roll_no,filters.paymentDate);
   const mutate = useMutation({
     mutationFn:async(fmData)=>await PostService("/api/admin/payment",fmData,token),
     // mutationKey:["page"],
@@ -44,9 +44,9 @@ const handleInputChange = (e) => {
       });
           // Reset form
     setFormData({
-      student_registration_no: '',
-      amount: '',
-      payment_method: 'cash'
+      student_roll_no: '',
+      totalAmount: '',
+      paymentMethod: 'cash'
     });
     }
   })
@@ -79,19 +79,19 @@ const handleInputChange = (e) => {
   const cancelEdit = () => {
     setEditIndex(null);
     setFormData({
-      student_registration_no: '',
-      amount: '',
-      payment_method: 'cash'
+      student_roll_no: '',
+      totalAmount: '',
+      paymentMethod: 'cash'
     });
   };
   
   const clearFilters = () => {
-    if(!filters.student_registration_no && !filters.date)return;
-    if(!inputVal && !filters.date)return;
+    if(!filters.student_roll_no && !filters.paymentDate)return;
+    if(!inputVal && !filters.paymentDate)return;
     setInputVal("");
     setFilters({
-      student_registration_no: '',
-      date: ''
+      student_roll_no: '',
+      paymentDate: ''
     });
   };
   
@@ -173,11 +173,11 @@ const handleInputChange = (e) => {
               </div>
               <div class="receipt-details">
               <p><strong>Receipt No:</strong> <span>${payment.id}</span></p>
-              <p><strong>Registration No:</strong> <span>${payment.student_registration_no}</span></p>
+              <p><strong>Registration No:</strong> <span>${payment.student_roll_no}</span></p>
               <p><strong>Student Name:</strong> <span>${payment.student_name}</span></p>
-              <p><strong>Amount Paid:</strong> <span>PKR ${payment.amount.toLocaleString()}</span></p>
-              <p><strong>Payment Method:</strong> <span>${payment.payment_method.charAt(0).toUpperCase() + payment.payment_method.slice(1)}</span></p>
-              <p><strong>Date:</strong> <span>${new Date(payment.date).toLocaleDateString()}</span></p>
+              <p><strong>Amount Paid:</strong> <span>PKR ${payment.totalAmount.toLocaleString()}</span></p>
+              <p><strong>Payment Method:</strong> <span>${payment.paymentMethod.charAt(0).toUpperCase() + payment.paymentMethod.slice(1)}</span></p>
+              <p><strong>Date:</strong> <span>${new Date(payment.paymentDate).toLocaleDateString()}</span></p>
               <p><strong>Time:</strong> <span>${new Date().toLocaleTimeString()}</span></p>
               </div>
               <div class="footer">
@@ -224,15 +224,15 @@ const handleInputChange = (e) => {
           <form onSubmit={handleSubmit} className="payment-form">
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="student_registration_no" className="form-label">
+                <label htmlFor="student_roll_no" className="form-label">
                   Student Registration No <span className="required">*</span>
                 </label>
                 <input
                   type="text"
-                  id="student_registration_no"
-                  name="student_registration_no"
+                  id="student_roll_no"
+                  name="student_roll_no"
                   className="form-control"
-                  value={formData.student_registration_no}
+                  value={formData.student_roll_no}
                   onChange={handleInputChange}
                   placeholder="Enter registration number"
                   required
@@ -240,15 +240,15 @@ const handleInputChange = (e) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="amount" className="form-label">
+                <label htmlFor="totalAmount" className="form-label">
                   Amount (PKR) <span className="required">*</span>
                 </label>
                 <input
                   type="number"
-                  id="amount"
-                  name="amount"
+                  id="totalAmount"
+                  name="totalAmount"
                   className="form-control"
-                  value={formData.amount}
+                  value={formData.totalAmount}
                   onChange={handleInputChange}
                   placeholder="Enter amount"
                   required
@@ -256,14 +256,14 @@ const handleInputChange = (e) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="payment_method" className="form-label">
+                <label htmlFor="paymentMethod" className="form-label">
                   Payment Method <span className="required">*</span>
                 </label>
                 <select
-                  id="payment_method"
-                  name="payment_method"
+                  id="paymentMethod"
+                  name="paymentMethod"
                   className="form-control"
-                  value={formData.payment_method}
+                  value={formData.paymentMethod}
                   onChange={handleInputChange}
                   required
                 >
@@ -298,26 +298,26 @@ const handleInputChange = (e) => {
           </h4>
           <div className="filters-row">
             <div className="filter-group">
-              <label htmlFor="student_registration_no" className="form-label">Search by Reg No</label>
+              <label htmlFor="student_roll_no" className="form-label">Search by Reg No</label>
               <input
                 type="text"
-                id="student_registration_no"
-                name="student_registration_no"
+                id="student_roll_no"
+                name="student_roll_no"
                 className="form-control"
-                value={inputVal.student_registration_no}
+                value={inputVal.student_roll_no}
                 onChange={handleFilterChange}
                 placeholder="Enter registration number"
               />
             </div>
 
             <div className="filter-group">
-              <label htmlFor="date" className="form-label">Date</label>
+              <label htmlFor="paymentDate" className="form-label">Date</label>
               <input
                 type="date"
-                id="date"
-                name="date"
+                id="paymentDate"
+                name="paymentDate"
                 className="form-control"
-                value={inputVal.date}
+                value={inputVal.paymentDate}
                 onChange={handleFilterChange}
               />
             </div>
@@ -359,7 +359,7 @@ const handleInputChange = (e) => {
               <table className="payments-table">
                 <thead>
                   <tr>
-                    <th>Student Reg No</th>
+                    <th>Student Roll No.</th>
                     <th className="amount-column">Amount</th>
                     <th className="method-column">Payment Method</th>
                     <th className="date-column">Date</th>
@@ -369,24 +369,24 @@ const handleInputChange = (e) => {
                 <tbody>
                    {data?.data?.length > 0 ? (
                     data?.data?.map((payment, index) => (
-                      <tr key={index} className="payment-row">
+                      <tr key={index} className="payment-row text-center">
                         <td className="reg-no-cell">
                           <div className="student-info">
-                            <div className="reg-no">{payment.student_registration_no}</div>
+                            <div className="reg-no">{payment.student_roll_no}</div>
                             <div className="student-name">{payment.student_name}</div>
                           </div>
                         </td>
                         <td className="amount-cell">
                           <div className="amount-display">
                             <span className="currency">PKR</span>
-                            {payment.amount.toLocaleString()}
+                            {payment?.totalAmount?.toLocaleString()}
                           </div>
                         </td>
                         <td className="method-cell">
-                          {getPaymentMethodBadge(payment.payment_method)}
+                          {getPaymentMethodBadge(payment.paymentMethod)}
                         </td>
                         <td className="date-cell">
-                          {new Date(payment.date).toLocaleDateString()}
+                          {new Date(payment.paymentDate)?.toLocaleDateString()}
                         </td>
                         <td className="actions-cell">
                           <div className="action-buttons">

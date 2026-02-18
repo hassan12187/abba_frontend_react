@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import './Report.css';
+import { GetService } from '../../Services/Services';
+import { useCustom } from '../../Store/Store';
+import useCustomQuery from '../../components/hooks/useCustomQuery';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -18,14 +21,24 @@ const Reports = () => {
     payments: [],
     expenses: []
   });
-
+const {token}=useCustom();
   const chartRef = useRef(null);
   const pieChartRef = useRef(null);
   const incomeExpenseChart = useRef(null);
   const expensePieChart = useRef(null);
-
+  // const {data:reportData}=useCustomQuery("/api/admin/report",token,"report_dashboard");
+  // console.log(reportData);
+  // const getReports=async()=>{
+  //   try {
+  //     const result = await GetService(,token);
+  //     console.log(result);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   // Sample data
   useEffect(() => {
+    // getReports();
     const sampleData = {
       totalStudents: 156,
       totalPayments: 450000,
@@ -50,7 +63,7 @@ const Reports = () => {
 
   // Initialize charts when data is loaded
   useEffect(() => {
-    if (reportData.payments.length > 0) {
+    if (reportData?.payments?.length > 0) {
       initializeCharts();
     }
 
@@ -118,7 +131,7 @@ const Reports = () => {
     // Expense Pie Chart
     const expensePieCtx = pieChartRef.current?.getContext('2d');
     if (expensePieCtx && !expensePieChart.current) {
-      const expenseByCategory = reportData.expenses.reduce((acc, expense) => {
+      const expenseByCategory = reportData?.expenses.reduce((acc, expense) => {
         acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
         return acc;
       }, {});
@@ -202,7 +215,7 @@ const Reports = () => {
     window.print();
   };
 
-  const balance = reportData.totalPayments - reportData.totalExpenses;
+  const balance = reportData?.totalPayments - reportData?.totalExpenses;
 
   return (
     <div className="reports-page">
@@ -310,7 +323,7 @@ const Reports = () => {
               </div>
               <div className="stat-content">
                 <h3>Total Students</h3>
-                <div className="stat-value">{reportData.totalStudents}</div>
+                <div className="stat-value">{reportData?.totalStudents}</div>
                 <p className="stat-description">Currently enrolled</p>
               </div>
             </div>
@@ -321,7 +334,7 @@ const Reports = () => {
               </div>
               <div className="stat-content">
                 <h3>Total Payments</h3>
-                <div className="stat-value">PKR {reportData.totalPayments.toLocaleString()}</div>
+                <div className="stat-value">PKR {reportData?.totalPayments.toLocaleString()}</div>
                 <p className="stat-description">Total income</p>
               </div>
             </div>
@@ -332,7 +345,7 @@ const Reports = () => {
               </div>
               <div className="stat-content">
                 <h3>Total Expenses</h3>
-                <div className="stat-value">PKR {reportData.totalExpenses.toLocaleString()}</div>
+                <div className="stat-value">PKR {reportData?.totalExpenses.toLocaleString()}</div>
                 <p className="stat-description">Total expenditure</p>
               </div>
             </div>
@@ -361,7 +374,7 @@ const Reports = () => {
                       <i className="fas fa-arrow-down success-icon"></i>
                       Payments (Income)
                     </td>
-                    <td className="amount positive">PKR {reportData.totalPayments.toLocaleString()}</td>
+                    <td className="amount positive">PKR {reportData?.totalPayments.toLocaleString()}</td>
                     <td className="percentage">100%</td>
                   </tr>
                   <tr>
@@ -369,9 +382,9 @@ const Reports = () => {
                       <i className="fas fa-arrow-up danger-icon"></i>
                       Expenses
                     </td>
-                    <td className="amount negative">PKR {reportData.totalExpenses.toLocaleString()}</td>
+                    <td className="amount negative">PKR {reportData?.totalExpenses.toLocaleString()}</td>
                     <td className="percentage">
-                      {((reportData.totalExpenses / reportData.totalPayments) * 100).toFixed(1)}%
+                      {((reportData?.totalExpenses / reportData?.totalPayments) * 100).toFixed(1)}%
                     </td>
                   </tr>
                   <tr className="balance-row">
@@ -384,7 +397,7 @@ const Reports = () => {
                     </td>
                     <td className="percentage">
                       <strong>
-                        {((balance / reportData.totalPayments) * 100).toFixed(1)}%
+                        {((balance / reportData?.totalPayments) * 100).toFixed(1)}%
                       </strong>
                     </td>
                   </tr>
@@ -425,7 +438,7 @@ const Reports = () => {
                   Payments Details
                 </h4>
                 <div className="table-summary">
-                  Total: PKR {reportData.totalPayments.toLocaleString()}
+                  Total: PKR {reportData?.totalPayments.toLocaleString()}
                 </div>
               </div>
               <div className="table-container">
@@ -439,7 +452,7 @@ const Reports = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData.payments.map(payment => (
+                    {reportData?.payments?.map(payment => (
                       <tr key={payment.id}>
                         <td className="student-cell">{payment.student}</td>
                         <td className="amount-cell positive">PKR {payment.amount.toLocaleString()}</td>
@@ -466,7 +479,7 @@ const Reports = () => {
                   Expenses Details
                 </h4>
                 <div className="table-summary">
-                  Total: PKR {reportData.totalExpenses.toLocaleString()}
+                  Total: PKR {reportData?.totalExpenses.toLocaleString()}
                 </div>
               </div>
               <div className="table-container">
@@ -480,7 +493,7 @@ const Reports = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData.expenses.map(expense => (
+                    {reportData?.expenses?.map(expense => (
                       <tr key={expense.id}>
                         <td className="description-cell">{expense.description}</td>
                         <td className="amount-cell negative">PKR {expense.amount.toLocaleString()}</td>
