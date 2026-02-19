@@ -14,20 +14,20 @@ const Reports = () => {
     fromDate: '',
     toDate: ''
   });
-  const [reportData, setReportData] = useState({
-    totalStudents: 0,
-    totalPayments: 0,
-    totalExpenses: 0,
-    payments: [],
-    expenses: []
-  });
+  // const [reportData, setReportData] = useState({
+  //   totalStudents: 0,
+  //   totalPayments: 0,
+  //   totalExpenses: 0,
+  //   payments: [],
+  //   expenses: []
+  // });
 const {token}=useCustom();
   const chartRef = useRef(null);
   const pieChartRef = useRef(null);
   const incomeExpenseChart = useRef(null);
   const expensePieChart = useRef(null);
-  // const {data:reportData}=useCustomQuery("/api/admin/report",token,"report_dashboard");
-  // console.log(reportData);
+  const {data:reportData}=useCustomQuery("/api/admin/report",token,"report_dashboard");
+  console.log(reportData);
   // const getReports=async()=>{
   //   try {
   //     const result = await GetService(,token);
@@ -37,33 +37,33 @@ const {token}=useCustom();
   //   }
   // };
   // Sample data
-  useEffect(() => {
-    // getReports();
-    const sampleData = {
-      totalStudents: 156,
-      totalPayments: 450000,
-      totalExpenses: 320000,
-      payments: [
-        { id: 1, student: 'Ali Ahmed (2024-CS-001)', amount: 15000, date: '2024-01-15', method: 'Cash' },
-        { id: 2, student: 'Sara Bilal (2024-CE-005)', amount: 12000, date: '2024-01-10', method: 'Online' },
-        { id: 3, student: 'Ahmed Raza (2024-EE-012)', amount: 18000, date: '2024-01-08', method: 'Cash' },
-        { id: 4, student: 'Fatima Khan (2024-ME-008)', amount: 16000, date: '2024-01-05', method: 'Online' },
-        { id: 5, student: 'Usman Ali (2024-CS-015)', amount: 14000, date: '2024-01-03', method: 'Cash' }
-      ],
-      expenses: [
-        { id: 1, description: 'Staff Salaries', amount: 150000, date: '2024-01-15', category: 'Salary' },
-        { id: 2, description: 'Electricity Bill', amount: 45000, date: '2024-01-10', category: 'Utility' },
-        { id: 3, description: 'Maintenance', amount: 25000, date: '2024-01-08', category: 'Maintenance' },
-        { id: 4, description: 'Food Supplies', amount: 80000, date: '2024-01-05', category: 'Food' },
-        { id: 5, description: 'Internet Bill', amount: 20000, date: '2024-01-03', category: 'Utility' }
-      ]
-    };
-    setReportData(sampleData);
-  }, []);
+  // useEffect(() => {
+  //   // getReports();
+  //   const sampleData = {
+  //     totalStudents: 156,
+  //     totalPayments: 450000,
+  //     totalExpenses: 320000,
+  //     payments: [
+  //       { id: 1, student: 'Ali Ahmed (2024-CS-001)', amount: 15000, date: '2024-01-15', method: 'Cash' },
+  //       { id: 2, student: 'Sara Bilal (2024-CE-005)', amount: 12000, date: '2024-01-10', method: 'Online' },
+  //       { id: 3, student: 'Ahmed Raza (2024-EE-012)', amount: 18000, date: '2024-01-08', method: 'Cash' },
+  //       { id: 4, student: 'Fatima Khan (2024-ME-008)', amount: 16000, date: '2024-01-05', method: 'Online' },
+  //       { id: 5, student: 'Usman Ali (2024-CS-015)', amount: 14000, date: '2024-01-03', method: 'Cash' }
+  //     ],
+  //     expenses: [
+  //       { id: 1, description: 'Staff Salaries', amount: 150000, date: '2024-01-15', category: 'Salary' },
+  //       { id: 2, description: 'Electricity Bill', amount: 45000, date: '2024-01-10', category: 'Utility' },
+  //       { id: 3, description: 'Maintenance', amount: 25000, date: '2024-01-08', category: 'Maintenance' },
+  //       { id: 4, description: 'Food Supplies', amount: 80000, date: '2024-01-05', category: 'Food' },
+  //       { id: 5, description: 'Internet Bill', amount: 20000, date: '2024-01-03', category: 'Utility' }
+  //     ]
+  //   };
+  //   setReportData(sampleData);
+  // }, []);
 
   // Initialize charts when data is loaded
   useEffect(() => {
-    if (reportData?.payments?.length > 0) {
+    if (reportData?.sixMonthAgoData?.length > 0) {
       initializeCharts();
     }
 
@@ -85,18 +85,19 @@ const {token}=useCustom();
       incomeExpenseChart.current = new Chart(incomeExpenseCtx, {
         type: 'bar',
         data: {
-          labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+          
+          labels: reportData?.sixMonthAgoData?.map(item=>item.month),
           datasets: [
             {
               label: 'Income',
-              data: [450000, 480000, 520000, 490000, 510000, 530000],
+              data: reportData?.sixMonthAgoData?.map(item=>item.Income),
               backgroundColor: 'rgba(39, 174, 96, 0.8)',
               borderColor: 'rgba(39, 174, 96, 1)',
               borderWidth: 1
             },
             {
               label: 'Expenses',
-              data: [320000, 340000, 310000, 350000, 330000, 360000],
+              data: reportData?.sixMonthAgoData?.map(item=>item.Expense),
               backgroundColor: 'rgba(231, 76, 60, 0.8)',
               borderColor: 'rgba(231, 76, 60, 1)',
               borderWidth: 1
@@ -131,7 +132,7 @@ const {token}=useCustom();
     // Expense Pie Chart
     const expensePieCtx = pieChartRef.current?.getContext('2d');
     if (expensePieCtx && !expensePieChart.current) {
-      const expenseByCategory = reportData?.expenses.reduce((acc, expense) => {
+      const expenseByCategory = reportData?.expenses?.reduce((acc, expense) => {
         acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
         return acc;
       }, {});

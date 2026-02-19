@@ -146,15 +146,8 @@ console.log(selectedInvoice);
       amount: parseInt(paymentForm.amount),
       method: paymentForm.method
     };
-    try {
       const result = await PatchService(`/api/admin/fee-invoice/${selectedInvoice._id}`,payment,token);
       console.log(result);
-      
-    } catch (error) {
-      console.log("hassan");
-      console.log(error.response.data.message);
-    }
-
     setShowPaymentModal(false);
     setPaymentForm({ amount: '', method: 'Cash', date: new Date().toISOString().split('T')[0] });
   };
