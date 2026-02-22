@@ -27,7 +27,6 @@ const {token}=useCustom();
   const incomeExpenseChart = useRef(null);
   const expensePieChart = useRef(null);
   const {data:reportData}=useCustomQuery("/api/admin/report",token,"report_dashboard");
-  console.log(reportData);
   // const getReports=async()=>{
   //   try {
   //     const result = await GetService(,token);
@@ -63,7 +62,7 @@ const {token}=useCustom();
 
   // Initialize charts when data is loaded
   useEffect(() => {
-    if (reportData?.sixMonthAgoData?.length > 0) {
+    if (reportData?.sixMonthAgoData) {
       initializeCharts();
     }
 
@@ -86,18 +85,18 @@ const {token}=useCustom();
         type: 'bar',
         data: {
           
-          labels: reportData?.sixMonthAgoData?.map(item=>item.month),
+          labels: reportData?.sixMonthAgoData?.months,
           datasets: [
             {
               label: 'Income',
-              data: reportData?.sixMonthAgoData?.map(item=>item.Income),
+              data: reportData?.sixMonthAgoData?.incomes,
               backgroundColor: 'rgba(39, 174, 96, 0.8)',
               borderColor: 'rgba(39, 174, 96, 1)',
               borderWidth: 1
             },
             {
               label: 'Expenses',
-              data: reportData?.sixMonthAgoData?.map(item=>item.Expense),
+              data: reportData?.sixMonthAgoData?.expenses,
               backgroundColor: 'rgba(231, 76, 60, 0.8)',
               borderColor: 'rgba(231, 76, 60, 1)',
               borderWidth: 1
@@ -132,18 +131,19 @@ const {token}=useCustom();
     // Expense Pie Chart
     const expensePieCtx = pieChartRef.current?.getContext('2d');
     if (expensePieCtx && !expensePieChart.current) {
-      const expenseByCategory = reportData?.expenses?.reduce((acc, expense) => {
-        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      const expenseByCategory = reportData?.sixMonthAgoData?.expenses?.reduce((acc, expense) => {
+        // console.log(expense);
+        // acc[expense.category||] = (acc[expense.category||] || 0) + expense;
         return acc;
       }, {});
 
       expensePieChart.current = new Chart(expensePieCtx, {
         type: 'pie',
         data: {
-          labels: Object.keys(expenseByCategory),
+          labels: ["Utility","Electricity","Food","Salary","Plumbing","Fuel","Furniture"],
           datasets: [
             {
-              data: Object.values(expenseByCategory),
+              data: reportData?.sixMonthAgoData?.expenses,
               backgroundColor: [
                 'rgba(52, 152, 219, 0.8)',
                 'rgba(155, 89, 182, 0.8)',
@@ -497,11 +497,11 @@ const {token}=useCustom();
                     {reportData?.expenses?.map(expense => (
                       <tr key={expense.id}>
                         <td className="description-cell">{expense.description}</td>
-                        <td className="amount-cell negative">PKR {expense.amount.toLocaleString()}</td>
+                        <td className="amount-cell negative">PKR {expense.toLocaleString()}</td>
                         <td className="date-cell">{new Date(expense.date).toLocaleDateString()}</td>
                         <td className="category-cell">
-                          <span className={`category-badge ${expense.category.toLowerCase()}`}>
-                            {expense.category}
+                          <span className={`category-badge ${expense?.category?.toLowerCase()||"-"}`}>
+                            {expense.category||"- "}
                           </span>
                         </td>
                       </tr>
