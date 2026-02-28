@@ -225,8 +225,9 @@ const Expenses = () => {
                 <SelectField name={'type'} id={'type'} value={instantVals.type} onChange={handleFilterChange}>
                   <option value="">All Types</option>
                   <option value="salary">Salary</option>
-                  <option value="normal expense">Normal Expense</option>
                   <option value="asset">Asset</option>
+                  <option value="food">Food</option>
+                  <option value="maintenance">Maintenance</option>
                 </SelectField>
                 <InputField type={'date'} id={'date'} name={'date'} value={instantVals.date} onChange={handleFilterChange}/>
       </FilterSection>

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import './Report.css';
-import { GetService } from '../../Services/Services';
 import { useCustom } from '../../Store/Store';
 import useCustomQuery from '../../components/hooks/useCustomQuery';
 
@@ -14,89 +13,35 @@ const Reports = () => {
     fromDate: '',
     toDate: ''
   });
-  // const [reportData, setReportData] = useState({
-  //   totalStudents: 0,
-  //   totalPayments: 0,
-  //   totalExpenses: 0,
-  //   payments: [],
-  //   expenses: []
-  // });
 const {token}=useCustom();
   const chartRef = useRef(null);
   const pieChartRef = useRef(null);
   const incomeExpenseChart = useRef(null);
   const expensePieChart = useRef(null);
-  const {data:reportData}=useCustomQuery("/api/admin/report",token,"report_dashboard");
-  // const getReports=async()=>{
-  //   try {
-  //     const result = await GetService(,token);
-  //     console.log(result);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  // Sample data
-  // useEffect(() => {
-  //   // getReports();
-  //   const sampleData = {
-  //     totalStudents: 156,
-  //     totalPayments: 450000,
-  //     totalExpenses: 320000,
-  //     payments: [
-  //       { id: 1, student: 'Ali Ahmed (2024-CS-001)', amount: 15000, date: '2024-01-15', method: 'Cash' },
-  //       { id: 2, student: 'Sara Bilal (2024-CE-005)', amount: 12000, date: '2024-01-10', method: 'Online' },
-  //       { id: 3, student: 'Ahmed Raza (2024-EE-012)', amount: 18000, date: '2024-01-08', method: 'Cash' },
-  //       { id: 4, student: 'Fatima Khan (2024-ME-008)', amount: 16000, date: '2024-01-05', method: 'Online' },
-  //       { id: 5, student: 'Usman Ali (2024-CS-015)', amount: 14000, date: '2024-01-03', method: 'Cash' }
-  //     ],
-  //     expenses: [
-  //       { id: 1, description: 'Staff Salaries', amount: 150000, date: '2024-01-15', category: 'Salary' },
-  //       { id: 2, description: 'Electricity Bill', amount: 45000, date: '2024-01-10', category: 'Utility' },
-  //       { id: 3, description: 'Maintenance', amount: 25000, date: '2024-01-08', category: 'Maintenance' },
-  //       { id: 4, description: 'Food Supplies', amount: 80000, date: '2024-01-05', category: 'Food' },
-  //       { id: 5, description: 'Internet Bill', amount: 20000, date: '2024-01-03', category: 'Utility' }
-  //     ]
-  //   };
-  //   setReportData(sampleData);
-  // }, []);
+  const {data:reportData,isFetched}=useCustomQuery("/api/admin/report",token,"report_dashboard");
+  useEffect(()=>{
+    if(reportData && isFetched){
+      if(incomeExpenseChart.current)incomeExpenseChart.current.destroy();
+      if(expensePieChart.current)expensePieChart.current.destroy();
 
-  // Initialize charts when data is loaded
-  useEffect(() => {
-    if (reportData?.sixMonthAgoData) {
-      initializeCharts();
-    }
-
-    return () => {
-      // Cleanup charts on unmount
-      if (incomeExpenseChart.current) {
-        incomeExpenseChart.current.destroy();
-      }
-      if (expensePieChart.current) {
-        expensePieChart.current.destroy();
-      }
-    };
-  }, [reportData]);
-
-  const initializeCharts = () => {
-    // Income vs Expenses Chart
-    const incomeExpenseCtx = chartRef.current?.getContext('2d');
-    if (incomeExpenseCtx && !incomeExpenseChart.current) {
+         const incomeExpenseCtx = chartRef.current?.getContext('2d');
+    if (incomeExpenseCtx && reportData?.charts?.trendChart) {
       incomeExpenseChart.current = new Chart(incomeExpenseCtx, {
         type: 'bar',
         data: {
           
-          labels: reportData?.sixMonthAgoData?.months,
+          labels: reportData.charts.trendChart.map(item=>item?.name),
           datasets: [
             {
               label: 'Income',
-              data: reportData?.sixMonthAgoData?.incomes,
+              data: reportData.charts.trendChart.map(item=>item?.Income),
               backgroundColor: 'rgba(39, 174, 96, 0.8)',
               borderColor: 'rgba(39, 174, 96, 1)',
               borderWidth: 1
             },
             {
               label: 'Expenses',
-              data: reportData?.sixMonthAgoData?.expenses,
+              data: reportData.charts.trendChart.map(item=>item?.Expense),
               backgroundColor: 'rgba(231, 76, 60, 0.8)',
               borderColor: 'rgba(231, 76, 60, 1)',
               borderWidth: 1
@@ -105,7 +50,7 @@ const {token}=useCustom();
         },
         options: {
           responsive: true,
-          plugins: {
+            plugins: {
             legend: {
               position: 'top',
             },
@@ -130,20 +75,14 @@ const {token}=useCustom();
 
     // Expense Pie Chart
     const expensePieCtx = pieChartRef.current?.getContext('2d');
-    if (expensePieCtx && !expensePieChart.current) {
-      const expenseByCategory = reportData?.sixMonthAgoData?.expenses?.reduce((acc, expense) => {
-        // console.log(expense);
-        // acc[expense.category||] = (acc[expense.category||] || 0) + expense;
-        return acc;
-      }, {});
-
+    if (expensePieCtx && reportData?.charts.expensePieChart) {
       expensePieChart.current = new Chart(expensePieCtx, {
         type: 'pie',
         data: {
-          labels: ["Utility","Electricity","Food","Salary","Plumbing","Fuel","Furniture"],
+          labels: reportData.charts.expensePieChart.map(item=>item.category),
           datasets: [
             {
-              data: reportData?.sixMonthAgoData?.expenses,
+              data: reportData.charts.expensePieChart.map(item=>item.amount),
               backgroundColor: [
                 'rgba(52, 152, 219, 0.8)',
                 'rgba(155, 89, 182, 0.8)',
@@ -176,7 +115,12 @@ const {token}=useCustom();
         }
       });
     }
-  };
+    };
+    return ()=>{
+      if(incomeExpenseChart.current)incomeExpenseChart.current.destroy();
+      if(expensePieChart.current)expensePieChart.current.destroy();
+    };
+  },[isFetched,reportData]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -216,7 +160,7 @@ const {token}=useCustom();
     window.print();
   };
 
-  const balance = reportData?.totalPayments - reportData?.totalExpenses;
+  const balance = reportData?.summaryCard?.total_payments_period - reportData?.summaryCard?.total_expenses_period;
 
   return (
     <div className="reports-page">
@@ -324,7 +268,7 @@ const {token}=useCustom();
               </div>
               <div className="stat-content">
                 <h3>Total Students</h3>
-                <div className="stat-value">{reportData?.totalStudents}</div>
+                <div className="stat-value">{reportData?.summaryCard?.total_enrolled_students}</div>
                 <p className="stat-description">Currently enrolled</p>
               </div>
             </div>
@@ -335,7 +279,7 @@ const {token}=useCustom();
               </div>
               <div className="stat-content">
                 <h3>Total Payments</h3>
-                <div className="stat-value">PKR {reportData?.totalPayments.toLocaleString()}</div>
+                <div className="stat-value">PKR {reportData?.summaryCard?.total_payments_period}</div>
                 <p className="stat-description">Total income</p>
               </div>
             </div>
@@ -346,7 +290,7 @@ const {token}=useCustom();
               </div>
               <div className="stat-content">
                 <h3>Total Expenses</h3>
-                <div className="stat-value">PKR {reportData?.totalExpenses.toLocaleString()}</div>
+                <div className="stat-value">PKR {reportData?.summaryCard?.total_expenses_period.toLocaleString()}</div>
                 <p className="stat-description">Total expenditure</p>
               </div>
             </div>
@@ -375,7 +319,7 @@ const {token}=useCustom();
                       <i className="fas fa-arrow-down success-icon"></i>
                       Payments (Income)
                     </td>
-                    <td className="amount positive">PKR {reportData?.totalPayments.toLocaleString()}</td>
+                    <td className="amount positive">PKR {reportData?.summaryCard?.total_payments_period}</td>
                     <td className="percentage">100%</td>
                   </tr>
                   <tr>
@@ -383,9 +327,9 @@ const {token}=useCustom();
                       <i className="fas fa-arrow-up danger-icon"></i>
                       Expenses
                     </td>
-                    <td className="amount negative">PKR {reportData?.totalExpenses.toLocaleString()}</td>
+                    <td className="amount negative">PKR {reportData?.summaryCard?.total_expenses_period}</td>
                     <td className="percentage">
-                      {((reportData?.totalExpenses / reportData?.totalPayments) * 100).toFixed(1)}%
+                      {((reportData?.summaryCard?.total_expenses_period / reportData?.summaryCard?.total_payments_period) * 100).toFixed(1)}%
                     </td>
                   </tr>
                   <tr className="balance-row">
@@ -398,7 +342,7 @@ const {token}=useCustom();
                     </td>
                     <td className="percentage">
                       <strong>
-                        {((balance / reportData?.totalPayments) * 100).toFixed(1)}%
+                        {((balance / reportData?.summaryCard?.total_payments_period) * 100).toFixed(1)}%
                       </strong>
                     </td>
                   </tr>
@@ -439,7 +383,7 @@ const {token}=useCustom();
                   Payments Details
                 </h4>
                 <div className="table-summary">
-                  Total: PKR {reportData?.totalPayments.toLocaleString()}
+                  Total: PKR {reportData?.summaryCard?.total_payments_period}
                 </div>
               </div>
               <div className="table-container">
@@ -453,14 +397,14 @@ const {token}=useCustom();
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData?.payments?.map(payment => (
-                      <tr key={payment.id}>
-                        <td className="student-cell">{payment.student}</td>
-                        <td className="amount-cell positive">PKR {payment.amount.toLocaleString()}</td>
-                        <td className="date-cell">{new Date(payment.date).toLocaleDateString()}</td>
+                    {reportData?.recentActivity?.payments?.map(payment => (
+                      <tr key={payment?._id}>
+                        <td className="student-cell">{payment?.student_roll_no}</td>
+                        <td className="amount-cell positive">PKR {payment?.totalAmount.toLocaleString()}</td>
+                        <td className="date-cell">{new Date(payment?.paymentDate).toLocaleDateString()}</td>
                         <td className="method-cell">
-                          <span className={`method-badge ${payment.method.toLowerCase()}`}>
-                            {payment.method}
+                          <span className={`method-badge ${payment?.paymentMethod.toLowerCase()}`}>
+                            {payment?.paymentMethod}
                           </span>
                         </td>
                       </tr>
@@ -480,7 +424,7 @@ const {token}=useCustom();
                   Expenses Details
                 </h4>
                 <div className="table-summary">
-                  Total: PKR {reportData?.totalExpenses.toLocaleString()}
+                  {/* Total: PKR {reportData?.totalExpenses.toLocaleString()} */}
                 </div>
               </div>
               <div className="table-container">
@@ -494,14 +438,14 @@ const {token}=useCustom();
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData?.expenses?.map(expense => (
+                    {reportData?.recentActivity?.expenses?.map(expense => (
                       <tr key={expense.id}>
                         <td className="description-cell">{expense.description}</td>
-                        <td className="amount-cell negative">PKR {expense.toLocaleString()}</td>
+                        <td className="amount-cell negative">PKR {expense.amount.toLocaleString()}</td>
                         <td className="date-cell">{new Date(expense.date).toLocaleDateString()}</td>
                         <td className="category-cell">
-                          <span className={`category-badge ${expense?.category?.toLowerCase()||"-"}`}>
-                            {expense.category||"- "}
+                          <span className={`category-badge ${expense?.expense_type.toLowerCase() || ""}`}>
+                            {expense.expense_type||"- "}
                           </span>
                         </td>
                       </tr>
