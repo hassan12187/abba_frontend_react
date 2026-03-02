@@ -24,6 +24,9 @@ import Complaints from './pages/Complaints/Complaints';
 import FeeTemplateAdmin from './pages/FeeTemplate/FeeTemplate';
 import FeeInvoiceUI from './pages/FeeInvoice/FeeInvoice';
 import CreateFeeInvoice from './pages/FeeInvoice/createFeeInvoice';
+import { MenuPanel } from './pages/Mess/MessMenu';
+import { AttendancePanel } from './pages/Mess/MessAttendance';
+import { SubscriptionsPanel } from './pages/Mess/MessSubscription';
 
 const App=()=>{
   const router=createBrowserRouter([
@@ -83,6 +86,18 @@ const App=()=>{
        {
         path:"/create/fee-invoice",
         element:<CheckAuth><CreateFeeInvoice /></CheckAuth>
+      },
+       {
+        path:"/mess-menu",
+        element:<CheckAuth><MenuPanel /></CheckAuth>
+      },
+      {
+        path:"/mess-attendance",
+        element:<CheckAuth><AttendancePanel /></CheckAuth>
+      },
+         {
+        path:"/mess-subscription",
+        element:<CheckAuth><SubscriptionsPanel /></CheckAuth>
       }
       ]
     },

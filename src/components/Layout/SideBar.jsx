@@ -16,7 +16,10 @@ const Sidebar = ({ isOpen }) => {
     {path:'/complaints',icon:'fa-solid fa-exclamation-circle',label:'Complaints'},
     {path:'/settings',icon: 'fa-solid fa-gear', label: 'Settings'},
     {path:"/fee-template",icon:'fa-solid fa-gear',label:"Fee Template"},
-    {path:"/fee-invoice",icon:'fa-solid fa-gear' ,label:"Fee Invoice"}
+    {path:"/fee-invoice",icon:'fa-solid fa-gear' ,label:"Fee Invoice"},
+    {path:"/mess-menu",icon:'fa-solid fa-gear' ,label:"Mess Menu"},
+    {path:"/mess-attendance",icon:'fa-solid fa-gear' ,label:"Mess Attendance"},
+    {path:"/mess-subscription",icon:'fa-solid fa-gear' ,label:"Mess Subscription"},
   ];
 
   const isActive = (path) => {
