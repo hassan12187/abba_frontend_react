@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { Coffee, UtensilsCrossed, Moon, Pencil, Clock } from "lucide-react"
 import { weeklyMenu, type DayMenu, type MealType } from "./mock-data"
+import useCustomQuery from "../../components/hooks/useCustomQuery";
+import { useCustom } from "../../Store/Store";
 
 const mealIcons: Record<MealType, typeof Coffee> = {
   Breakfast: Coffee,
@@ -72,19 +74,22 @@ export function MenuPanel() {
     dayIndex: number
     meal: MealType
   }>({ open: false, dayIndex: 0, meal: "Breakfast" })
-
+  const {token}=useCustom();
+console.log(token);
   const currentDay = menu[editState.dayIndex]
   const mealKey = editState.meal.toLowerCase() as "breakfast" | "lunch" | "dinner"
   const currentMealData = currentDay?.[mealKey]
 
+const {data}=useCustomQuery("/api/admin/mess-menu",token,"mess-menu");
+console.log(data);
   const handleSave = (items: string[], time: string) => {
-    setMenu(prev => {
-      const updated = [...prev]
-      const day = { ...updated[editState.dayIndex] }
-      day[mealKey] = { items, time }
-      updated[editState.dayIndex] = day
-      return updated
-    })
+    // setMenu(prev => {
+    //   const updated = [...prev]
+    //   const day = { ...updated[editState.dayIndex] }
+    //   day[mealKey] = { items, time }
+    //   updated[editState.dayIndex] = day
+    //   return updated
+    // });
     setEditState(prev => ({ ...prev, open: false }))
   }
 

@@ -1,0 +1,21 @@
+import { useQuery } from "@tanstack/react-query";
+import { GetService } from "../../Services/Services";
+import { useCustom } from "../../Store/Store";
+
+export const usePaymentQuery=(page:number,token:string,q:string,date:string)=>{
+    return useQuery({
+        queryKey:["page",`${page}`,q,date],
+        queryFn:async()=>await GetService(`/api/admin/payment?page=${page}&limit=10&query=${q}&date=${date}`,token),
+        enabled:!!token,
+        cacheTime: 1000 * 60 * 60,
+        staleTime: 1000 * 60 * 60,     
+    });
+};
+export const useStudentApplication=(page:number)=>{
+    const {token}=useCustom();
+    return useQuery({
+        queryKey:['applications',`${page}`],
+        queryFn:()=>GetService(`/api/admin/student/application?page=${page}&limit=10`,token),
+        enabled:!!token,
+    });
+};

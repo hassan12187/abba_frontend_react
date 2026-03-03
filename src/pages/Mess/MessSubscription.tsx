@@ -16,7 +16,7 @@ const statusConfig: Record<SubscriptionStatus, { color: string; bgColor: string 
 
 export function SubscriptionsPanel() {
   const [subs, setSubs] = useState<Subscription[]>(initialSubscriptions)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState<string>("")
   const [statusFilter, setStatusFilter] = useState<SubscriptionStatus | "All">("All")
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<{

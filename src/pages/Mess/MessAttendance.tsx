@@ -228,9 +228,9 @@ export function AttendancePanel() {
                       value={newEntry.meal}
                       onChange={(e) => setNewEntry(prev => ({ ...prev, meal: e.target.value as MealType }))}
                     >
-                      <SelectField value="Breakfast">Breakfast</SelectField>
+                      {/* <SelectField value="Breakfast">Breakfast</SelectField>
                       <SelectField value="Lunch">Lunch</SelectField>
-                      <SelectField value="Dinner">Dinner</SelectField>
+                      <SelectField value="Dinner">Dinner</SelectField> */}
                     </select>
                   </div>
 
