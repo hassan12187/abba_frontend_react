@@ -1,5 +1,5 @@
 import React, { useState,type ChangeEvent } from 'react';
-import './StudentApplications';
+import './StudentApplications.css';
 import useApplicationQuery from '../../components/hooks/useApplicationQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';

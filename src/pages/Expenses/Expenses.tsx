@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import './Expenses';
+import './Expenses.css';
 import useExpenseQuery from '../../components/hooks/useExpenseQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';

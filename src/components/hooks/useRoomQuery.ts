@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { GetService } from "../../Services/Services";
 
-export const useRoomsQuery=(token,page,query,status)=>{
+export const useRoomsQuery=(token:string,page:number,query:string,status:string)=>{
     return useQuery({
         queryKey:[`rooms`,`${page}`,query,status],
         queryFn:()=>GetService(`/api/admin/room?page=${page}&limit=10&query=${query}&status=${status}`,token),
@@ -10,7 +10,7 @@ export const useRoomsQuery=(token,page,query,status)=>{
         staleTime: 1000 * 60 * 60,
     });
 };
-export const useBlockRoomsQuery=(block,token)=>{
+export const useBlockRoomsQuery=(block:string,token:string)=>{
     return useQuery({
         queryKey:[`block_with_rooms`,block],
         queryFn:async()=>await GetService(`/api/admin/room/block?&block=${block}`,token),

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type BaseSyntheticEvent } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import Axios from '../../Services/Axios';
@@ -15,7 +15,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e:BaseSyntheticEvent) => {
+    console.log(e);
     const { id, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -32,7 +33,7 @@ const Login = () => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors:Partial<{email:string,password:string}> = {};
 
     if (!formData.email.trim()) {
       newErrors.email = 'Username is required';
@@ -47,7 +48,7 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e:BaseSyntheticEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -77,7 +78,7 @@ const Login = () => {
       // } else {
       //   throw new Error('Invalid credentials');
       // }
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
       if(error.status==401){
         setErrors(error.response.data);
@@ -94,15 +95,15 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleDemoLogin = (role) => {
-    const demoCredentials = {
-      admin: { email: 'admin', password: 'password' },
-      manager: { email: 'manager', password: 'manager123' },
-      staff: { email: 'staff', password: 'staff123' }
-    };
+  // const handleDemoLogin = (role) => {
+  //   const demoCredentials:{} = {
+  //     admin: { email: 'admin', password: 'password' },
+  //     manager: { email: 'manager', password: 'manager123' },
+  //     staff: { email: 'staff', password: 'staff123' }
+  //   };
 
-    setFormData(demoCredentials[role]);
-  };
+  //   setFormData(demoCredentials[role]);
+  // };
 
   return (
     <div className="login-page">

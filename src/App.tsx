@@ -12,10 +12,10 @@ import Login from './pages/Login/Login.js';
 import StudentApplications from './pages/StudentApplications/StudentApplications.js';
 import Students from './pages/Students/Students.js';
 // Import FontAwesome CSS
-// import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import Unauthorized from './pages/Unauthorized/Unauthorized.js';
 import CheckAuth from './components/CheckAuth';
-// import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.css';
 import AdmissionForm from './pages/AdmissionForm/AdmissionForm.js';
 // import Settings from './pages/Settings/Settings';
 import Blocks from './pages/Blocks/Blocks.js';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Payments';
+import './Payments.css';
 import { usePaymentQuery } from '../../components/hooks/usePaymentQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
@@ -283,9 +283,9 @@ const Payments = () => {
                       <td>PKR {payment.totalAmount?.toLocaleString()}</td>
                       <td>{getPaymentMethodBadge(payment.paymentMethod)}</td>
                       <td>{new Date(payment.paymentDate).toLocaleDateString()}</td>
-                      <td>
-                        <button onClick={() => printReceipt(payment)}><i className="fas fa-print"></i></button>
-                        <button onClick={() => handleEdit(index)}><i className="fas fa-edit"></i></button>
+                      <td className='d-flex'>
+                        <button className='action btn btn-view' onClick={() => printReceipt(payment)}><i className="fas fa-print"></i></button>
+                        <button className='action btn btn-edit' onClick={() => handleEdit(index)}><i className="fas fa-edit"></i></button>
                       </td>
                     </tr>
                   ))

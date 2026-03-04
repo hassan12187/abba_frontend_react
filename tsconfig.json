@@ -41,5 +41,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "moduleResolution": "bundler"
-  }
+  },
+  "include": ["src","vite-env.d.ts"]
 }

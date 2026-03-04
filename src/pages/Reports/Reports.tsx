@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef,type ChangeEvent } from 'react';
 import { Chart, registerables,type ChartConfiguration } from 'chart.js';
-import 'Report';
+import './Report.css';
 import { useCustom } from '../../Store/Store';
 import useCustomQuery from '../../components/hooks/useCustomQuery';
 

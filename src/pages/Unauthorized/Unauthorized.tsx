@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useRouteError } from 'react-router-dom';
 import './Unauthorized.css';
 
-const Unauthorized = ({title,info}) => {
+const Unauthorized = ({title,info}:{title:string,info:string}) => {
   const error = useRouteError();
   const navigate = useNavigate();
   

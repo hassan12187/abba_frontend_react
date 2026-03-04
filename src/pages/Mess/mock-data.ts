@@ -18,11 +18,12 @@ export interface Subscription {
 
 export interface MenuItem {
   items: string[]
-  time: string
+  startTime: string
+  endTime:string
 }
 
 export interface DayMenu {
-  day: DayOfWeek
+  dayOfWeek: DayOfWeek
   breakfast: MenuItem
   lunch: MenuItem
   dinner: MenuItem
@@ -62,46 +63,46 @@ export const subscriptions: Subscription[] = [
 
 export const weeklyMenu: DayMenu[] = [
   {
-    day: "Monday",
-    breakfast: { items: ["Aloo Paratha", "Curd", "Pickle", "Tea/Coffee"], time: "7:30 AM - 9:30 AM" },
-    lunch: { items: ["Dal Fry", "Rice", "Roti", "Mixed Veg", "Salad"], time: "12:00 PM - 2:00 PM" },
-    dinner: { items: ["Paneer Butter Masala", "Rice", "Roti", "Raita"], time: "7:00 PM - 9:00 PM" },
+    dayOfWeek: "Monday",
+    breakfast: { items: ["Aloo Paratha", "Curd", "Pickle", "Tea/Coffee"], endTime:"0000",startTime: "7:30 AM - 9:30 AM" },
+    lunch: { items: ["Dal Fry", "Rice", "Roti", "Mixed Veg", "Salad"], endTime:"0000",startTime: "12:00 PM - 2:00 PM" },
+    dinner: { items: ["Paneer Butter Masala", "Rice", "Roti", "Raita"], endTime:"0000",startTime: "7:00 PM - 9:00 PM" },
   },
   {
-    day: "Tuesday",
-    breakfast: { items: ["Poha", "Boiled Eggs", "Bread & Butter", "Tea/Coffee"], time: "7:30 AM - 9:30 AM" },
-    lunch: { items: ["Rajma", "Rice", "Roti", "Aloo Gobi", "Salad"], time: "12:00 PM - 2:00 PM" },
-    dinner: { items: ["Chicken Curry", "Rice", "Roti", "Dal"], time: "7:00 PM - 9:00 PM" },
+    dayOfWeek: "Tuesday",
+    breakfast: { items: ["Poha", "Boiled Eggs", "Bread & Butter", "Tea/Coffee"], endTime:"0000",startTime: "7:30 AM - 9:30 AM" },
+    lunch: { items: ["Rajma", "Rice", "Roti", "Aloo Gobi", "Salad"], endTime:"0000",startTime: "12:00 PM - 2:00 PM" },
+    dinner: { items: ["Chicken Curry", "Rice", "Roti", "Dal"], endTime:"0000",startTime: "7:00 PM - 9:00 PM" },
   },
   {
-    day: "Wednesday",
-    breakfast: { items: ["Idli", "Sambar", "Coconut Chutney", "Tea/Coffee"], time: "7:30 AM - 9:30 AM" },
-    lunch: { items: ["Chole", "Bhature", "Rice", "Salad", "Pickle"], time: "12:00 PM - 2:00 PM" },
-    dinner: { items: ["Egg Curry", "Rice", "Roti", "Mixed Veg"], time: "7:00 PM - 9:00 PM" },
+    dayOfWeek: "Wednesday",
+    breakfast: { items: ["Idli", "Sambar", "Coconut Chutney", "Tea/Coffee"], endTime:"0000",startTime: "7:30 AM - 9:30 AM" },
+    lunch: { items: ["Chole", "Bhature", "Rice", "Salad", "Pickle"], endTime:"0000",startTime: "12:00 PM - 2:00 PM" },
+    dinner: { items: ["Egg Curry", "Rice", "Roti", "Mixed Veg"], endTime:"0000",startTime: "7:00 PM - 9:00 PM" },
   },
   {
-    day: "Thursday",
-    breakfast: { items: ["Upma", "Vada", "Chutney", "Tea/Coffee"], time: "7:30 AM - 9:30 AM" },
-    lunch: { items: ["Dal Tadka", "Rice", "Roti", "Bhindi Fry", "Salad"], time: "12:00 PM - 2:00 PM" },
-    dinner: { items: ["Fish Curry", "Rice", "Roti", "Dal Fry"], time: "7:00 PM - 9:00 PM" },
+    dayOfWeek: "Thursday",
+    breakfast: { items: ["Upma", "Vada", "Chutney", "Tea/Coffee"], endTime:"0000",startTime: "7:30 AM - 9:30 AM" },
+    lunch: { items: ["Dal Tadka", "Rice", "Roti", "Bhindi Fry", "Salad"], endTime:"0000",startTime: "12:00 PM - 2:00 PM" },
+    dinner: { items: ["Fish Curry", "Rice", "Roti", "Dal Fry"], endTime:"0000",startTime: "7:00 PM - 9:00 PM" },
   },
   {
-    day: "Friday",
-    breakfast: { items: ["Puri Bhaji", "Sprouts", "Fruit", "Tea/Coffee"], time: "7:30 AM - 9:30 AM" },
-    lunch: { items: ["Kadhi Pakora", "Rice", "Roti", "Aloo Matar", "Salad"], time: "12:00 PM - 2:00 PM" },
-    dinner: { items: ["Biryani", "Raita", "Salad", "Gulab Jamun"], time: "7:00 PM - 9:00 PM" },
+    dayOfWeek: "Friday",
+    breakfast: { items: ["Puri Bhaji", "Sprouts", "Fruit", "Tea/Coffee"], endTime:"0000",startTime: "7:30 AM - 9:30 AM" },
+    lunch: { items: ["Kadhi Pakora", "Rice", "Roti", "Aloo Matar", "Salad"], endTime:"0000",startTime: "12:00 PM - 2:00 PM" },
+    dinner: { items: ["Biryani", "Raita", "Salad", "Gulab Jamun"], endTime:"0000",startTime: "7:00 PM - 9:00 PM" },
   },
   {
-    day: "Saturday",
-    breakfast: { items: ["Dosa", "Sambar", "Chutney", "Tea/Coffee"], time: "7:30 AM - 9:30 AM" },
-    lunch: { items: ["Pav Bhaji", "Rice", "Dal", "Salad"], time: "12:00 PM - 2:00 PM" },
-    dinner: { items: ["Mutton Curry", "Rice", "Roti", "Raita"], time: "7:00 PM - 9:00 PM" },
+    dayOfWeek: "Saturday",
+    breakfast: { items: ["Dosa", "Sambar", "Chutney", "Tea/Coffee"], endTime:"0000",startTime: "7:30 AM - 9:30 AM" },
+    lunch: { items: ["Pav Bhaji", "Rice", "Dal", "Salad"], endTime:"0000",startTime: "12:00 PM - 2:00 PM" },
+    dinner: { items: ["Mutton Curry", "Rice", "Roti", "Raita"], endTime:"0000",startTime: "7:00 PM - 9:00 PM" },
   },
   {
-    day: "Sunday",
-    breakfast: { items: ["Chole Bhature", "Lassi", "Fruit Salad", "Tea/Coffee"], time: "8:00 AM - 10:00 AM" },
-    lunch: { items: ["Special Thali", "Rice", "Roti", "Sweet"], time: "12:30 PM - 2:30 PM" },
-    dinner: { items: ["Butter Chicken", "Naan", "Rice", "Ice Cream"], time: "7:00 PM - 9:30 PM" },
+    dayOfWeek: "Sunday",
+    breakfast: { items: ["Chole Bhature", "Lassi", "Fruit Salad", "Tea/Coffee"], endTime:"0000",startTime: "8:00 AM - 10:00 AM" },
+    lunch: { items: ["Special Thali", "Rice", "Roti", "Sweet"], endTime:"0000",startTime: "12:30 PM - 2:30 PM" },
+    dinner: { items: ["Butter Chicken", "Naan", "Rice", "Ice Cream"], endTime:"0000",startTime: "7:00 PM - 9:30 PM" },
   },
 ]
 

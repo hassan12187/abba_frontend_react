@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Coffee, UtensilsCrossed, Moon, Pencil, Clock } from "lucide-react"
-import { weeklyMenu, type DayMenu, type MealType } from "./mock-data"
+import { weeklyMenu,type DayMenu, type MealType } from "./mock-data"
 import useCustomQuery from "../../components/hooks/useCustomQuery";
 import { useCustom } from "../../Store/Store";
 
@@ -19,10 +19,11 @@ const mealColors: Record<MealType, string> = {
   Dinner: "bg-warning-subtle text-warning",
 }
 
-function MealCard({ meal, items, time, day, onEdit }: {
+function MealCard({ meal, items, startTime,endTime, day, onEdit }: {
   meal: MealType
   items: string[]
-  time: string
+  startTime: string
+  endTime:string
   day: string
   onEdit: () => void
 }) {
@@ -41,7 +42,7 @@ function MealCard({ meal, items, time, day, onEdit }: {
               <h6 className="mb-0 fw-bold">{meal}</h6>
               <div className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '12px' }}>
                 <Clock size={12} />
-                {time}
+                {`${startTime} - ${endTime}`}
               </div>
             </div>
           </div>
@@ -67,7 +68,7 @@ function MealCard({ meal, items, time, day, onEdit }: {
 }
 
 export function MenuPanel() {
-  const [menu, setMenu] = useState<DayMenu[]>(weeklyMenu)
+  const [memoizedData, setMenu] = useState<DayMenu[]>(weeklyMenu)
   const [activeTab, setActiveTab] = useState("Monday")
   const [editState, setEditState] = useState<{
     open: boolean
@@ -75,13 +76,13 @@ export function MenuPanel() {
     meal: MealType
   }>({ open: false, dayIndex: 0, meal: "Breakfast" })
   const {token}=useCustom();
-console.log(token);
-  const currentDay = menu[editState.dayIndex]
+  const currentDay = memoizedData[editState.dayIndex];
   const mealKey = editState.meal.toLowerCase() as "breakfast" | "lunch" | "dinner"
   const currentMealData = currentDay?.[mealKey]
 
-const {data}=useCustomQuery("/api/admin/mess-menu",token,"mess-menu");
-console.log(data);
+// const {data}=useCustomQuery("/api/admin/mess-menu",token,"mess-menu");
+// const memoizedData:{}[]=useMemo(()=>data,[data]);
+// console.log(memoizedData);
   const handleSave = (items: string[], time: string) => {
     // setMenu(prev => {
     //   const updated = [...prev]
@@ -102,13 +103,13 @@ console.log(data);
 
       {/* Bootstrap Nav Tabs */}
       <ul className="nav nav-tabs mb-4 overflow-auto flex-nowrap border-bottom-0">
-        {menu.map((dayMenu, idx) => (
-          <li className="nav-item" key={dayMenu.day}>
+        {memoizedData?.map((dayMenu:Partial<DayMenu>, idx:number) => (
+          <li className="nav-item" key={dayMenu.dayOfWeek}>
             <button
-              className={`nav-link ${activeTab === dayMenu.day ? "active fw-bold" : "text-muted"}`}
-              onClick={() => setActiveTab(dayMenu.day)}
+              className={`nav-link ${activeTab === dayMenu.dayOfWeek ? "active fw-bold" : "text-muted"}`}
+              onClick={() => setActiveTab(dayMenu?.dayOfWeek||"Not Set")}
             >
-              {dayMenu.day}
+              {dayMenu?.dayOfWeek || "Not Set"}
             </button>
           </li>
         ))}
@@ -116,18 +117,20 @@ console.log(data);
 
       {/* Tab Content */}
       <div className="tab-content">
-        {menu.map((dayMenu, dayIndex) => (
-          <div key={dayMenu.day} className={`tab-pane fade ${activeTab === dayMenu.day ? "show active" : ""}`}>
+        {memoizedData?.map((dayMenu, dayIndex:number) => (
+          <div key={dayMenu?.dayOfWeek} className={`tab-pane fade ${activeTab === dayMenu.dayOfWeek ? "show active" : ""}`}>
             <div className="row g-3">
               {(["Breakfast", "Lunch", "Dinner"] as MealType[]).map((meal) => {
-                const key = meal.toLowerCase() as "breakfast" | "lunch" | "dinner"
+                const key = meal.toLowerCase() as "breakfast" | "lunch" | "dinner";
+                console.log(dayMenu[key]);
                 return (
                   <div className="col-12 col-md-4" key={meal}>
                     <MealCard
                       meal={meal}
-                      items={dayMenu[key].items}
-                      time={dayMenu[key].time}
-                      day={dayMenu.day}
+                      items={dayMenu[key]?.items ?? []}
+                      startTime={dayMenu[key]?.startTime ?? "Not Set"}
+                      endTime={dayMenu[key]?.endTime??"Not Set"}
+                      day={dayMenu?.dayOfWeek ??"Not Set"}
                       onEdit={() => setEditState({ open: true, dayIndex, meal })}
                     />
                   </div>
@@ -155,12 +158,12 @@ console.log(data);
                 </tr>
               </thead>
               <tbody>
-                {menu.map((dayMenu) => (
-                  <tr key={dayMenu.day}>
-                    <td className="ps-4 fw-bold">{dayMenu.day}</td>
-                    <td className="text-muted small">{dayMenu.breakfast.items.slice(0, 2).join(", ")}</td>
-                    <td className="text-muted small">{dayMenu.lunch.items.slice(0, 2).join(", ")}</td>
-                    <td className="text-muted small">{dayMenu.dinner.items.slice(0, 2).join(", ")}</td>
+                {memoizedData?.map((dayMenu) => (
+                  <tr key={dayMenu?.dayOfWeek||"Not Set"}>
+                    <td className="ps-4 fw-bold">{dayMenu?.dayOfWeek}</td>
+                    <td className="text-muted small">{dayMenu.breakfast?.items.slice(0, 2).join(", ")}</td>
+                    <td className="text-muted small">{dayMenu.lunch?.items.slice(0, 2).join(", ")}</td>
+                    <td className="text-muted small">{dayMenu.dinner?.items.slice(0, 2).join(", ")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -175,7 +178,7 @@ console.log(data);
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Edit {editState.meal} - {currentDay.day}</h5>
+                <h5 className="modal-title">Edit {editState.meal} - {currentDay?.dayOfWeek}</h5>
                 <button type="button" className="btn-close" onClick={() => setEditState(p => ({ ...p, open: false }))}></button>
               </div>
               <div className="modal-body">
@@ -194,7 +197,7 @@ console.log(data);
                   <input 
                     type="text" 
                     className="form-control" 
-                    defaultValue={currentMealData.time}
+                    defaultValue={currentMealData?.startTime}
                     id="edit-time-input"
                   />
                 </div>

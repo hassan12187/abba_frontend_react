@@ -1,4 +1,4 @@
-import { useState} from "react";
+import { useState, type ReactNode} from "react";
 import { createContext } from "react";
 import { useContext } from "react";
 
@@ -8,7 +8,10 @@ interface typeInterface{
 token:string,
 setToken:React.SetStateAction<T>
 };
-export const Store=({children}:any):JSX.Element=>{
+interface StoreChildren{
+    children:ReactNode
+};
+export const Store=({children}:StoreChildren):React.ReactNode=>{
     const [token,setToken]=useState<string>("");
     const [toggleDarkMode,setToggleDarkMode]=useState<boolean>(false);
 

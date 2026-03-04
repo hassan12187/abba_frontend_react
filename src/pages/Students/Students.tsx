@@ -1,6 +1,6 @@
 import React, { useState, type ChangeEvent } from 'react';
 import { useDebounce } from '../../components/hooks/useDebounce';
-import './Students';
+import './Students.css';
 import useStudentQuery from '../../components/hooks/useStudentQuery';
 import { useCustom } from '../../Store/Store';
 import Pagination from '../../components/Layout/Pagination';
@@ -166,12 +166,12 @@ const Students: React.FC = () => {
                   <td>{student.student_name}</td>
                   <td>{getRoomBadge(student.room_id?.room_no, student.room_id?._id)}</td>
                   <td>{getStatusBadge(student.status)}</td>
-                  <td className="actions-cell">
-                     <button className="btn-view" onClick={() => handleViewDetails(student._id)}>
+                  <td className="actions-cell" style={{display:"flex"}}>
+                     <button className="action btn btn-sm btn-view" onClick={() => handleViewDetails(student._id)}>
                         <i className="fas fa-eye"></i>
                      </button>
                      {student.room_id && (
-                        <button className="btn-delete" onClick={() => removeRoom(student._id)}>
+                        <button className="action btn btn-sm btn-delete" onClick={() => removeRoom(student._id)}>
                            <i className="fa-solid fa-rotate-left"></i>
                         </button>
                      )}

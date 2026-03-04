@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query"
 import { GetService } from "../../Services/Services"
 
-const useCustomQuery=(route:string,token:string,...key:any):any=>{
+const useCustomQuery=(route:string,token:string,...key:any[]):any=>{
     return useQuery({
         queryKey:[key],
         queryFn:async()=>await GetService(route,token),

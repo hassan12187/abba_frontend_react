@@ -1,7 +1,7 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState,type ChangeEvent,type FormEvent } from 'react';
 import './AdmissionForm.css';
 import Axios from '../../Services/Axios';
-import { useSnackbar, VariantType } from 'notistack';
+import { useSnackbar } from 'notistack';
 
 // --- Interfaces ---
 interface AdmissionFormData {
