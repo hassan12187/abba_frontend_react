@@ -4,6 +4,8 @@ import { useState, useMemo } from "react"
 import { Coffee, UtensilsCrossed, Moon, Plus, Search, UserCheck, Clock, X } from "lucide-react"
 import { todayAttendance, stats, type MealType, type AttendanceRecord } from "./mock-data"
 import SelectField from "../../components/reusable/SelectField"
+import useCustomQuery from "../../components/hooks/useCustomQuery"
+import { useCustom } from "../../Store/Store"
 
 const mealConfig: Record<MealType, { icon: typeof Coffee; color: string; bgColor: string; count: number }> = {
   Breakfast: { icon: Coffee, color: "text-success", bgColor: "bg-success-subtle", count: stats.todayBreakfast },
@@ -18,6 +20,8 @@ export function AttendancePanel() {
   const [records, setRecords] = useState<AttendanceRecord[]>(todayAttendance)
   const [manualDialogOpen, setManualDialogOpen] = useState(false)
   const [newEntry, setNewEntry] = useState({ studentName: "", studentId: "", meal: "Lunch" as MealType, room: "" })
+  const {token}=useCustom();
+  const {data}=useCustomQuery("/api/admin/mess/attendance",token,"mess-attendace");
 
   const filteredRecords = useMemo(() => {
     return records.filter((record) => {
