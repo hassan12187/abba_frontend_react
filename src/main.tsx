@@ -1,10 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.js';
-import './index.css';
+import './theme.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Store } from './Store/Store.js';
 import { SnackbarProvider } from 'notistack';
+import { ThemeProvider } from './Store/ThemeContext.js';
 
 const queryClient=new QueryClient();
 const rootElement = document.getElementById("root");
@@ -16,7 +17,9 @@ createRoot(rootElement).render(
     <Store>
     <QueryClientProvider client={queryClient}>
       <SnackbarProvider>
+        <ThemeProvider>
     <App />
+        </ThemeProvider>
       </SnackbarProvider>
     </QueryClientProvider>
     </Store>

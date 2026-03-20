@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import useNotificationQuery from '../hooks/useNotificationQuery';
 import { useMutation } from '@tanstack/react-query';
 import { PatchService } from '../../Services/Services';
+import { ThemeToggle } from '../reusable/ThemeToggle';
 
 // --- Interfaces ---
 
@@ -142,6 +143,9 @@ const Header = memo<HeaderProps>(({ onToggleSidebar }) => {
                   <button className="dropdown-item" type="button" onClick={handleLogOut}>
                     Logout
                   </button>
+                </li>
+                <li>
+                  <ThemeToggle/>
                 </li>
               </ul>
             </div>

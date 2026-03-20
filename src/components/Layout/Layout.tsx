@@ -23,7 +23,6 @@ const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   
   // Accessing the store with type safety
-  const { toggleDarkMode } = useCustom() as CustomStore;
 
   const toggleSidebar = (): void => {
     // Logic for sidebar state toggle
@@ -33,16 +32,15 @@ const Layout: React.FC = () => {
   return (
     <div 
       className={`layout-wrapper ${sidebarOpen ? '' : 'sidebar-collapsed'}`} 
-      style={toggleDarkMode ? darkModeStyle : undefined}
     >
       {/* Passing the state as a prop to Sidebar */}
       <Sidebar isOpen={sidebarOpen} />
       
-      <div className="main-content-wrapper">
+      <div className="main-content-wrapper" >
         {/* Passing the toggle function as a prop to Header */}
         <Header onToggleSidebar={toggleSidebar} />
         
-        <main className="main-content">
+        <main className="main-content page-wrapper">
           <Outlet />
         </main>
         
