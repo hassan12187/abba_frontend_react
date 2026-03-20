@@ -8,16 +8,16 @@ import { useCustom } from '../../Store/Store';
 
 // --- Interfaces ---
 
-interface CustomStore {
-  toggleDarkMode?: boolean;
-  // Add other store properties here as needed
-}
+// interface CustomStore {
+//   toggleDarkMode?: boolean;
+//   // Add other store properties here as needed
+// }
 
-// Defining the dark mode styles using React's CSSProperties type
-const darkModeStyle: CSSProperties = {
-  backgroundColor: "black",
-  color: "#fff"
-};
+// // Defining the dark mode styles using React's CSSProperties type
+// const darkModeStyle: CSSProperties = {
+//   backgroundColor: "black",
+//   color: "#fff"
+// };
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);

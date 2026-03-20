@@ -119,7 +119,7 @@ function PaymentModal({ invoice, onClose, onConfirm, isLoading, serverError }: P
               <input type="number" className="form-control" value={amount} min={0.01}
                 max={invoice.balanceDue} step={0.01} autoFocus
                 onChange={(e) => setAmount(e.target.value)} disabled={isLoading} />
-              <div className="form-text">Balance due: <strong>₹{invoice.balanceDue.toLocaleString("en-IN")}</strong></div>
+              <div className="form-text">Balance due: <strong>₹{invoice?.balanceDue?.toLocaleString("en-IN")}</strong></div>
             </div>
             <div className="mb-3">
               <label className="form-label small fw-semibold">Payment Method</label>
@@ -197,11 +197,11 @@ function InvoiceDetailView({
                   <p className="mb-1"><span className="fw-bold">Room:</span> {invoice.room_no ?? "No Room"}</p>
                   <p className="mb-1"><span className="fw-bold">Billing Month:</span> {invoice.billingMonth}</p>
                   <p className="mb-0"><span className="fw-bold">Due Date:</span>{" "}
-                    {new Date(invoice.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(invoice?.dueDate)?.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                 </div>
               </div>
-              <StatusBadge status={invoice.status} />
+              <StatusBadge status={invoice?.status} />
             </div>
           </div>
 
@@ -239,7 +239,7 @@ function InvoiceDetailView({
                 <div className={`rounded p-3 h-100 ${invoice.balanceDue > 0 ? "bg-danger bg-opacity-10" : "bg-success bg-opacity-10"}`}>
                   <p className="small text-muted mb-1">Balance Due</p>
                   <p className={`h5 fw-bold mb-0 ${invoice.balanceDue > 0 ? "text-danger" : "text-success"}`}>
-                    ₹{invoice.balanceDue.toLocaleString("en-IN")}
+                    ₹{invoice?.balanceDue?.toLocaleString("en-IN")}
                   </p>
                 </div>
               </div>

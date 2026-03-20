@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCustom }              from "../../Store/Store"
 import { useState, useCallback }  from "react"
-import { StudentApplicationAPI, ApplicationFilters, Application } from "../StudentApplications/studentapplication.api"
-// import { RoomAPI }   from "./room.api"
+import { ApplicationFilters, Application } from "../StudentApplications/studentapplication.api"
+import {StudentsAPI,BlocksAPI,RoomsAPI} from "./student.api";
+import { RoomAPI }   from "./room.api"
 import { applicationKeys }        from "../StudentApplications/studentapplication.queries";
 
 // ─── Room query keys ──────────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ export function useAssignRoom(token: string) {
 
   return useMutation({
     mutationFn: ({ studentId, roomId }: { studentId: string; roomId: string | null }) =>
-      StudentApplicationAPI.assignRoom(studentId, roomId, token),
+      StudentsAPI.assignRoom(studentId, roomId, token),
 
     onSuccess: (_data, { studentId }) => {
       // Invalidate list + the specific student detail
@@ -67,7 +68,7 @@ export function useStudents() {
 
   const listQuery = useQuery({
     queryKey:        applicationKeys.list(filters),
-    queryFn:         () => StudentApplicationAPI.getAll(filters, token),
+    queryFn:         () => StudentsAPI.getAll(filters, token),
     staleTime:       60_000,
     enabled:         !!token,
     placeholderData: (prev) => prev,
@@ -78,7 +79,7 @@ export function useStudents() {
 
   const detailQuery = useQuery({
     queryKey:  applicationKeys.detail(selectedId!),
-    queryFn:   () => StudentApplicationAPI.getById(selectedId!, token).then((r) => r.data),
+    queryFn:   () => StudentsAPI.getById(selectedId!, token).then((r) => r.data),
     staleTime: 30_000,
     enabled:   !!token && !!selectedId,
   })

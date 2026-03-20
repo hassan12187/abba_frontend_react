@@ -1,189 +1,166 @@
-// ─── Base config ─────────────────────────────────────────────────────────────
+// const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
 const BASE_URL = "http://localhost:8000/api/admin"
 const ENDPOINT = `${BASE_URL}/subscriptions`
 
-// ─── Types (mirrors your backend DTOs) ───────────────────────────────────────
-export type PlanType = "Monthly" | "Semester" | "Pay_Per_Meal"
-export type SubscriptionStatus = "Active" | "Cancelled" | "Suspended"
+// ─── Types ────────────────────────────────────────────────────────────────────
+export type PlanType           = "Monthly" | "Semester" | "Pay_Per_Meal"
+export type SubscriptionStatus = "Active"  | "Cancelled" | "Suspended"
 
 export interface Subscription {
-  _id: string
+  _id:        string
   student: {
-    _id: string
-    name: string
-    email: string
-    rollNo: string
+    _id:    string
+    student_name:   string
+    student_email:  string
+    student_roll_no: string
   }
-  planType: PlanType
-  status: SubscriptionStatus
+  planType:   PlanType
+  status:     SubscriptionStatus
   monthlyFee: number
   validUntil?: string
-  createdAt: string
-  updatedAt: string
+  createdAt:  string
+  updatedAt:  string
 }
 
 export interface SubscriptionStats {
   byStatus: Record<SubscriptionStatus, number>
-  byPlan: Record<PlanType, number>
+  byPlan:   Record<PlanType, number>
   revenue: {
     totalMonthlyRevenue: number
-    avgMonthlyFee: number
-    activeCount: number
+    avgMonthlyFee:       number
+    activeCount:         number
   }
 }
 
 export interface PaginatedResponse<T> {
-  data: T[]
-  total: number
-  page: number
-  limit: number
+  data:       T[]
+  total:      number
+  page:       number
+  limit:      number
   totalPages: number
 }
 
 export interface ApiResponse<T> {
-  success: boolean
+  success:  boolean
   message?: string
-  data: T
+  data:     T
 }
 
 export interface SubscriptionFilters {
-  status?: SubscriptionStatus | "All"
+  status?:   SubscriptionStatus | "All"
   planType?: PlanType
-  page?: number
-  limit?: number
+  page?:     number
+  limit?:    number
 }
 
 export interface CreateSubscriptionPayload {
-  student: string
-  planType?: PlanType
+  student:    string        // ObjectId — field name is "student" not "student_id"
+  planType?:  PlanType
   monthlyFee: number
-  validUntil?: string
+  validUntil?: string      // ISO 8601 datetime — required for Monthly/Semester, omit for Pay_Per_Meal
 }
 
 export interface UpdateStatusPayload {
-  status: SubscriptionStatus
+  status:  SubscriptionStatus
   reason?: string
 }
 
-// ─── Request helper ───────────────────────────────────────────────────────────
+// ─── Request helper — NOW passes token on every call ─────────────────────────
 async function request<T>(
-  url: string,
+  url:     string,
+  token:   string,
   options?: RequestInit
 ): Promise<T> {
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type":  "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
     ...options,
   })
 
   const json = await res.json()
-
-  if (!res.ok) {
-    // Surface the server's error message to the caller
-    throw new Error(json.message ?? `Request failed with status ${res.status}`)
-  }
-
+  if (!res.ok) throw new Error(json.message ?? `Request failed: ${res.status}`)
   return json as T
 }
 
-// ─── API methods ──────────────────────────────────────────────────────────────
-
+// ─── API ──────────────────────────────────────────────────────────────────────
 export const MessSubscriptionAPI = {
-  /**
-   * GET /subscriptions
-   * Paginated list with optional status / planType filters.
-   */
-  async getAll(
-    filters: SubscriptionFilters = {}
+
+  /** GET /subscriptions — paginated list */
+  getAll(
+    filters: SubscriptionFilters = {},
+    token:   string
   ): Promise<PaginatedResponse<Subscription> & { success: boolean }> {
-    const params = new URLSearchParams()
-    if (filters.status && filters.status !== "All") params.set("status", filters.status)
-    if (filters.planType) params.set("planType", filters.planType)
-    if (filters.page) params.set("page", String(filters.page))
-    if (filters.limit) params.set("limit", String(filters.limit))
+    const p = new URLSearchParams()
+    if (filters.status && filters.status !== "All") p.set("status",   filters.status)
+    if (filters.planType)                            p.set("planType", filters.planType)
+    if (filters.page)                                p.set("page",     String(filters.page))
+    if (filters.limit)                               p.set("limit",    String(filters.limit))
+    const qs = p.toString()
+    return request(`${ENDPOINT}${qs ? `?${qs}` : ""}`, token)
+  },
 
-    const qs = params.toString()
-    return request(`${ENDPOINT}${qs ? `?${qs}` : ""}`)
+  /** GET /subscriptions/stats */
+  getStats(token: string): Promise<ApiResponse<SubscriptionStats>> {
+    return request(`${ENDPOINT}/stats`, token)
+  },
+
+  /** GET /subscriptions/student/:studentId — check if student already has one */
+  getByStudentId(studentId: string, token: string): Promise<ApiResponse<Subscription | null>> {
+    return request(`${ENDPOINT}/student/${studentId}`, token)
   },
 
   /**
-   * GET /subscriptions/stats
+   * POST /subscriptions — create a new mess subscription.
+   *
+   * Payload notes:
+   *  - `student`    → ObjectId string (field name, not student_id)
+   *  - `monthlyFee` → positive number, rounded to 2dp (backend validates with .transform)
+   *  - `validUntil` → required for Monthly/Semester, omit for Pay_Per_Meal
+   *  - `planType`   → optional, defaults to "Monthly" server-side
    */
-  async getStats(): Promise<ApiResponse<SubscriptionStats>> {
-    return request(`${ENDPOINT}/stats`)
-  },
-
-  /**
-   * GET /subscriptions/expiring-soon?withinDays=7
-   */
-  async getExpiringSoon(withinDays = 7): Promise<ApiResponse<Subscription[]>> {
-    return request(`${ENDPOINT}/expiring-soon?withinDays=${withinDays}`)
-  },
-
-  /**
-   * GET /subscriptions/:id
-   */
-  async getById(id: string): Promise<ApiResponse<Subscription>> {
-    return request(`${ENDPOINT}/${id}`)
-  },
-
-  /**
-   * GET /subscriptions/student/:studentId
-   */
-  async getByStudentId(studentId: string): Promise<ApiResponse<Subscription>> {
-    return request(`${ENDPOINT}/student/${studentId}`)
-  },
-
-  /**
-   * POST /subscriptions
-   */
-  async create(payload: CreateSubscriptionPayload): Promise<ApiResponse<Subscription>> {
-    return request(`${ENDPOINT}`, {
+  create(
+    payload: CreateSubscriptionPayload,
+    token:   string
+  ): Promise<ApiResponse<Subscription>> {
+    // Round fee before sending to avoid multipleOf(0.01) validation issues
+    const safePayload = {
+      ...payload,
+      monthlyFee: Math.round(payload.monthlyFee * 100) / 100,
+    }
+    return request(`${ENDPOINT}`, token, {
       method: "POST",
-      body: JSON.stringify(payload),
+      body:   JSON.stringify(safePayload),
     })
   },
 
-  /**
-   * PATCH /subscriptions/:id/status
-   * Controlled status transition — suspend, cancel, or reactivate.
-   */
-  async updateStatus(
-    id: string,
-    payload: UpdateStatusPayload
+  /** PATCH /subscriptions/:id/status */
+  updateStatus(
+    id:      string,
+    payload: UpdateStatusPayload,
+    token:   string
   ): Promise<ApiResponse<Subscription>> {
-    return request(`${ENDPOINT}/${id}/status`, {
+    return request(`${ENDPOINT}/${id}/status`, token, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body:   JSON.stringify(payload),
     })
   },
 
-  /**
-   * PATCH /subscriptions/:id
-   * Update plan type, monthly fee, or validUntil.
-   */
-  async update(
-    id: string,
-    payload: Partial<Pick<Subscription, "planType" | "monthlyFee" | "validUntil">>
+  /** PATCH /subscriptions/:id */
+  update(
+    id:      string,
+    payload: Partial<Pick<Subscription, "planType" | "monthlyFee" | "validUntil">>,
+    token:   string
   ): Promise<ApiResponse<Subscription>> {
-    return request(`${ENDPOINT}/${id}`, {
+    return request(`${ENDPOINT}/${id}`, token, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body:   JSON.stringify(payload),
     })
   },
 
-  /**
-   * DELETE /subscriptions/:id
-   * Only succeeds for Cancelled subscriptions.
-   */
-  async delete(id: string): Promise<ApiResponse<null>> {
-    return request(`${ENDPOINT}/${id}`, { method: "DELETE" })
-  },
-
-  /**
-   * POST /subscriptions/suspend-expired
-   * Bulk-suspend all expired active subscriptions (cron / manual trigger).
-   */
-  async suspendExpired(): Promise<ApiResponse<{ modifiedCount: number }>> {
-    return request(`${ENDPOINT}/suspend-expired`, { method: "POST" })
+  /** DELETE /subscriptions/:id — only for Cancelled subscriptions */
+  delete(id: string, token: string): Promise<ApiResponse<null>> {
+    return request(`${ENDPOINT}/${id}`, token, { method: "DELETE" })
   },
 }

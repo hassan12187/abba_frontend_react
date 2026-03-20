@@ -1,300 +1,591 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import {
-  Search, MoreHorizontal, Ban, RefreshCw, Mail,
+  Search, Ban, RefreshCw, Mail,
   IndianRupee, AlertTriangle, CheckCircle2, Loader2,
+  TrendingUp, ChevronDown, X, Users,
 } from "lucide-react"
 import { useMessSubscriptions } from "./MessSubscription.queries"
 import type { Subscription, SubscriptionStatus } from "./messSubscription.api"
 
-const statusConfig: Record<SubscriptionStatus, { color: string; bgColor: string }> = {
-  Active:    { color: "text-success", bgColor: "bg-success-subtle" },
-  Cancelled: { color: "text-danger",  bgColor: "bg-danger-subtle"  },
-  Suspended: { color: "text-warning", bgColor: "bg-warning-subtle" },
+// ─── Status config — semantic colors via CSS vars ─────────────────────────────
+const STATUS_CFG: Record<SubscriptionStatus, {
+  label: string; color: string; bg: string; dot: string; border: string
+}> = {
+  Active:    { label: "Active",    color: "var(--green)",  bg: "rgba(16,185,129,.10)", dot: "var(--green)",  border: "rgba(16,185,129,.25)" },
+  Suspended: { label: "Suspended", color: "var(--amber)",  bg: "rgba(245,158,11,.10)", dot: "var(--amber)",  border: "rgba(245,158,11,.25)" },
+  Cancelled: { label: "Cancelled", color: "var(--red)",    bg: "rgba(239,68,68,.10)",  dot: "var(--red)",    border: "rgba(239,68,68,.25)"  },
 }
 
-const actionLabels = {
-  suspend: { title: "Suspend Subscription", description: "This will suspend meal access for this student.",                                                        button: "Suspend",             variant: "btn-warning", newStatus: "Suspended" as SubscriptionStatus },
-  renew:   { title: "Renew Subscription",   description: "This will reactivate meal access for this student.",                                                     button: "Renew",               variant: "btn-primary", newStatus: "Active"    as SubscriptionStatus },
-  cancel:  { title: "Cancel Subscription",  description: "This will permanently cancel this subscription. The student will lose all meal access.", button: "Cancel Subscription", variant: "btn-danger",  newStatus: "Cancelled" as SubscriptionStatus },
+const ACTION_CFG = {
+  suspend: {
+    title:   "Suspend Subscription",
+    desc:    "Meal access will be paused immediately. The student can be reinstated at any time.",
+    button:  "Suspend Access",
+    color:   "var(--amber)",
+    bg:      "rgba(245,158,11,.12)",
+    newStatus: "Suspended" as SubscriptionStatus,
+  },
+  renew: {
+    title:   "Reactivate Subscription",
+    desc:    "Meal access will be restored and the subscription set back to Active.",
+    button:  "Reactivate",
+    color:   "var(--green)",
+    bg:      "rgba(16,185,129,.12)",
+    newStatus: "Active" as SubscriptionStatus,
+  },
+  cancel: {
+    title:   "Cancel Subscription",
+    desc:    "This is permanent. The student will lose all meal access and cannot be reinstated.",
+    button:  "Cancel Permanently",
+    color:   "var(--red)",
+    bg:      "rgba(239,68,68,.12)",
+    newStatus: "Cancelled" as SubscriptionStatus,
+  },
 }
 
-type ActionKey = keyof typeof actionLabels
+type ActionKey = keyof typeof ACTION_CFG
 
-export function SubscriptionsPanel() {
-  const {
-    subscriptions,
-    stats,
-    totalRecords,
-    isLoading,
-    isStatsLoading,
-    error,
-    mutationError,       // ← new: server rejection from React Query
-    actionLoading,
-    filters,
-    setFilters,
-    updateStatus,
-  } = useMessSubscriptions()
+// ─── Tiny reusable primitives ─────────────────────────────────────────────────
 
-  const [searchQuery,    setSearchQuery]    = useState("")
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
-  const [confirmDialog,  setConfirmDialog]  = useState<{
-    open: boolean; action: ActionKey; subscription: Subscription | null
-  }>({ open: false, action: "suspend", subscription: null })
-
-  const filteredSubs = useMemo(() => {
-    if (!searchQuery) return subscriptions
-    const q = searchQuery.toLowerCase()
-    return subscriptions.filter(
-      (sub) =>
-        sub.student.name.toLowerCase().includes(q)   ||
-        sub.student.rollNo.toLowerCase().includes(q) ||
-        sub.student.email.toLowerCase().includes(q)
-    )
-  }, [subscriptions, searchQuery])
-
-  const activeCount    = stats?.byStatus?.Active    ?? 0
-  const suspendedCount = stats?.byStatus?.Suspended ?? 0
-  const revenue        = stats?.revenue?.totalMonthlyRevenue ?? 0
-
-  const handleConfirmAction = async () => {
-    if (!confirmDialog.subscription) return
-    try {
-      await updateStatus(confirmDialog.subscription._id, {
-        status: actionLabels[confirmDialog.action].newStatus,
-      })
-      setConfirmDialog({ open: false, action: "suspend", subscription: null })
-    } catch {
-      // mutationError from the hook surfaces the message automatically
-    }
-  }
-
-  const openDialog = (action: ActionKey, sub: Subscription) => {
-    setOpenDropdownId(null)
-    setConfirmDialog({ open: true, action, subscription: sub })
-  }
-
+function StatusPill({ status }: { status: SubscriptionStatus }) {
+  const c = STATUS_CFG[status]
   return (
-    <div className="container-fluid p-0 d-flex flex-column gap-4">
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      padding: "3px 10px", borderRadius: 20,
+      fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+      color: c.color, background: c.bg, border: `1px solid ${c.border}`,
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: c.dot, flexShrink: 0 }} />
+      {c.label}
+    </span>
+  )
+}
 
-      <div>
-        <h2 className="h4 fw-bold mb-1">Subscriptions</h2>
-        <p className="text-muted small">Manage student mess subscriptions and billing</p>
-      </div>
-
-      {/* Fetch error */}
-      {error && (
-        <div className="alert alert-danger d-flex align-items-center gap-2 py-2 small" role="alert">
-          <AlertTriangle size={16} />{error}
-        </div>
-      )}
-
-      {/* Stats */}
-      <div className="row g-3">
-        <StatCard icon={<CheckCircle2 size={20} />} iconClass="bg-success-subtle text-success" label="Active"          value={isStatsLoading ? "—" : activeCount} />
-        <StatCard icon={<AlertTriangle size={20} />} iconClass="bg-warning-subtle text-warning" label="Suspended"       value={isStatsLoading ? "—" : suspendedCount} />
-        <StatCard icon={<IndianRupee  size={20} />} iconClass="bg-primary-subtle text-primary" label="Monthly Revenue" value={isStatsLoading ? "—" : `₹${revenue.toLocaleString("en-IN")}`} />
-      </div>
-
-      {/* Table */}
-      <div className="card border shadow-sm mt-2">
-        <div className="card-header bg-white border-bottom-0 pt-4 px-4">
-          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-            <div>
-              <h5 className="mb-0 fw-bold">All Subscriptions</h5>
-              <p className="text-muted small mb-0">
-                {isLoading ? "Loading…" : `${filteredSubs.length} of ${totalRecords} records`}
-              </p>
-            </div>
-            <div className="d-flex flex-column flex-sm-row gap-2">
-              <div className="position-relative">
-                <Search className="position-absolute text-muted" size={16} style={{ left:"12px", top:"50%", transform:"translateY(-50%)" }} />
-                <input className="form-control ps-5" placeholder="Search students…" value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)} style={{ minWidth:"250px" }} />
-              </div>
-              <div className="btn-group shadow-sm">
-                {(["All","Active","Suspended","Cancelled"] as const).map((s) => (
-                  <button key={s}
-                    className={`btn btn-sm ${filters.status === s ? "btn-dark" : "btn-outline-secondary"}`}
-                    onClick={() => setFilters({ status: s })}
-                  >{s}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card-body p-0 mt-3">
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th className="ps-4 small text-uppercase text-muted fw-bold">Student</th>
-                  <th className="small text-uppercase text-muted fw-bold">Plan</th>
-                  <th className="small text-uppercase text-muted fw-bold">Status</th>
-                  <th className="small text-uppercase text-muted fw-bold">Fee</th>
-                  <th className="small text-uppercase text-muted fw-bold">Valid Until</th>
-                  <th className="pe-4 text-end"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i}>
-                      {Array.from({ length: 6 }).map((_, j) => (
-                        <td key={j} className={j === 0 ? "ps-4" : ""}>
-                          <div className="rounded" style={{ height:14, width: j===0?140:80, background:"var(--bs-border-color)", opacity:.5, animation:"pulse 1.4s ease-in-out infinite" }} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : filteredSubs.length === 0 ? (
-                  <tr><td colSpan={6} className="py-5 text-center text-muted">No subscriptions found</td></tr>
-                ) : (
-                  filteredSubs.map((sub) => {
-                    const cfg        = statusConfig[sub.status]
-                    const isMutating = actionLoading === sub._id
-                    return (
-                      <tr key={sub._id} style={{ opacity: isMutating ? 0.5 : 1, transition:"opacity .2s" }}>
-                        <td className="ps-4">
-                          <div className="fw-bold">{sub.student.name}</div>
-                          <div className="text-muted small font-monospace">{sub.student.rollNo}</div>
-                          <div className="text-muted small">{sub.student.email}</div>
-                        </td>
-                        <td>
-                          <span className="badge bg-light text-dark border fw-normal">
-                            {sub.planType === "Pay_Per_Meal" ? "Pay Per Meal" : sub.planType}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`badge border-0 ${cfg.bgColor} ${cfg.color} fw-normal`}>{sub.status}</span>
-                        </td>
-                        <td>
-                          {sub.monthlyFee > 0
-                            ? `₹${sub.monthlyFee.toLocaleString("en-IN")}`
-                            : <span className="text-muted small">Per meal</span>}
-                        </td>
-                        <td className="text-muted small">
-                          {sub.validUntil
-                            ? new Date(sub.validUntil).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" })
-                            : "—"}
-                        </td>
-                        <td className="pe-4 text-end position-relative">
-                          {isMutating ? (
-                            <Loader2 size={18} className="text-muted" style={{ animation:"spin .8s linear infinite" }} />
-                          ) : (
-                            <button className="btn btn-link text-dark p-1"
-                              onClick={() => setOpenDropdownId(openDropdownId === sub._id ? null : sub._id)}>
-                              <MoreHorizontal size={18} />
-                            </button>
-                          )}
-                          {openDropdownId === sub._id && (
-                            <div className="dropdown-menu show shadow border-0"
-                              style={{ position:"absolute", right:"1.5rem", top:"2.5rem", zIndex:1000 }}>
-                              <button className="dropdown-item d-flex align-items-center gap-2 small py-2">
-                                <Mail size={14} /> Send Email
-                              </button>
-                              <div className="dropdown-divider" />
-                              {sub.status === "Active" && (
-                                <button className="dropdown-item d-flex align-items-center gap-2 small py-2"
-                                  onClick={() => openDialog("suspend", sub)}>
-                                  <Ban size={14} /> Suspend
-                                </button>
-                              )}
-                              {(sub.status === "Suspended" || sub.status === "Cancelled") && (
-                                <button className="dropdown-item d-flex align-items-center gap-2 small py-2"
-                                  onClick={() => openDialog("renew", sub)}>
-                                  <RefreshCw size={14} /> Renew
-                                </button>
-                              )}
-                              {sub.status !== "Cancelled" && (
-                                <button className="dropdown-item d-flex align-items-center gap-2 small py-2 text-danger"
-                                  onClick={() => openDialog("cancel", sub)}>
-                                  <Ban size={14} /> Cancel Subscription
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Confirm dialog */}
-      {confirmDialog.open && (
-        <div className="modal show d-block" tabIndex={-1}
-          style={{ backgroundColor:"rgba(0,0,0,0.5)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setConfirmDialog((p) => ({ ...p, open:false })) }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 shadow">
-              <div className="modal-header border-bottom-0">
-                <h5 className="modal-title fw-bold">{actionLabels[confirmDialog.action].title}</h5>
-                <button type="button" className="btn-close"
-                  onClick={() => setConfirmDialog((p) => ({ ...p, open:false }))} />
-              </div>
-              <div className="modal-body">
-                <p className="text-muted small mb-2">{actionLabels[confirmDialog.action].description}</p>
-                {confirmDialog.subscription && (
-                  <div className="p-2 bg-light rounded small fw-bold">
-                    {confirmDialog.subscription.student.name} ({confirmDialog.subscription.student.rollNo})
-                  </div>
-                )}
-                {/* React Query surfaces the server error here */}
-                {mutationError && (
-                  <div className="alert alert-danger mt-3 py-2 small mb-0">
-                    {mutationError}
-                  </div>
-                )}
-              </div>
-              <div className="modal-footer border-top-0 pt-0">
-                <button className="btn btn-light btn-sm" disabled={!!actionLoading}
-                  onClick={() => setConfirmDialog((p) => ({ ...p, open:false }))}>
-                  Go Back
-                </button>
-                <button className={`btn btn-sm ${actionLabels[confirmDialog.action].variant}`}
-                  onClick={handleConfirmAction} disabled={!!actionLoading}>
-                  {actionLoading
-                    ? <span className="d-flex align-items-center gap-1">
-                        <Loader2 size={14} style={{ animation:"spin .8s linear infinite" }} />Processing…
-                      </span>
-                    : actionLabels[confirmDialog.action].button
-                  }
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
-        @keyframes spin   { to{transform:rotate(360deg)} }
-      `}</style>
+function Avatar({ name }: { name: string }) {
+  const initials = name?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()
+  // deterministic hue from name
+  const hue = name?.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360
+  return (
+    <div style={{
+      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+      background: `hsl(${hue},45%,30%)`,
+      border: `1px solid hsl(${hue},45%,40%)`,
+      color: `hsl(${hue},80%,85%)`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: 12, fontWeight: 700, letterSpacing: "0.05em",
+    }}>
+      {initials}
     </div>
   )
 }
 
-function StatCard({ icon, iconClass, label, value }: {
-  icon: React.ReactNode; iconClass: string; label: string; value: string | number
-}) {
+// ─── Skeleton row ─────────────────────────────────────────────────────────────
+function SkeletonRow() {
   return (
-    <div className="col-12 col-md-4">
-      <div className="card border shadow-sm h-100">
-        <div className="card-body d-flex align-items-center gap-3">
-          <div className={`rounded-3 p-3 d-flex align-items-center justify-content-center ${iconClass}`}>{icon}</div>
-          <div>
-            <p className="small text-muted mb-0 fw-medium">{label}</p>
-            <h3 className="h4 fw-bold mb-0">{value}</h3>
-          </div>
+    <div style={{
+      display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 40px",
+      gap: 16, alignItems: "center",
+      padding: "16px 24px", borderBottom: "1px solid var(--border)",
+      animation: "shimmer 1.4s ease-in-out infinite",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--border)" }} />
+        <div>
+          <div style={{ width: 120, height: 12, borderRadius: 6, background: "var(--border)", marginBottom: 6 }} />
+          <div style={{ width: 80, height: 10, borderRadius: 6, background: "var(--border)", opacity: .6 }} />
         </div>
       </div>
+      {[70, 80, 70, 90].map((w, i) => (
+        <div key={i} style={{ width: w, height: 12, borderRadius: 6, background: "var(--border)" }} />
+      ))}
+      <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--border)" }} />
+    </div>
+  )
+}
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
+function StatCard({ icon, label, value, sub, colorVar, isLoading }: {
+  icon: React.ReactNode; label: string; value: string | number
+  sub?: string; colorVar: string; isLoading: boolean
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "var(--card)", border: "1px solid var(--border)",
+        borderRadius: 16, padding: "20px 24px",
+        display: "flex", alignItems: "center", gap: 16,
+        transition: "transform .2s, box-shadow .2s, border-color .2s",
+        transform: hovered ? "translateY(-2px)" : "none",
+        boxShadow: hovered ? "var(--stat-shadow)" : "none",
+        borderColor: hovered ? `color-mix(in srgb, ${colorVar} 35%, transparent)` : "var(--border)",
+        cursor: "default",
+      }}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+        background: `color-mix(in srgb, ${colorVar} 12%, transparent)`,
+        color: colorVar,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {icon}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>
+          {label}
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-pri)", lineHeight: 1, fontFamily: "'DM Serif Display',serif" }}>
+          {isLoading
+            ? <span style={{ display: "inline-block", width: 60, height: 20, borderRadius: 6, background: "var(--border)", animation: "shimmer 1.4s ease-in-out infinite" }} />
+            : value
+          }
+        </div>
+        {sub && <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{sub}</div>}
+      </div>
+    </div>
+  )
+}
+
+// ─── Row action menu ──────────────────────────────────────────────────────────
+// Dropdown uses position:fixed with getBoundingClientRect so it escapes
+// the parent card's overflow:hidden without needing a portal.
+function ActionMenu({ sub, onAction }: {
+  sub: Subscription
+  onAction: (action: ActionKey, sub: Subscription) => void
+}) {
+  const [open,    setOpen]    = useState(false)
+  const [pos,     setPos]     = useState({ top: 0, right: 0 })
+  const btnRef  = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        btnRef.current  && !btnRef.current.contains(e.target as Node)
+      ) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
+
+  // Close on scroll so the dropdown doesn't float away
+  useEffect(() => {
+    if (!open) return
+    const handler = () => setOpen(false)
+    window.addEventListener("scroll", handler, true)
+    return () => window.removeEventListener("scroll", handler, true)
+  }, [open])
+
+  const handleToggle = () => {
+    if (!open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect()
+      setPos({
+        // top:   rect.bottom + 6,
+        top:-115,
+        // left: window.innerWidth - rect.right,
+        // right:0
+      })
+    }
+    setOpen(p => !p)
+  }
+
+  const items: { action: ActionKey; icon: React.ReactNode; label: string; danger?: boolean }[] = []
+  if (sub.status === "Active")    items.push({ action: "suspend", icon: <Ban size={13} />,       label: "Suspend Access" })
+  if (sub.status !== "Active")    items.push({ action: "renew",   icon: <RefreshCw size={13} />, label: "Reactivate" })
+  if (sub.status !== "Cancelled") items.push({ action: "cancel",  icon: <Ban size={13} />,       label: "Cancel Permanently", danger: true })
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={handleToggle}
+        style={{
+          width: 32, height: 32, borderRadius: 8,
+          border: "1px solid var(--border)",
+          background: open ? "var(--accent-lo)" : "transparent",
+          color: open ? "var(--accent)" : "var(--text-muted)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", transition: "all .15s",
+        }}
+      >
+        <ChevronDown size={14} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
+      </button>
+
+      {open && (
+        <div
+          ref={menuRef}
+          style={{
+            position: "fixed",
+            // Force string so React never omits the property when value is 0
+            top:  `${pos.top}px`,
+            left: `${pos.left}px`,
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 12, padding: 6,
+            zIndex: 9999,
+            minWidth: 190,
+            boxShadow: "var(--shadow)",
+            animation: "fadeUp .15s ease",
+          }}
+        >
+          <button onClick={() => setOpen(false)} style={menuItemStyle(false)}>
+            <Mail size={13} /> Send Email
+          </button>
+
+          {items.length > 0 && <div style={{ height: 1, background: "var(--border)", margin: "4px 0" }} />}
+
+          {items.map(item => (
+            <button
+              key={item.action}
+              onClick={() => { setOpen(false); onAction(item.action, sub) }}
+              style={menuItemStyle(!!item.danger)}
+            >
+              {item.icon} {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
+const menuItemStyle = (danger: boolean): React.CSSProperties => ({
+  width: "100%", display: "flex", alignItems: "center", gap: 8,
+  padding: "8px 10px", borderRadius: 8, border: "none",
+  background: "transparent",
+  color: danger ? "var(--red)" : "var(--text-sec)",
+  fontSize: 12, fontWeight: 500, cursor: "pointer",
+  transition: "background .1s, color .1s",
+})
+
+// ─── Confirm dialog ───────────────────────────────────────────────────────────
+function ConfirmDialog({ action, sub, onConfirm, onClose, isLoading, error }: {
+  action: ActionKey; sub: Subscription
+  onConfirm: () => void; onClose: () => void
+  isLoading: boolean; error: string | null
+}) {
+  const cfg = ACTION_CFG[action]
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "var(--overlay)", backdropFilter: "blur(8px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+      }}
+      onClick={e => { if (e.target === e.currentTarget && !isLoading) onClose() }}
+    >
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: 20, padding: 28, width: "100%", maxWidth: 420,
+        boxShadow: "var(--shadow)", animation: "fadeUp .2s ease",
+      }}>
+        {/* Icon */}
+        <div style={{
+          width: 48, height: 48, borderRadius: 14, marginBottom: 18,
+          background: cfg.bg, color: cfg.color,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {action === "renew" ? <CheckCircle2 size={22} /> : <Ban size={22} />}
+        </div>
+
+        <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 20, fontWeight: 700, color: "var(--text-pri)", marginBottom: 8 }}>
+          {cfg.title}
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-sec)", lineHeight: 1.6, marginBottom: 16 }}>
+          {cfg.desc}
+        </div>
+
+        {/* Student chip */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "10px 14px", borderRadius: 12,
+          background: "var(--input-bg)", border: "1px solid var(--border)", marginBottom: 20,
+        }}>
+          <Avatar name={sub.student.student_name} />
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-pri)" }}>{sub.student.student_name}</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "'JetBrains Mono',monospace" }}>{sub.student.student_roll_no}</div>
+          </div>
+        </div>
+
+        {error && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,.12)", color: "var(--red)", fontSize: 12, marginBottom: 16 }}>
+            <AlertTriangle size={13} />{error}
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={onClose} disabled={isLoading} style={{
+            flex: 1, padding: 11, borderRadius: 12,
+            border: "1px solid var(--border)", background: "transparent",
+            color: "var(--text-sec)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>
+            Go Back
+          </button>
+          <button onClick={onConfirm} disabled={isLoading} style={{
+            flex: 1, padding: 11, borderRadius: 12, border: "none",
+            background: isLoading ? "var(--border)" : cfg.color,
+            color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          }}>
+            {isLoading
+              ? <><Loader2 size={14} style={{ animation: "spin .8s linear infinite" }} />Processing…</>
+              : cfg.button
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export function SubscriptionsPanel() {
+  const {
+    subscriptions, stats, totalRecords,
+    isLoading, isStatsLoading, error, mutationError,
+    actionLoading, filters, setFilters, updateStatus,
+  } = useMessSubscriptions()
+
+  const [search,  setSearch]  = useState("")
+  const [confirm, setConfirm] = useState<{ action: ActionKey; sub: Subscription } | null>(null)
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return subscriptions
+    const q = search.toLowerCase()
+    return subscriptions.filter(s =>
+      s.student.student_name.toLowerCase().includes(q)   ||
+      s.student.student_roll_no.toLowerCase().includes(q) ||
+      s.student.student_email.toLowerCase().includes(q)
+    )
+  }, [subscriptions, search])
+
+  const handleConfirm = async () => {
+    if (!confirm) return
+    try {
+      await updateStatus(confirm.sub._id, { status: ACTION_CFG[confirm.action].newStatus })
+      setConfirm(null)
+    } catch { /* mutationError surfaces from hook */ }
+  }
+
+  const activeCount = stats?.byStatus?.Active    ?? 0
+  const suspCount   = stats?.byStatus?.Suspended ?? 0
+  const revenue     = stats?.revenue?.totalMonthlyRevenue ?? 0
+
+  const STATUS_FILTERS: (SubscriptionStatus | "All")[] = ["All", "Active", "Suspended", "Cancelled"]
+
+  return (
+    <div style={{ fontFamily: "'DM Sans',sans-serif", color: "var(--text-pri)", display: "flex", flexDirection: "column", gap: 24 }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Mess Management</span>
+          </div>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: "var(--text-pri)", lineHeight: 1.1, fontFamily: "'DM Serif Display',serif" }}>Subscriptions</h1>
+          <p style={{ margin: "5px 0 0", fontSize: 13, color: "var(--text-sec)" }}>Manage student meal plans and billing</p>
+        </div>
+      </div>
+
+      {error && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,.1)", color: "var(--red)", fontSize: 13, border: "1px solid rgba(239,68,68,.2)" }}>
+          <AlertTriangle size={15} />{error}
+        </div>
+      )}
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14 }}>
+        <StatCard icon={<Users size={18} />}        label="Active Plans"      value={isStatsLoading ? "—" : activeCount}                                  colorVar="var(--green)"  isLoading={isStatsLoading} />
+        <StatCard icon={<AlertTriangle size={18} />} label="Suspended"        value={isStatsLoading ? "—" : suspCount}                                    colorVar="var(--amber)"  isLoading={isStatsLoading} />
+        <StatCard icon={<IndianRupee size={18} />}  label="Monthly Revenue"   value={isStatsLoading ? "—" : `₹${revenue.toLocaleString("en-IN")}`}        colorVar="var(--accent)" isLoading={isStatsLoading} sub="this month" />
+        <StatCard icon={<TrendingUp size={18} />}   label="Total Records"     value={isStatsLoading ? "—" : totalRecords}                                  colorVar="var(--text-sec)" isLoading={isStatsLoading} />
+      </div>
+
+      {/* Table card */}
+      <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
+
+        {/* Toolbar */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 24px", borderBottom: "1px solid var(--border)", flexWrap: "wrap", gap: 12,
+        }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-pri)" }}>All Subscriptions</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+              {isLoading ? "Loading…" : `${filtered.length} of ${totalRecords} records`}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {/* Search */}
+            <div style={{ position: "relative" }}>
+              <Search size={13} color="var(--text-muted)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search students…"
+                style={{
+                  padding: "9px 12px 9px 34px", borderRadius: 10,
+                  border: "1px solid var(--border)", background: "var(--input-bg)",
+                  color: "var(--text-pri)", fontSize: 12, outline: "none", minWidth: 220,
+                  transition: "border-color .2s",
+                }}
+                onFocus={e => (e.target.style.borderColor = "var(--accent)")}
+                onBlur={e  => (e.target.style.borderColor = "var(--border)")}
+              />
+              {search && (
+                <button onClick={() => setSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex" }}>
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            {/* Status filter pills */}
+            <div style={{ display: "flex", gap: 4, background: "var(--input-bg)", padding: 3, borderRadius: 10, border: "1px solid var(--border)" }}>
+              {STATUS_FILTERS.map(s => {
+                const active = filters.status === s
+                return (
+                  <button key={s} onClick={() => setFilters({ status: s })} style={{
+                    padding: "5px 12px", borderRadius: 8, border: "none",
+                    background: active ? "var(--accent)" : "transparent",
+                    color: active ? "#fff" : "var(--text-muted)",
+                    fontSize: 11, fontWeight: active ? 700 : 500, cursor: "pointer",
+                    transition: "all .15s",
+                  }}>
+                    {s}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Column headers */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 48px",
+          gap: 16, padding: "10px 24px",
+          borderBottom: "1px solid var(--border)",
+          background: "var(--surface)",
+        }}>
+          {["Student", "Plan", "Status", "Fee", "Valid Until", ""].map((h, i) => (
+            <div key={i} style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: i === 5 ? "right" : "left" }}>
+              {h}
+            </div>
+          ))}
+        </div>
+
+        {/* Rows */}
+        <div>
+          {isLoading
+            ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+            : filtered.length === 0
+            ? (
+              <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)" }}>
+                <Users size={36} style={{ marginBottom: 12, opacity: .3 }} />
+                <div style={{ fontSize: 14, fontWeight: 600 }}>No subscriptions found</div>
+                <div style={{ fontSize: 12, marginTop: 4 }}>Try adjusting your search or filter</div>
+              </div>
+            )
+            : filtered.map((sub, idx) => {
+              const isMutating = actionLoading === sub._id
+              return (
+                <div
+                  key={sub._id}
+                  style={{
+                    display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 48px",
+                    gap: 16, alignItems: "center",
+                    padding: "14px 24px",
+                    borderBottom: idx < filtered.length - 1 ? "1px solid var(--border)" : "none",
+                    opacity: isMutating ? 0.45 : 1,
+                    transition: "opacity .2s, background .15s",
+                    animation: `fadeUp .25s ease ${idx * .03}s both`,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--card-hover)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                >
+                  {/* Student */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <Avatar name={sub.student.student_name} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-pri)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sub.student.student_name}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "'JetBrains Mono',monospace" }}>
+                        {sub.student.student_roll_no}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Plan */}
+                  <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-sec)" }}>
+                    <span style={{ padding: "3px 8px", borderRadius: 6, background: "var(--input-bg)", border: "1px solid var(--border)", fontSize: 11 }}>
+                      {sub.planType === "Pay_Per_Meal" ? "Per Meal" : sub.planType}
+                    </span>
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <StatusPill status={sub.status} />
+                  </div>
+
+                  {/* Fee */}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-pri)" }}>
+                    {sub.monthlyFee > 0
+                      ? `₹${sub.monthlyFee.toLocaleString("en-IN")}`
+                      : <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Per meal</span>
+                    }
+                  </div>
+
+                  {/* Valid Until */}
+                  <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                    {sub.validUntil
+                      ? new Date(sub.validUntil).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                      : "—"
+                    }
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    {isMutating
+                      ? <Loader2 size={16} color="var(--text-muted)" style={{ animation: "spin .8s linear infinite" }} />
+                      : <ActionMenu sub={sub} onAction={(action, s) => setConfirm({ action, sub: s })} />
+                    }
+                  </div>
+                </div>
+              )
+            })
+          }
+        </div>
+      </div>
+
+      {/* Confirm dialog */}
+      {confirm && (
+        <ConfirmDialog
+          action={confirm.action}
+          sub={confirm.sub}
+          onConfirm={handleConfirm}
+          onClose={() => setConfirm(null)}
+          isLoading={!!actionLoading}
+          error={mutationError ?? null}
+        />
+      )}
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+        @keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:.8} }
+        @keyframes spin    { to{transform:rotate(360deg)} }
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        select option { background: var(--card); color: var(--text-pri); }
+      `}</style>
     </div>
   )
 }
