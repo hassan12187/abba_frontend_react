@@ -5,8 +5,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { io, Socket } from "socket.io-client"
 
-// const BASE = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:8000"
-const BASE = "http://localhost:8000"
+const BASE = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:8000"
+// const BASE = "http://localhost:8000"
 
 let socket: Socket | null = null
 

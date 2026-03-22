@@ -12,7 +12,7 @@ interface StoreChildren{
     children:ReactNode
 };
 export const Store=({children}:StoreChildren):React.ReactNode=>{
-    const [token,setToken]=useState<string>("");
+    const [token,setToken]=useState<string|null>(null);
     const [toggleDarkMode,setToggleDarkMode]=useState<boolean>(false);
 
     return <StoreContext.Provider value={{token,setToken,toggleDarkMode,setToggleDarkMode}}>

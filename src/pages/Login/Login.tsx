@@ -6,11 +6,9 @@ import { Eye, EyeOff, Loader2, AlertTriangle, Building2, Lock, Mail } from "luci
 import { useCustom } from "../../Store/Store"
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-// const BASE =
-//   (import.meta as any).env?.VITE_API_URL ??
-//   process.env.REACT_APP_API_URL ??
-//   "http://localhost:5000/api"
-const BASE = "http://localhost:8000/api"
+const BASE =
+  (import.meta as any).env?.VITE_API_URL ??
+  "http://localhost:8000/api"
 
 async function loginRequest(email: string, password: string) {
   const res  = await fetch(`${BASE}/auth/login`, {

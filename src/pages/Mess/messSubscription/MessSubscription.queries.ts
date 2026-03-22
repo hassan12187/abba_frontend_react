@@ -14,7 +14,7 @@ export const subscriptionKeys = {
 export function useSubscriptionList(filters: SubscriptionFilters, token: string) {
   return useQuery({
     queryKey: subscriptionKeys.list(filters),
-    queryFn:  () => MessSubscriptionAPI.getAll(filters).then((r) => r),
+    queryFn:  () => MessSubscriptionAPI.getAll(filters,token).then((r) => r),
     staleTime: 60_000,       // 1 min — subscription data changes infrequently
     enabled:   !!token,
     placeholderData: (prev) => prev,   // keeps previous page visible while next loads
@@ -25,7 +25,7 @@ export function useSubscriptionList(filters: SubscriptionFilters, token: string)
 export function useSubscriptionStats(token: string) {
   return useQuery({
     queryKey: subscriptionKeys.stats(),
-    queryFn:  () => MessSubscriptionAPI.getStats().then((r) => r.data),
+    queryFn:  () => MessSubscriptionAPI.getStats(token).then((r) => r.data),
     staleTime: 2 * 60_000,   // 2 min — stats don't need to be real-time
     enabled:   !!token,
   })
@@ -37,7 +37,7 @@ export function useUpdateSubscriptionStatus(token: string) {
 
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateStatusPayload }) =>
-      MessSubscriptionAPI.updateStatus(id, payload).then((r) => r.data),
+      MessSubscriptionAPI.updateStatus(id, payload,token).then((r) => r.data),
 
     // Optimistic update — change the row status immediately
     onMutate: async ({ id, payload }) => {

@@ -1,25 +1,35 @@
-import React, { useState,type CSSProperties } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import './Layout.css';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './SideBar';
 import { useCustom } from '../../Store/Store';
+import Axios from '../../Services/Axios';
 
-// --- Interfaces ---
+const REFRESH_MS=13*60*1000;
 
-// interface CustomStore {
-//   toggleDarkMode?: boolean;
-//   // Add other store properties here as needed
-// }
+const useTokenRefresh=()=>{
+  const {setToken}=useCustom() as {setToken:(t:string|null)=>void};
+  const intervalRef=useRef<ReturnType<typeof setInterval> | null>(null);
 
-// // Defining the dark mode styles using React's CSSProperties type
-// const darkModeStyle: CSSProperties = {
-//   backgroundColor: "black",
-//   color: "#fff"
-// };
+  useEffect(()=>{
+    intervalRef.current = setInterval(async()=>{
+      try{
+        const res=await Axios.post("/api/auth/refresh",{},{withCredentials:true})
+        setToken(res.data.accessToken)
+      }catch{
+        setToken(null);
+      }
+    },REFRESH_MS);
+    return()=>{
+      if(intervalRef.current)clearInterval(intervalRef.current)
+    };
+  },[setToken])
+};
 
 const Layout: React.FC = () => {
+useTokenRefresh();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   
   // Accessing the store with type safety

@@ -15,7 +15,7 @@ import Students from './pages/Students/Students.js';
 // Import FontAwesome CSS
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Unauthorized from './pages/Unauthorized/Unauthorized.js';
-import CheckAuth from './components/CheckAuth';
+import { ProtectedRoute } from './components/ProtectedRoute.js';
 import 'bootstrap/dist/css/bootstrap.css';
 // import "./theme.css"
 import AdmissionForm from './pages/AdmissionForm/AdmissionForm.js';
@@ -33,72 +33,72 @@ const App=()=>{
   const router=createBrowserRouter([
     {
       path:'/',
-      element:<Layout/>,
+      element:<ProtectedRoute><Layout/></ProtectedRoute>,
       errorElement:<Unauthorized title={"Error"} info={"Error 404 Page Not Found."} />,
       children:[
       { 
         path:"/",
-        element:<CheckAuth><AdminDashboard /></CheckAuth>
+        element:<AdminDashboard />
       },
       {
         path:'/expenses',
-        element:<CheckAuth><Expenses /></CheckAuth>
+        element:<Expenses />
       },
       {
         path:'/payments',
-        element:<CheckAuth><Payments /></CheckAuth>
+        element:<Payments />
       },
       {
         path:'/rooms',
-        element:<CheckAuth><Rooms /></CheckAuth>
+        element:<Rooms />
       },
       {
         path:'/reports',
-        element:<CheckAuth><Reports /></CheckAuth>
+        element:<Reports />
       },
       {
         path:'/applications',
-        element:<CheckAuth><StudentApplications /></CheckAuth>
+        element:<StudentApplications />
       },
       {
         path:"/students",
-        element:<CheckAuth><Students /></CheckAuth>
+        element:<Students />
       },
       {
         path:"/settings",
-        element:<CheckAuth><Settings /></CheckAuth>
+        element:<Settings />
       },
       {
         path:"/blocks",
-        element:<CheckAuth><Blocks /></CheckAuth>
+        element:<Blocks />
       },
       {
         path:"/complaints",
-        element:<CheckAuth><Complaints /></CheckAuth>
+        element:<Complaints />
       },
       {
         path:"/fee-template",
-        element:<CheckAuth><FeeTemplateAdmin /></CheckAuth>
+        element:<FeeTemplateAdmin />
       },
         {
         path:"/fee-invoice",
-        element:<CheckAuth><FeeInvoiceUI /></CheckAuth>
+        element:<FeeInvoiceUI />
       },
        {
         path:"/create/fee-invoice",
-        element:<CheckAuth><CreateFeeInvoice /></CheckAuth>
+        element:<CreateFeeInvoice />
       },
        {
         path:"/mess-menu",
-        element:<CheckAuth><MenuPanel /></CheckAuth>
+        element:<MenuPanel />
       },
       {
         path:"/mess-attendance",
-        element:<CheckAuth><AttendancePanel /></CheckAuth>
+        element:<AttendancePanel />
       },
          {
         path:"/mess-subscription",
-        element:<CheckAuth><SubscriptionsPanel /></CheckAuth>
+        element:<SubscriptionsPanel />
       }
       ]
     },
