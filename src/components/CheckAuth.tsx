@@ -11,9 +11,10 @@ const CheckAuth = ({children}:{children:ReactNode}) => {
           const verifyToken=async()=>{
             if(!token){
               try {
-                const res = await Axios.post("/refresh-token",{},{
+                const res = await Axios.post("/api/auth/refresh",{},{
                   withCredentials:true
                 });
+                console.log(res);
                 setToken(res?.data?.accessToken);
               } catch (error) {
                 console.log(error);
@@ -22,7 +23,7 @@ const CheckAuth = ({children}:{children:ReactNode}) => {
             }
                if(isTokenExpired(token)){
               try {
-                const res = await Axios.post("/refresh-token",{},{
+                const res = await Axios.post("/api/auth/refresh",{},{
                   withCredentials:true
                 });
                 setToken(res.data.accessToken);

@@ -8,6 +8,7 @@ import Expenses from './pages/Expenses/Expenses.js';
 import Payments from './pages/Payments/Payments.js';
 import Reports from './pages/Reports/Reports.js';
 import Rooms from './pages/hostel/Rooms.js';
+import Settings from "./pages/Settings/Settings.js";
 import Login from './pages/Login/Login.js';
 import StudentApplications from './pages/StudentApplications/StudentApplications.js';
 import Students from './pages/Students/Students.js';
@@ -25,7 +26,7 @@ import FeeTemplateAdmin from './pages/FeeTemplate/FeeTemplate.js';
 import FeeInvoiceUI from './pages/FeeInvoice/FeeInvoice.js';
 import CreateFeeInvoice from './pages/FeeInvoice/createFeeInvoice.js';
 import { MenuPanel } from './pages/Mess/menupanel/MessMenu.js';
-import { AttendancePanel } from './pages/Mess/MessAttendance.js';
+import { AttendancePanel } from './pages/Mess/mealattendance/MessAttendance.js';
 import { SubscriptionsPanel } from './pages/Mess/messSubscription/MessSubscription.js';
 
 const App=()=>{
@@ -63,10 +64,10 @@ const App=()=>{
         path:"/students",
         element:<CheckAuth><Students /></CheckAuth>
       },
-      // {
-      //   path:"/settings",
-      //   element:<CheckAuth><Settings /></CheckAuth>
-      // },
+      {
+        path:"/settings",
+        element:<CheckAuth><Settings /></CheckAuth>
+      },
       {
         path:"/blocks",
         element:<CheckAuth><Blocks /></CheckAuth>

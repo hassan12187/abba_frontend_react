@@ -177,7 +177,7 @@ function MessTab({ student, token }: { student: Application; token: string }) {
 
   const { data: existingSub, isLoading: subLoading } = useStudentSubscription(student._id, token)
   const createSub = useCreateSubscription(token)
-
+console.log(existingSub);
   const handlePlanChange = (plan: PlanType) => {
     setPlanType(plan)
     setMonthlyFee(PLAN_DEFAULTS[plan].fee)
@@ -214,14 +214,14 @@ function MessTab({ student, token }: { student: Application; token: string }) {
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-            background: "rgba(16,185,129,.15)", color: "var(--green)",
+            background: "rgba(16,185,129,.15)", color: `var(--green)`,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <CalendarCheck size={18} />
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-pri)" }}>
-              Subscription Active
+              Subscription {existingSub.status}
             </div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
               {existingSub.planType} · ₹{existingSub.monthlyFee.toLocaleString("en-IN")}/mo
@@ -234,7 +234,7 @@ function MessTab({ student, token }: { student: Application; token: string }) {
           </div>
         </div>
         <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>
-          Manage this subscription from the{" "}
+          Manage this subscription from the
           <strong style={{ color: "var(--accent)" }}>Subscriptions</strong> panel.
         </div>
       </div>
@@ -696,11 +696,8 @@ const Students: React.FC = () => {
     assignRoom, isAssigning, assignError,
     token,
   } = useStudents()
-  console.log(students);
-  console.log(total);
-  console.log(totalPages);
+ console.log(selectedStudent);
   console.log(stats);
-  
   const [searchInput, setSearchInput] = useState("")
 
   const applySearch = useDebounce((val: string) => setFilters({ search: val }), 500)

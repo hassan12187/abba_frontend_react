@@ -1,279 +1,284 @@
-import React, { useState, type BaseSyntheticEvent } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import './Login.css';
-import Axios from '../../Services/Axios';
-import { useCustom } from '../../Store/Store';
+"use client"
 
-const Login = () => {
-  const {setToken}=useCustom();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
+import React, { useState, type FormEvent, type ChangeEvent } from "react"
+import { useNavigate, NavLink } from "react-router-dom"
+import { Eye, EyeOff, Loader2, AlertTriangle, Building2, Lock, Mail } from "lucide-react"
+import { useCustom } from "../../Store/Store"
 
-  const handleInputChange = (e:BaseSyntheticEvent) => {
-    console.log(e);
-    const { id, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [id]: value
-    }));
+// ─── API ──────────────────────────────────────────────────────────────────────
+// const BASE =
+//   (import.meta as any).env?.VITE_API_URL ??
+//   process.env.REACT_APP_API_URL ??
+//   "http://localhost:5000/api"
+const BASE = "http://localhost:8000/api"
 
-    // Clear error when user starts typing
-    // if (errors[id]) {
-    //   setErrors(prev => ({
-    //     ...prev,
-    //     [id]: ''
-    //   }));
-    // }
-  };
+async function loginRequest(email: string, password: string) {
+  const res  = await fetch(`${BASE}/auth/login`, {
+    method:      "POST",
+    credentials: "include",           // sends/receives the httpOnly refresh token cookie
+    headers:     { "Content-Type": "application/json" },
+    body:        JSON.stringify({ email, password }),
+  })
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.message ?? "Login failed.")
+  return json   // { success, accessToken, data: { role, username, applicationId, … } }
+}
 
-  const validateForm = () => {
-    const newErrors:Partial<{email:string,password:string}> = {};
+// ─── Input ────────────────────────────────────────────────────────────────────
+function Field({
+  id, label, type = "text", value, onChange,
+  placeholder, disabled, error, icon, right,
+}: {
+  id: string; label: string; type?: string
+  value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  placeholder?: string; disabled?: boolean; error?: string
+  icon:  React.ReactNode
+  right?: React.ReactNode
+}) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{
+        fontSize: 12, fontWeight: 600, color: "var(--text-sec)",
+        textTransform: "uppercase", letterSpacing: "0.06em",
+      }}>
+        {label}
+      </label>
+      <div style={{ position: "relative" }}>
+        <span style={{
+          position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+          color: focused ? "var(--accent)" : "var(--text-muted)",
+          display: "flex", transition: "color .2s", pointerEvents: "none",
+        }}>
+          {icon}
+        </span>
+        <input
+          id={id} type={type} value={value}
+          onChange={onChange} placeholder={placeholder} disabled={disabled}
+          onFocus={() => setFocused(true)}
+          onBlur={()  => setFocused(false)}
+          style={{
+            width: "100%", padding: "12px 14px 12px 42px",
+            paddingRight: right ? 46 : 14,
+            borderRadius: 12,
+            border: `1.5px solid ${error ? "var(--red)" : focused ? "var(--accent)" : "var(--border)"}`,
+            background: "var(--input-bg)",
+            color: "var(--text-pri)", fontSize: 14, outline: "none",
+            transition: "border-color .2s",
+            opacity: disabled ? .6 : 1,
+          }}
+        />
+        {right && (
+          <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)" }}>
+            {right}
+          </span>
+        )}
+      </div>
+      {error && (
+        <span style={{ fontSize: 11, color: "var(--red)", display: "flex", alignItems: "center", gap: 4 }}>
+          <AlertTriangle size={11} />{error}
+        </span>
+      )}
+    </div>
+  )
+}
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Username is required';
-    }
+// ─── Main ─────────────────────────────────────────────────────────────────────
+const Login: React.FC = () => {
+  const { setToken } = useCustom() as { setToken: (t: string) => void }
+  const navigate     = useNavigate()
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
+  const [email,       setEmail]       = useState("")
+  const [password,    setPassword]    = useState("")
+  const [showPw,      setShowPw]      = useState(false)
+  const [loading,     setLoading]     = useState(false)
+  const [error,       setError]       = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
 
-    return Object.keys(newErrors).length === 0;
-  };
+  // ── Validation ────────────────────────────────────────────────────────────
+  function validate(): boolean {
+    const errs: typeof fieldErrors = {}
+    if (!email.trim())          errs.email    = "Email is required."
+    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = "Enter a valid email address."
+    if (!password)              errs.password = "Password is required."
+    else if (password.length < 8) errs.password = "Password must be at least 8 characters."
+    setFieldErrors(errs)
+    return Object.keys(errs).length === 0
+  }
 
-  const handleSubmit = async (e:BaseSyntheticEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+  // ── Submit ────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (!validate()) return
 
-    setIsLoading(true);
-
+    setLoading(true)
     try {
-        const result = await Axios.post('/static/login',formData,{
-          withCredentials:true
-        });
-        console.log(result);
-        if(result.status==200 && result.data.role=="ADMIN"){
-          setToken(result?.data.token);
-          return navigate("/");
-        };
-        return;
-      // // Mock authentication - in real app, this would be an API call
-      // if (formData.email === 'admin' && formData.password === 'password') {
-      //   // Store authentication state (in real app, use context or redux)
-      //   // Show success message
-      //   alert('Login successful! Welcome to Hostel Management System.');
-        
-      //   // Redirect to dashboard
-      //   navigate('/dashboard');
-      // } else {
-      //   throw new Error('Invalid credentials');
-      // }
-    } catch (error:any) {
-      console.log(error);
-      if(error.status==401){
-        setErrors(error.response.data);
+      const result = await loginRequest(email.trim().toLowerCase(), password)
+
+      // Store the access token
+      setToken(result.accessToken)
+
+      // Route by role
+      const role = result.data?.role
+      if (role === "ADMIN" || role === "SUPERADMIN") {
+        navigate("/")
+      } else if (role === "STUDENT") {
+        navigate("/student/dashboard")
+      } else {
+        navigate("/")
       }
-      // setErrors({
-      //   submit: error.message || 'Login failed. Please check your credentials.'
-      // });
+    } catch (err: any) {
+      setError(err.message ?? "An unexpected error occurred. Please try again.")
     } finally {
-      setIsLoading(false);
+      setLoading(false)
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // const handleDemoLogin = (role) => {
-  //   const demoCredentials:{} = {
-  //     admin: { email: 'admin', password: 'password' },
-  //     manager: { email: 'manager', password: 'manager123' },
-  //     staff: { email: 'staff', password: 'staff123' }
-  //   };
-
-  //   setFormData(demoCredentials[role]);
-  // };
+  }
 
   return (
-    <div className="login-page">
-      <div className="login-container">
-        <div className="login-card">
-          {/* Header Section */}
-          <div className="login-header">
-            <div className="logo">
-              <i className="fas fa-hotel"></i>
-              <span>HostelMS</span>
-            </div>
-            <h1>Welcome Back</h1>
-            <p>Sign in to your Hostel Management System account</p>
+    <div style={{
+      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+      background: "var(--bg)", fontFamily: "'DM Sans',sans-serif", padding: 20,
+      position: "relative", overflow: "hidden",
+    }}>
+
+      {/* Background decoration */}
+      <div style={{
+        position: "absolute", top: "-30%", right: "-15%",
+        width: 600, height: 600, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", bottom: "-20%", left: "-10%",
+        width: 500, height: 500, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Card */}
+      <div style={{
+        width: "100%", maxWidth: 420,
+        background: "var(--card)", border: "1px solid var(--border)",
+        borderRadius: 24, padding: "40px 36px",
+        boxShadow: "var(--shadow)",
+        animation: "fadeUp .35s ease",
+        position: "relative", zIndex: 1,
+      }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: 18, margin: "0 auto 14px",
+            background: "var(--accent-lo)", border: "1.5px solid rgba(99,102,241,.3)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 28px rgba(99,102,241,.2)",
+          }}>
+            <Building2 size={26} color="var(--accent)" />
           </div>
+          <h1 style={{
+            margin: 0, fontSize: 22, fontWeight: 800,
+            color: "var(--text-pri)", fontFamily: "'DM Serif Display',serif",
+            letterSpacing: "-0.02em",
+          }}>
+            HostelMS
+          </h1>
+          <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-muted)" }}>
+            Sign in to your account
+          </p>
+        </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                <i className="fas fa-user"></i>
-                Username
-              </label>
-              <input
-                type="email"
-                id="email"
-                name='email'
-                className={`form-control`}
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                disabled={isLoading}
-              />
-            </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">
-                <i className="fas fa-lock"></i>
-                Password
-              </label>
-              <div className="password-input-container form-group">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name='password'
-                  className={`form-control`}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Enter your password"
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={togglePasswordVisibility}
-                  disabled={isLoading}
-                >
-                  <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                </button>
-              </div>
-              {errors && <span className="error-message">{errors}</span>}
-            </div>
-            {/* Remember Me & Forgot Password */}
-            <div className="form-options">
-              <label className="remember-me">
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </label>
-              <NavLink to={'/forgot-password'} className="forgot-password">
-                Forgot password?
-              </NavLink>
-            </div>
+          <Field
+            id="email" label="Email Address" type="email"
+            value={email} onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: undefined })) }}
+            placeholder="admin@hostel.com"
+            disabled={loading} error={fieldErrors.email}
+            icon={<Mail size={16} />}
+          />
 
-            {/* {errors.submit && (
-              <div className="alert alert-error">
-                <i className="fas fa-exclamation-circle"></i>
-                {errors.submit}
-              </div>
-            )} */}
-
-            <button 
-              type="submit" 
-              className="login-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <div className="spinner"></div>
-                  Signing In...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-sign-in-alt"></i>
-                  Sign In
-                </>
-              )}
-            </button>
-          </form>
-
-
-          {/* Demo Accounts Section */}
-          {/* <div className="demo-section">
-            <div className="demo-divider">
-              <span>Quick Demo Access</span>
-            </div>
-            
-            <div className="demo-buttons">
-              <button
-                type="button"
-                className="demo-btn admin"
-                onClick={() => handleDemoLogin('admin')}
-                disabled={isLoading}
-              >
-                <i className="fas fa-user-shield"></i>
-                Admin Demo
+          <Field
+            id="password" label="Password"
+            type={showPw ? "text" : "password"}
+            value={password} onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: undefined })) }}
+            placeholder="Enter your password"
+            disabled={loading} error={fieldErrors.password}
+            icon={<Lock size={16} />}
+            right={
+              <button type="button" onClick={() => setShowPw(p => !p)} disabled={loading}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", padding: 0 }}>
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
-              
-              <button
-                type="button"
-                className="demo-btn manager"
-                onClick={() => handleDemoLogin('manager')}
-                disabled={isLoading}
-              >
-                <i className="fas fa-user-tie"></i>
-                Manager Demo
-              </button>
-              
-              <button
-                type="button"
-                className="demo-btn staff"
-                onClick={() => handleDemoLogin('staff')}
-                disabled={isLoading}
-              >
-                <i className="fas fa-user"></i>
-                Staff Demo
-              </button>
+            }
+          />
+
+          {/* Remember + Forgot */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 7, cursor: "pointer", fontSize: 13, color: "var(--text-sec)" }}>
+              <input type="checkbox" style={{ accentColor: "var(--accent)", width: 14, height: 14 }} />
+              Remember me
+            </label>
+            <NavLink to="/forgot-password" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>
+              Forgot password?
+            </NavLink>
+          </div>
+
+          {/* Server error */}
+          {error && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "11px 14px", borderRadius: 12,
+              background: "rgba(239,68,68,.10)", color: "var(--red)",
+              border: "1px solid rgba(239,68,68,.25)", fontSize: 13,
+              animation: "fadeUp .2s ease",
+            }}>
+              <AlertTriangle size={14} style={{ flexShrink: 0 }} />{error}
             </div>
-          </div> */}
+          )}
 
-          {/* Footer */}
-          {/* <div className="login-footer">
-            <p className="copyright">
-              &copy; 2024 Hostel Management System. All rights reserved.
-            </p>
-            <div className="security-info">
-              <i className="fas fa-shield-alt"></i>
-              <span>Secure Login</span>
-            </div>
-          </div>
-        </div> */}
+          {/* Submit */}
+          <button
+            type="submit" disabled={loading}
+            style={{
+              padding: "13px", borderRadius: 14, border: "none",
+              background: loading ? "var(--border)" : "var(--accent)",
+              color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "background .2s, transform .15s",
+              boxShadow: loading ? "none" : "0 0 28px var(--accent-glow)",
+              marginTop: 4,
+            }}
+            onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)" }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)" }}
+          >
+            {loading
+              ? <><Loader2 size={16} style={{ animation: "spin .8s linear infinite" }} />Signing in…</>
+              : "Sign In"
+            }
+          </button>
+        </form>
 
-        {/* Background Decoration */}
-        {/* <div className="login-background">
-          <div className="floating-icon">
-            <i className="fas fa-bed"></i>
-          </div>
-          <div className="floating-icon">
-            <i className="fas fa-users"></i>
-          </div>
-          <div className="floating-icon">
-            <i className="fas fa-chart-bar"></i>
-          </div>
-          <div className="floating-icon">
-            <i className="fas fa-money-bill-wave"></i>
-          </div>
-        </div> */}
-
+        {/* Footer */}
+        <div style={{
+          marginTop: 28, paddingTop: 20,
+          borderTop: "1px solid var(--border)",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          fontSize: 11, color: "var(--text-muted)",
+        }}>
+          <Lock size={11} />
+          Secured with JWT · Cookie-based refresh tokens
         </div>
       </div>
-    </div>
-  );
-};
 
-export default Login;
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes spin   { to{transform:rotate(360deg)} }
+      `}</style>
+    </div>
+  )
+}
+
+export default Login

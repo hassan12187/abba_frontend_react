@@ -1,6 +1,6 @@
 // const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
 const BASE_URL = "http://localhost:8000/api/admin"
-const ENDPOINT = `${BASE_URL}/menus`
+const ENDPOINT = `${BASE_URL}/mess-menu`
 
 // ─── Types (mirrors backend) ──────────────────────────────────────────────────
 export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday"
