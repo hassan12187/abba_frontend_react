@@ -76,7 +76,7 @@ const inputCss = (hasError?: string, focused?: boolean): React.CSSProperties => 
 
 // ─── Field wrapper ────────────────────────────────────────────────────────────
 function Field({ id, label, required, error, children }: {
-  id: string; label: string; required?: boolean; error?: string; children: ReactNode
+  id: string; label: string; required: boolean|undefined; error: string|undefined; children: ReactNode
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -101,7 +101,7 @@ function Field({ id, label, required, error, children }: {
 function Input({ id, type = "text", value = "", onChange, placeholder, error, disabled, required, label }: {
   id: string; type?: string; value?: string
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
-  placeholder?: string; error?: string; disabled?: boolean
+  placeholder?: string; error: string|undefined; disabled?: boolean
   required?: boolean; label: string
 }) {
   const [focused, setFocused] = useState(false)
@@ -122,7 +122,7 @@ function Select({ id, label, value, onChange, options, error, required, disabled
   id: string; label: string; value: string
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void
   options: { value: string; label: string }[]
-  error?: string; required?: boolean; disabled?: boolean
+  error: string|undefined; required?: boolean; disabled?: boolean
 }) {
   const [focused, setFocused] = useState(false)
   return (
@@ -143,7 +143,7 @@ function Select({ id, label, value, onChange, options, error, required, disabled
 function Textarea({ id, label, value, onChange, placeholder, error, required, disabled, rows = 3 }: {
   id: string; label: string; value: string
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void
-  placeholder?: string; error?: string; required?: boolean; disabled?: boolean; rows?: number
+  placeholder?: string; error?: string|undefined; required?: boolean|undefined; disabled?: boolean; rows?: number
 }) {
   const [focused, setFocused] = useState(false)
   return (
@@ -472,7 +472,7 @@ const AdmissionForm: React.FC = () => {
             <form onSubmit={handleNext}>
               <SectionHeading icon={<MapPin size={16}/>} title="Address Information" />
               <G cols={1}>
-                <Textarea id="postal_address"    label="Postal Address"    value={form.postal_address}    onChange={handleText as any} placeholder="Street, Area, City"       error={errors.postal_address}    required />
+                <Textarea id="postal_address"  label="Postal Address"  value={form.postal_address}    onChange={handleText as any} placeholder="Street, Area, City"       error={errors.postal_address}    required />
                 <Textarea id="permanent_address" label="Permanent Address" value={form.permanent_address} onChange={handleText as any} placeholder="Village / Town / City"    error={errors.permanent_address} required />
               </G>
               <div style={{ height: 16 }} />
@@ -493,7 +493,7 @@ const AdmissionForm: React.FC = () => {
               </G>
               <div style={{ height: 16 }} />
               <G cols={1}>
-                <Textarea id="reason_for_applying" label="Reason for Applying" value={form.reason_for_applying} onChange={handleText as any} placeholder="Briefly explain why you need hostel accommodation…" rows={4} />
+                <Textarea id="reason_for_applying" label="Reason for Applying" value={form.reason_for_applying} onChange={handleText as any} placeholder="Briefly explain why you need hostel accommodation…" rows={4} error={""} />
               </G>
 
               {apiError && (

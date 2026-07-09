@@ -75,19 +75,19 @@ export interface UpdateComplaintDTO {
 }
 
 export interface UpdateStatusDTO {
-  status:          ComplaintStatus
+  status:          ComplaintStatus|undefined
   admin_comments?: string
-  note?:           string
+  note?:           string|undefined
 }
 
 // ─── Filters ──────────────────────────────────────────────────────────────────
 export interface ComplaintFilters {
-  status?:    ComplaintStatus | "All"
-  priority?:  ComplaintPriority | ""
-  category?:  ComplaintCategory | ""
-  search?:    string
-  from?:      string
-  to?:        string
+  status?:    ComplaintStatus | "All"|undefined
+  priority?:  ComplaintPriority | ""|undefined 
+  category?:  ComplaintCategory | ""|undefined
+  search?:    string|undefined
+  from?:      string|undefined
+  to?:        string|undefined
   page?:      number
   limit?:     number
   sortBy?:    "createdAt" | "updatedAt" | "priority"
@@ -151,8 +151,8 @@ async function request<T>(url: string, token: string, opts?: RequestInit): Promi
 function buildQS(f: ComplaintFilters): string {
   const p = new URLSearchParams()
   if (f.status   && f.status   !== "All") p.set("status",    f.status)
-  if (f.priority && f.priority !== "")    p.set("priority",  f.priority)
-  if (f.category && f.category !== "")    p.set("category",  f.category)
+  if (f.priority && f.priority !== undefined)    p.set("priority",  f.priority)
+  if (f.category && f.category !== undefined)    p.set("category",  f.category)
   if (f.search)                           p.set("search",    f.search.trim())
   if (f.from)                             p.set("from",      f.from)
   if (f.to)                               p.set("to",        f.to)

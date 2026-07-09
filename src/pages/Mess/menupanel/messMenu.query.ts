@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, UseMutationResult } from "@tanstack/react-query"
 import {
   MessMenuAPI,
   MessMenu,
@@ -50,7 +50,13 @@ export function useTodayMenu(token: string) {
  * Optimistic update: the pill list in the UI changes immediately.
  * On error, the previous data is restored automatically.
  */
-export function useUpdateMealItems(token: string) {
+export function useUpdateMealItems(token: string):UseMutationResult<MessMenu, Error, {
+    menuId: string;
+    mealType: MealType;
+    payload: UpdateMealItemsPayload;
+}, {
+    previous: MessMenu[] | undefined;
+}> {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -114,7 +120,13 @@ export function useUpdateMealItems(token: string) {
  * Update start / end time of a single meal.
  * Optimistically patches the timing displayed in the card header.
  */
-export function useUpdateMealTiming(token: string) {
+export function useUpdateMealTiming(token: string):UseMutationResult<MessMenu, Error, {
+    menuId: string;
+    mealType: MealType;
+    payload: UpdateMealTimingPayload;
+}, {
+    previous: MessMenu[] | undefined;
+}> {
   const queryClient = useQueryClient()
 
   return useMutation({

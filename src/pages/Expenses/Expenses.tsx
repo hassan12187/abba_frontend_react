@@ -84,7 +84,7 @@ function SkeletonRow() {
 // ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, sub, colorVar, isLoading }: {
   icon: React.ReactNode; label: string; value: string
-  sub?: string; colorVar: string; isLoading: boolean
+  sub?: string|undefined; colorVar: string; isLoading: boolean
 }) {
   const [hov, setHov] = useState(false)
   return (
@@ -264,9 +264,9 @@ function DeleteConfirm({ expense, token, onDone, onCancel }: {
         Permanently delete <strong style={{ color: "var(--text-pri)" }}>{expense.description}</strong>?
         This cannot be undone.
       </div>
-      {mutation.error && (
+      {mutation.error==undefined && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,.12)", color: "var(--red)", fontSize: 12, marginBottom: 14 }}>
-          <AlertTriangle size={13} />{(mutation.error as Error).message}
+          <AlertTriangle size={13} />{(mutation.error as unknown as Error).message}
         </div>
       )}
       <div style={{ display: "flex", gap: 10 }}>
@@ -341,7 +341,7 @@ const Expenses: React.FC = () => {
     queryFn:   () => ExpenseAPI.getAll(filters, token),
     staleTime: 60_000,
     enabled:   !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 
   const statsQuery = useQuery({
@@ -366,7 +366,7 @@ const Expenses: React.FC = () => {
   return (
     <div style={{ fontFamily: "'DM Sans',sans-serif", color: "var(--text-pri)", display: "flex", flexDirection: "column", gap: 24 }}>
 
-      {/* ── Header ── */}
+      
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -382,7 +382,7 @@ const Expenses: React.FC = () => {
         </button>
       </div>
 
-      {/* ── Stats ── */}
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 14 }}>
         <StatCard icon={<Wallet       size={18} />} label="Total Expenses"  value={fmt(stats?.totalAmount ?? 0)}   colorVar="var(--red)"    isLoading={statsQuery.isLoading} />
         <StatCard icon={<TrendingDown size={18} />} label="This Month"      value={fmt(stats?.thisMonth   ?? 0)}   colorVar="var(--amber)"  isLoading={statsQuery.isLoading}
@@ -391,10 +391,10 @@ const Expenses: React.FC = () => {
         <StatCard icon={<TrendingUp   size={18} />} label="Page Total"      value={fmt(pageTotal)}                 colorVar="#06b6d4"       isLoading={listQuery.isLoading}  />
       </div>
 
-      {/* ── Table card ── */}
+      
       <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
 
-        {/* Toolbar */}
+      
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 24px", borderBottom: "1px solid var(--border)", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-pri)" }}>All Expenses</div>
@@ -404,7 +404,7 @@ const Expenses: React.FC = () => {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            {/* Search */}
+
             <div style={{ position: "relative" }}>
               <Search size={13} color="var(--text-muted)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
               <input value={searchInput} onChange={handleSearch} placeholder="Search description…"
@@ -419,7 +419,7 @@ const Expenses: React.FC = () => {
               )}
             </div>
 
-            {/* Category filter pills */}
+
             <div style={{ display: "flex", gap: 4, background: "var(--input-bg)", padding: 3, borderRadius: 10, border: "1px solid var(--border)" }}>
               <button onClick={() => setF({ category: undefined })}
                 style={{ padding: "5px 10px", borderRadius: 8, border: "none", background: !filters.category ? "var(--accent)" : "transparent", color: !filters.category ? "#fff" : "var(--text-muted)", fontSize: 11, fontWeight: !filters.category ? 700 : 500, cursor: "pointer", transition: "all .15s" }}>
@@ -437,7 +437,7 @@ const Expenses: React.FC = () => {
               })}
             </div>
 
-            {/* Date filter toggle */}
+            
             <button onClick={() => setShowFilters(p => !p)}
               style={{ padding: "8px 14px", borderRadius: 10, border: `1px solid ${showFilters ? "var(--accent)" : "var(--border)"}`, background: showFilters ? "var(--accent-lo)" : "transparent", color: showFilters ? "var(--accent)" : "var(--text-sec)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <Filter size={13} /> Date
@@ -445,7 +445,6 @@ const Expenses: React.FC = () => {
           </div>
         </div>
 
-        {/* Date filters */}
         {showFilters && (
           <div style={{ padding: "14px 24px", borderBottom: "1px solid var(--border)", background: "var(--surface)", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
             {[{ label: "From", key: "from" }, { label: "To", key: "to" }].map(f => (
@@ -465,7 +464,7 @@ const Expenses: React.FC = () => {
           </div>
         )}
 
-        {/* Column headers */}
+        
         <div style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1fr 64px", gap: 16, padding: "10px 24px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
           {["Description", "Category", "Amount", "Date", ""].map((h, i) => (
             <div key={h + i} style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: i === 4 ? "right" : "left" }}>
@@ -474,7 +473,6 @@ const Expenses: React.FC = () => {
           ))}
         </div>
 
-        {/* Rows */}
         <div>
           {listQuery.isLoading
             ? Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
@@ -486,13 +484,12 @@ const Expenses: React.FC = () => {
                 <div style={{ fontSize: 12, marginTop: 4 }}>Click "Add Expense" to record one</div>
               </div>
             )
-            : expenses.map((exp, idx) => (
+            : expenses.map((exp:Expense, idx:number) => (
               <div key={exp._id}
                 style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1fr 64px", gap: 16, alignItems: "center", padding: "13px 24px", borderBottom: idx < expenses.length - 1 ? "1px solid var(--border)" : "none", transition: "background .15s", animation: `fadeUp .25s ease ${idx * .025}s both` }}
                 onMouseEnter={e => (e.currentTarget.style.background = "var(--card-hover)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
-                {/* Description */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                   <CatIcon category={exp.category} />
                   <div style={{ minWidth: 0 }}>
@@ -509,7 +506,7 @@ const Expenses: React.FC = () => {
 
                 <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{fmtDate(exp.date)}</div>
 
-                {/* Actions */}
+
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
                   <button onClick={() => setPanel({ mode: "edit", expense: exp })} title="Edit"
                     style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "var(--accent-lo)", color: "var(--accent)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -526,7 +523,6 @@ const Expenses: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Pagination ── */}
       {totalPages > 1 && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Page {filters.page ?? 1} of {totalPages}</span>
@@ -544,13 +540,12 @@ const Expenses: React.FC = () => {
         </div>
       )}
 
-      {listQuery.error && (
+      {listQuery.error!=undefined && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,.1)", color: "var(--red)", fontSize: 13, border: "1px solid rgba(239,68,68,.2)" }}>
-          <AlertTriangle size={15} />{(listQuery.error as Error).message}
+          <AlertTriangle size={15} />{(listQuery.error as unknown as Error).message}
         </div>
       )}
 
-      {/* ── Side panel ── */}
       {panel?.mode === "create" && (
         <SidePanel title="Add New Expense" onClose={() => setPanel(null)}>
           <ExpenseForm token={token} onDone={() => setPanel(null)} onCancel={() => setPanel(null)} />

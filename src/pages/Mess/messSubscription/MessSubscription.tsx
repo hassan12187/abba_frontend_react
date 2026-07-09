@@ -188,10 +188,8 @@ function ActionMenu({ sub, onAction }: {
     if (!open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect()
       setPos({
-        // top:   rect.bottom + 6,
-        top:-115,
-        // left: window.innerWidth - rect.right,
-        // right:0
+        top:   rect.bottom + 6,
+        right: window.innerWidth - rect.right,
       })
     }
     setOpen(p => !p)
@@ -226,7 +224,7 @@ function ActionMenu({ sub, onAction }: {
             position: "fixed",
             // Force string so React never omits the property when value is 0
             top:  `${pos.top}px`,
-            left: `${pos.left}px`,
+            left: `${pos.right}px`,
             background: "var(--card)", border: "1px solid var(--border)",
             borderRadius: 12, padding: 6,
             zIndex: 9999,
@@ -360,7 +358,7 @@ export function SubscriptionsPanel() {
   const filtered = useMemo(() => {
     if (!search.trim()) return subscriptions
     const q = search.toLowerCase()
-    return subscriptions.filter(s =>
+    return subscriptions.filter((s:Subscription) =>
       s.student.student_name.toLowerCase().includes(q)   ||
       s.student.student_roll_no.toLowerCase().includes(q) ||
       s.student.student_email.toLowerCase().includes(q)
@@ -495,7 +493,7 @@ export function SubscriptionsPanel() {
                 <div style={{ fontSize: 12, marginTop: 4 }}>Try adjusting your search or filter</div>
               </div>
             )
-            : filtered.map((sub, idx) => {
+            : filtered.map((sub:Subscription, idx:number) => {
               const isMutating = actionLoading === sub._id
               return (
                 <div

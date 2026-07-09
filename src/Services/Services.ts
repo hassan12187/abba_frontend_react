@@ -1,3 +1,4 @@
+import { isObject } from "chart.js/helpers";
 import Axios from "./Axios";
 
 export const GetService=async(route:string,token:string)=>{
@@ -26,13 +27,14 @@ export function isTokenExpired(token: string | null | undefined): boolean {
 
   try {
     // JWT is three base64url segments separated by dots
-    const parts = token.split(".")
-    if (parts.length !== 3) return true
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
 
     // Decode the payload (middle segment)
     // atob doesn't handle base64url — replace url-safe chars first
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/")
-    const payload = JSON.parse(atob(base64))
+    ;
+    const base64 = parts[1]?.replace(/-/g, "+").replace(/_/g, "/")
+    const payload = JSON.parse(atob(base64 as string))
 
     if (typeof payload.exp !== "number") return true
 

@@ -12,6 +12,7 @@ import { useDebounce } from "../../components/hooks/useDebounce"
 import type { Application, ApplicationStatus } from "../StudentApplications/studentapplication.api"
 import type { Room, Block } from "./room.api"
 import type { PlanType } from "../Mess/messSubscription/messSubscription.api"
+import { Student } from "./student.api"
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CFG: Partial<Record<ApplicationStatus, {
@@ -264,7 +265,6 @@ console.log(existingSub);
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Plan type */}
       <div style={{ marginBottom: 18 }}>
         <label style={{
           fontSize: 10, fontWeight: 700, color: "var(--text-muted)",
@@ -301,7 +301,6 @@ console.log(existingSub);
         </div>
       </div>
 
-      {/* Fee */}
       <div style={{ marginBottom: 18 }}>
         <label style={{
           fontSize: 10, fontWeight: 700, color: "var(--text-muted)",
@@ -333,14 +332,14 @@ console.log(existingSub);
         </div>
       </div>
 
-      {createSub.error && (
+      {createSub.error==undefined && (
         <div style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "10px 14px", borderRadius: 10,
           background: "rgba(239,68,68,.12)", color: "var(--red)",
           fontSize: 12, marginBottom: 16,
         }}>
-          <AlertTriangle size={13} />{(createSub.error as Error).message}
+          <AlertTriangle size={13} />{(createSub.error as unknown as Error).message}
         </div>
       )}
 
@@ -567,7 +566,7 @@ function RoomTab({ student, token, onAssign, onUnassign, isLoading, error }: {
 
 // ─── Assign modal ─────────────────────────────────────────────────────────────
 interface AssignModalProps {
-  student:    Application
+  student:    Application | Student
   token:      string
   onClose:    () => void
   onAssign:   (roomId: string) => Promise<void>
@@ -850,7 +849,7 @@ const Students: React.FC = () => {
                 <div style={{ fontSize: 12, marginTop: 4 }}>Try adjusting your search or filter</div>
               </div>
             )
-            : students.map((student, idx) => {
+            : students.map((student:Student, idx:number) => {
                 const isMutating = isAssigning && selectedId === student._id
                 return (
                   <div

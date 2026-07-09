@@ -27,9 +27,9 @@ function Field({
   id, label, type = "text", value, onChange,
   placeholder, disabled, error, icon, right,
 }: {
-  id: string; label: string; type?: string
+  id: string; label: string; type: string
   value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void
-  placeholder?: string; disabled?: boolean; error?: string
+  placeholder?: string|undefined; disabled?: boolean|undefined; error?: string|undefined
   icon:  React.ReactNode
   right?: React.ReactNode
 }) {
@@ -91,7 +91,7 @@ const Login: React.FC = () => {
   const [showPw,      setShowPw]      = useState(false)
   const [loading,     setLoading]     = useState(false)
   const [error,       setError]       = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string|undefined ; password?: string|undefined }>({})
 
   // ── Validation ────────────────────────────────────────────────────────────
   function validate(): boolean {
@@ -259,15 +259,15 @@ const Login: React.FC = () => {
         </form>
 
         {/* Footer */}
-        <div style={{
+        {/* <div style={{
           marginTop: 28, paddingTop: 20,
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           fontSize: 11, color: "var(--text-muted)",
         }}>
           <Lock size={11} />
-          Secured with JWT · Cookie-based refresh tokens
-        </div>
+        
+        </div> */}
       </div>
 
       <style>{`

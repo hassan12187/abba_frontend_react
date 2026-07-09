@@ -40,10 +40,10 @@ export type UpdateExpenseDTO = Partial<CreateExpenseDTO>
 
 // ─── Filters ──────────────────────────────────────────────────────────────────
 export interface ExpenseFilters {
-  category?:  ExpenseCategory | ""
-  from?:      string            // YYYY-MM-DD
-  to?:        string            // YYYY-MM-DD
-  search?:    string            // description full-text search
+  category?:  ExpenseCategory | undefined
+  from?:      string|undefined            // YYYY-MM-DD
+  to?:        string|undefined            // YYYY-MM-DD
+  search?:    string|undefined            // description full-text search
   page?:      number
   limit?:     number
   sortBy?:    "date" | "amount" | "createdAt"
@@ -115,7 +115,7 @@ async function request<T>(
 // ─── Query string builder ─────────────────────────────────────────────────────
 function buildQS(filters: ExpenseFilters): string {
   const p = new URLSearchParams()
-  if (filters.category  && filters.category !== "")  p.set("category",  filters.category)
+  if (filters.category  && filters.category !== undefined)  p.set("category",  filters.category)
   if (filters.from)      p.set("from",      filters.from)
   if (filters.to)        p.set("to",        filters.to)
   if (filters.search)    p.set("search",    filters.search.trim())

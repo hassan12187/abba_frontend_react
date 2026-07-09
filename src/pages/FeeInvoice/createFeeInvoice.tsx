@@ -149,7 +149,7 @@ const CreateFeeInvoice: React.FC = () => {
   // ── Line items ──────────────────────────────────────────────────────────────
   const updateLineItem = (index: number, field: keyof LineItem, value: string) => {
     setForm((p) => {
-      const items = [...p.lineItems]
+      const items:any = [...p.lineItems]
       items[index] = {
         ...items[index],
         [field]: field === "amount" ? parseFloat(value) || 0 : value,
@@ -170,7 +170,7 @@ const CreateFeeInvoice: React.FC = () => {
       FeeInvoiceAPI.createInvoice(
         {
           student_id:   form.student_id,
-          room_id:      form.room_id ?? undefined,
+          room_id:      form?.room_id ?? undefined,
           billingMonth: form.billingMonth,
           dueDate:      new Date(form.dueDate).toISOString(),
           lineItems:    form.lineItems,

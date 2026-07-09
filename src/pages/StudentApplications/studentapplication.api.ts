@@ -8,7 +8,7 @@ export type Gender             = "male" | "female"
 
 export interface Application {
   _id:                     string
-  student_roll_no:         number
+  student_roll_no?:         number
   student_name:            string
   student_email:           string
   student_cellphone?:      string
@@ -65,10 +65,10 @@ export interface PaginatedApplications {
 }
 
 export interface ApplicationFilters {
-  status?:        ApplicationStatus | "All"
+  status?:        ApplicationStatus | undefined
   gender?:        Gender
   academic_year?: string
-  search?:        string
+  search?:        string|undefined
   page?:          number
   limit?:         number
   sortBy?:        "application_submit_date" | "student_name" | "createdAt"
@@ -77,7 +77,7 @@ export interface ApplicationFilters {
 
 export interface UpdateStatusPayload {
   status: ApplicationStatus
-  reason?: string
+  reason?: string|undefined
 }
 
 // ─── Request helper ───────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export const StudentApplicationAPI = {
 
   getAll(filters: ApplicationFilters, token: string): Promise<PaginatedApplications> {
     const p = new URLSearchParams()
-    if (filters.status && filters.status !== "All") p.set("status",        filters.status)
+    if (filters.status && filters.status !== undefined) p.set("status",        filters.status)
     if (filters.gender)                              p.set("gender",        filters.gender)
     if (filters.academic_year)                       p.set("academic_year", filters.academic_year)
     if (filters.search)                              p.set("search",        filters.search)

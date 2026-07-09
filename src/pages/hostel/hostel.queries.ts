@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, UseMutationResult } from "@tanstack/react-query"
 import { useCustom } from "../../Store/Store"
 import { useState, useCallback } from "react"
 import {
@@ -34,7 +34,7 @@ export function useBlockList(filters: BlockFilters, token: string) {
     queryFn:         () => BlocksAPI.getAll(filters, token),
     staleTime:       60_000,
     enabled:         !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 }
 
@@ -76,7 +76,14 @@ export function useCreateBlock(token: string) {
   })
 }
 
-export function useUpdateBlock(token: string) {
+export function useUpdateBlock(token: string):UseMutationResult<{
+    success: boolean;
+    message: string;
+    data: Block;
+}, Error, {
+    id: string;
+    payload: UpdateBlockPayload;
+}, unknown> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateBlockPayload }) =>
@@ -102,7 +109,7 @@ export function useDeleteBlock(token: string) {
 }
 
 // ─── useBlocks composite hook ─────────────────────────────────────────────────
-export function useBlocks() {
+export function useBlocks():any {
   const { token } = useCustom()
   const [filters, setFiltersState] = useState<BlockFilters>({
     page: 1, limit: 10, sortBy: "createdAt", sortOrder: "desc",
@@ -134,7 +141,7 @@ export function useRoomList(filters: RoomFilters, token: string) {
     queryFn:         () => RoomsAPI.getAll(filters, token),
     staleTime:       60_000,
     enabled:         !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 }
 
@@ -156,7 +163,11 @@ export function useRoomStats(token: string, blockId?: string) {
   })
 }
 
-export function useCreateRoom(token: string) {
+export function useCreateRoom(token: string):UseMutationResult<{
+    success: boolean;
+    message: string;
+    data: Room;
+}, Error, CreateRoomPayload, unknown> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (payload: CreateRoomPayload) => RoomsAPI.create(payload, token),
@@ -168,7 +179,14 @@ export function useCreateRoom(token: string) {
   })
 }
 
-export function useUpdateRoom(token: string) {
+export function useUpdateRoom(token: string):UseMutationResult<{
+    success: boolean;
+    message: string;
+    data: Room;
+}, Error, {
+    id: string;
+    payload: UpdateRoomPayload;
+}, unknown> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateRoomPayload }) =>
@@ -193,7 +211,10 @@ export function useUpdateRoomStatus(token: string) {
   })
 }
 
-export function useDeleteRoom(token: string) {
+export function useDeleteRoom(token: string):UseMutationResult<{
+    success: boolean;
+    message: string;
+}, Error, string, unknown> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => RoomsAPI.delete(id, token),

@@ -233,7 +233,7 @@ function ConfirmDialog({ action, app, onConfirm, onCancel, isLoading, error }: {
 }
 
 // ─── Field / Section helpers for detail modal ─────────────────────────────────
-function Field({ label, value }: { label: string; value?: string | number | null }) {
+function Field({ label, value }: { label: string; value?: string | number | undefined }) {
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>{label}</div>
@@ -618,7 +618,7 @@ const StudentApplications: React.FC = () => {
                 <div style={{ fontSize: 12, marginTop: 4 }}>Try adjusting your search or filter</div>
               </div>
             )
-            : applications.map((app, idx) => {
+            : applications.map((app:Application, idx:number) => {
               const isMutating = mutatingId === app._id
               return (
                 <div

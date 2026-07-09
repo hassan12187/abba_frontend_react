@@ -25,7 +25,7 @@ export interface User {
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 export interface UpdateProfileDTO {
-  username?: string
+  username?: string|undefined
   phone?:    string | null
 }
 

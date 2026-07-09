@@ -60,7 +60,7 @@ export interface StudentLookup {
 export interface AddPaymentPayload {
   amount:        number
   paymentMethod: PaymentMethod
-  note?:         string
+  note?:         string|undefined
 }
 
 export interface AddPaymentResult {
@@ -73,7 +73,7 @@ export interface AddPaymentResult {
 
 export interface CreateInvoicePayload {
   student_id:   string
-  room_id?:     string
+  room_id?:     string|undefined
   billingMonth: string
   dueDate:      string
   lineItems:    { description: string; amount: number }[]
@@ -82,12 +82,12 @@ export interface CreateInvoicePayload {
 
 export interface InvoiceFilters {
   status?:       InvoiceStatus | "All"
-  billingMonth?: string
+  billingMonth?: string|undefined
   student_id?:   string
   page?:         number
   limit?:        number
-  sortBy?:       "createdAt" | "dueDate" | "totalAmount"
-  sortOrder?:    "asc" | "desc"
+  sortBy?:       "createdAt" | "dueDate" | "totalAmount"|undefined
+  sortOrder?:    "asc" | "desc"|undefined
 }
 
 // ─── Request helper ───────────────────────────────────────────────────────────

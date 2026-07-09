@@ -14,6 +14,7 @@ import {
 import type {
   Room, RoomStatus, RoomType,
   CreateRoomPayload, UpdateRoomPayload, BlockFilters,
+  Block,
 } from "./hostel.api"
 
 // ─── Status config using CSS variables ────────────────────────────────────────
@@ -268,7 +269,7 @@ function RoomForm({ initialValues, onSubmit, isLoading, error, submitLabel, onCa
           <label style={labelStyle}>Block<span style={{color:"var(--red)"}}>*</span></label>
           <select name="block_id" value={form.block_id} onChange={set} required disabled={isLoading} style={inputStyle}>
             <option value="">Select Block…</option>
-            {blocks.map(b => <option key={b._id} value={b._id}>Block {b.block_no}</option>)}
+            {blocks.map((b:Block) => <option key={b._id} value={b._id}>Block {b.block_no}</option>)}
           </select>
         </div>
         <div>
@@ -456,9 +457,9 @@ function RoomModal({ roomId, token, onClose }: { roomId:string; token:string; on
                       )
                     })}
                   </div>
-                  {updateStatus.error && (
+                  {updateStatus.error!=undefined && (
                     <div style={{ marginTop:10, fontSize:12, color:"var(--red)", display:"flex", alignItems:"center", gap:6 }}>
-                      <AlertTriangle size={12} />{(updateStatus.error as Error).message}
+                      <AlertTriangle size={12} />{(updateStatus.error as unknown as Error).message}
                     </div>
                   )}
                 </div>
@@ -605,7 +606,6 @@ const Rooms: React.FC = () => {
         </button>
       </div>
 
-      {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:16, marginBottom:28 }}>
         <StatCard icon={<BedDouble size={22} />}    label="Total Rooms"    value={stats?.totalRooms ?? 0}            colorKey="accent" isLoading={roomStats.isLoading} />
         <StatCard icon={<CheckCircle2 size={22} />} label="Available Beds" value={stats?.availableBeds ?? 0}         colorKey="green"  isLoading={roomStats.isLoading} />
@@ -613,7 +613,6 @@ const Rooms: React.FC = () => {
         <StatCard icon={<Wrench size={22} />}        label="Maintenance"    value={stats?.byStatus?.maintenance ?? 0} colorKey="red"    isLoading={roomStats.isLoading} />
       </div>
 
-      {/* Create form */}
       {showCreate && (
         <div style={{ background:"var(--card)", border:"1px solid var(--border-hover)", borderRadius:20, padding:28, marginBottom:24, boxShadow:"var(--stat-shadow)" }}>
           <div style={{ fontSize:15, fontWeight:700, color:"var(--text-pri)", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
@@ -625,7 +624,6 @@ const Rooms: React.FC = () => {
         </div>
       )}
 
-      {/* Filters */}
       <div style={{ display:"flex", gap:12, marginBottom:24, flexWrap:"wrap" }}>
         <div style={{ position:"relative", flex:1, minWidth:220 }}>
           <Search size={14} color="var(--text-muted)" style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)" }} />
@@ -653,9 +651,9 @@ const Rooms: React.FC = () => {
         </div>
       </div>
 
-      {error && (
+      {error==undefined && (
         <div style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 18px", borderRadius:12, background:"rgba(239,68,68,.1)", color:"var(--red)", fontSize:13, marginBottom:20 }}>
-          <AlertTriangle size={15} />{error}
+          <AlertTriangle size={15} />{`${error}`}
         </div>
       )}
 
@@ -674,7 +672,7 @@ const Rooms: React.FC = () => {
         </div>
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
-          {rooms.map(room => (
+          {rooms.map((room:Room) => (
             <RoomCard key={room._id} room={room}
               onView={() => setSelectedId(room._id)}
               onDelete={() => setDeleteTarget(room)} />

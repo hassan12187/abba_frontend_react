@@ -165,7 +165,7 @@ function StatusDropdown({ complaint, token, onDone }: {
 
   const mutation = useMutation({
     mutationFn: (dto: UpdateStatusDTO) =>
-      ComplaintAPI.updateStatus(complaint._id, dto, token),
+     ComplaintAPI.updateStatus(complaint._id, dto, token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["complaints"] })
       setOpen(false); setNote(""); onDone()
@@ -229,9 +229,9 @@ function StatusDropdown({ complaint, token, onDone }: {
               style={{ width:"100%", padding:"6px 10px", borderRadius:8, border:"1px solid var(--border)", background:"var(--input-bg)", color:"var(--text-pri)", fontSize:11, outline:"none" }}
               onFocus={e=>(e.target.style.borderColor="var(--accent)")} onBlur={e=>(e.target.style.borderColor="var(--border)")} />
           </div>
-          {mutation.error && (
+          {mutation.error==undefined && (
             <div style={{ fontSize:11, color:"var(--red)", padding:"6px 4px 2px", display:"flex", alignItems:"center", gap:4 }}>
-              <AlertTriangle size={11}/>{(mutation.error as Error).message}
+              <AlertTriangle size={11}/>{(mutation.error as unknown as Error).message}
             </div>
           )}
         </div>
@@ -410,7 +410,7 @@ function DeleteConfirm({ complaint, token, onDone, onCancel }: {
       <div style={{ fontSize:13, color:"var(--text-sec)", lineHeight:1.6, marginBottom:16 }}>
         Permanently delete <strong style={{ color:"var(--text-pri)" }}>"{complaint.title}"</strong>? This cannot be undone.
       </div>
-      {mutation.error && <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderRadius:10, background:"rgba(239,68,68,.12)", color:"var(--red)", fontSize:12, marginBottom:14 }}><AlertTriangle size={13}/>{(mutation.error as Error).message}</div>}
+      {mutation.error==undefined && <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderRadius:10, background:"rgba(239,68,68,.12)", color:"var(--red)", fontSize:12, marginBottom:14 }}><AlertTriangle size={13}/>{(mutation.error as unknown as Error).message}</div>}
       <div style={{ display:"flex", gap:10 }}>
         <button onClick={onCancel} disabled={mutation.isPending}
           style={{ flex:1, padding:10, borderRadius:12, border:"1px solid var(--border)", background:"transparent", color:"var(--text-sec)", fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
@@ -452,7 +452,7 @@ const Complaints: React.FC = () => {
     queryKey:  ["complaints", "list", filters],
     queryFn:   () => ComplaintAPI.getAll(filters, token),
     staleTime: 60_000, enabled: !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 
   const statsQuery = useQuery({
@@ -471,7 +471,6 @@ const Complaints: React.FC = () => {
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", color:"var(--text-pri)", display:"flex", flexDirection:"column", gap:24 }}>
 
-      {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
@@ -483,7 +482,6 @@ const Complaints: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:14 }}>
         <StatCard icon={<Clock        size={18}/>} label="Pending"      value={stats?.byStatus?.Pending      ?? 0} colorVar="var(--amber)"  isLoading={statsQuery.isLoading} />
         <StatCard icon={<Loader2      size={18}/>} label="In Progress"  value={stats?.byStatus?.["In Progress"] ?? 0} colorVar="var(--accent)" isLoading={statsQuery.isLoading} />
@@ -491,10 +489,10 @@ const Complaints: React.FC = () => {
         <StatCard icon={<AlertCircle  size={18}/>} label="High Priority" value={stats?.pendingHighPriority   ?? 0} colorVar="var(--red)"    isLoading={statsQuery.isLoading} />
       </div>
 
-      {/* Table card */}
+      
+
       <div style={{ background:"var(--card)", border:"1px solid var(--border)", borderRadius:20, overflow:"hidden" }}>
 
-        {/* Toolbar */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 24px", borderBottom:"1px solid var(--border)", flexWrap:"wrap", gap:12 }}>
           <div>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-pri)" }}>All Complaints</div>
@@ -504,7 +502,6 @@ const Complaints: React.FC = () => {
           </div>
 
           <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
-            {/* Search */}
             <div style={{ position:"relative" }}>
               <Search size={13} color="var(--text-muted)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }} />
               <input value={searchInput} onChange={handleSearch} placeholder="Search title…"
@@ -513,7 +510,6 @@ const Complaints: React.FC = () => {
               {searchInput && <button onClick={()=>{setSearchInput("");setF({search:undefined})}} style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"var(--text-muted)", display:"flex" }}><X size={12}/></button>}
             </div>
 
-            {/* Status pills */}
             <div style={{ display:"flex", gap:4, background:"var(--input-bg)", padding:3, borderRadius:10, border:"1px solid var(--border)" }}>
               <button onClick={()=>setF({status:"All"})}
                 style={{ padding:"5px 10px", borderRadius:8, border:"none", background:(!filters.status||filters.status==="All")?"var(--accent)":"transparent", color:(!filters.status||filters.status==="All")?"#fff":"var(--text-muted)", fontSize:11, fontWeight:(!filters.status||filters.status==="All")?700:500, cursor:"pointer", transition:"all .15s" }}>All</button>
@@ -583,7 +579,7 @@ const Complaints: React.FC = () => {
                 <div style={{ fontSize:12, marginTop:4 }}>Adjust your filters or search</div>
               </div>
             )
-            : complaints.map((c, idx) => (
+            : complaints.map((c:Complaint, idx:number) => (
               <div key={c._id}
                 style={{ display:"grid", gridTemplateColumns:"1fr 2fr 1fr 1fr 1fr 80px", gap:16, alignItems:"center", padding:"13px 24px",
                   borderBottom:idx<complaints.length-1?"1px solid var(--border)":"none",
@@ -591,27 +587,21 @@ const Complaints: React.FC = () => {
                 onMouseEnter={e=>(e.currentTarget.style.background="var(--card-hover)")}
                 onMouseLeave={e=>(e.currentTarget.style.background="transparent")}
               >
-                {/* Room */}
                 <div style={{ fontSize:12, fontWeight:700, color:"var(--text-pri)", fontFamily:"'JetBrains Mono',monospace" }}>
                   {c.room_id?.room_no ?? "—"}
                 </div>
 
-                {/* Title + date */}
                 <div style={{ minWidth:0 }}>
                   <div style={{ fontSize:13, fontWeight:600, color:"var(--text-pri)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{c.title}</div>
                   <div style={{ fontSize:11, color:"var(--text-muted)", marginTop:2 }}>{fmtDate(c.createdAt)}</div>
                 </div>
 
-                {/* Category */}
                 <div><CategoryBadge category={c.category}/></div>
 
-                {/* Priority */}
                 <div><PriorityPill priority={c.priority}/></div>
 
-                {/* Status — inline change dropdown */}
                 <div><StatusDropdown complaint={c} token={token} onDone={()=>{}}/></div>
 
-                {/* Actions */}
                 <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
                   <button onClick={()=>setPanel({mode:"view",complaint:c})} title="View details"
                     style={{ width:28, height:28, borderRadius:8, border:"none", background:"var(--accent-lo)", color:"var(--accent)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -632,7 +622,6 @@ const Complaints: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <span style={{ fontSize:12, color:"var(--text-muted)" }}>Page {filters.page??1} of {totalPages}</span>
@@ -650,13 +639,12 @@ const Complaints: React.FC = () => {
         </div>
       )}
 
-      {listQuery.error && (
+      {listQuery.error!=undefined && (
         <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 16px", borderRadius:12, background:"rgba(239,68,68,.1)", color:"var(--red)", fontSize:13, border:"1px solid rgba(239,68,68,.2)" }}>
-          <AlertTriangle size={15}/>{(listQuery.error as Error).message}
+          <AlertTriangle size={15}/>{(listQuery.error as unknown as Error).message}
         </div>
       )}
 
-      {/* Side panels */}
       {panel?.mode==="view" && (
         <SidePanel title="Complaint Details" onClose={()=>setPanel(null)}>
           <DetailView complaint={panel.complaint} token={token}/>

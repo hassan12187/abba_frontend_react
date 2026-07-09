@@ -278,7 +278,7 @@ const FeeInvoiceUI: React.FC = () => {
     stats, isStatsLoading,
     filters, setFilters,
     addPayment, paymentLoading, paymentError,
-  } = useFeeInvoice()
+  } = useFeeInvoice();
 
   const [selectedId,    setSelectedId]    = useState<string | null>(null)
   const [paymentTarget, setPaymentTarget] = useState<Invoice | null>(null)
@@ -412,7 +412,7 @@ const FeeInvoiceUI: React.FC = () => {
                   ? Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
                   : invoices.length === 0
                   ? <tr><td colSpan={10} className="text-center py-5 text-muted">No invoices found</td></tr>
-                  : invoices.map((inv) => {
+                  : invoices.map((inv:Invoice) => {
                     const isMutating = paymentLoading === inv._id
                     return (
                       <tr key={inv._id} style={{ opacity: isMutating ? 0.5 : 1, transition: "opacity .2s" }}>

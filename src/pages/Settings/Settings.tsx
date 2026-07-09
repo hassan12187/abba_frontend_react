@@ -147,14 +147,14 @@ function ProfileSection({ user, token }: { user: IUser; token: string }) {
               <span style={{
                 padding: "3px 10px", borderRadius: 20,
                 fontSize: 11, fontWeight: 700,
-                color: role.color, background: role.bg, border: `1px solid ${role.border}`,
+                color: role?.color, background: role?.bg, border: `1px solid ${role?.border}`,
               }}>
-                {role.label}
+                {role?.label}
               </span>
               {/* Status dot */}
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: status.color }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: status.dot }} />
-                {status.label}
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: status?.color }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: status?.dot }} />
+                {status?.label}
               </span>
             </div>
           </div>
@@ -177,7 +177,7 @@ function ProfileSection({ user, token }: { user: IUser; token: string }) {
                 icon: <CalendarDays size={14}/>, label: "Member Since",
                 value: new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
               },
-              { icon: <BadgeCheck size={14}/>, label: "Role", value: role.label },
+              { icon: <BadgeCheck size={14}/>, label: "Role", value: role?.label },
             ].map(f => (
               <div key={f.label} style={{ padding: "12px 14px", background: "var(--surface)", borderRadius: 12, border: "1px solid var(--border)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", marginBottom: 4 }}>
@@ -455,9 +455,9 @@ const Settings: React.FC = () => {
 
       {isLoading && <SettingsSkeleton />}
 
-      {error && (
+      {error!=undefined && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderRadius: 12, background: "rgba(239,68,68,.1)", color: "var(--red)", fontSize: 13, border: "1px solid rgba(239,68,68,.2)" }}>
-          <AlertTriangle size={15} />{(error as Error).message}
+          <AlertTriangle size={15} />{(error as unknown as Error).message}
         </div>
       )}
 

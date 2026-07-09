@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult, QueryKey } from "@tanstack/react-query"
 import { useCustom } from "../../Store/Store"
 import { useState, useCallback } from "react"
 import {
@@ -17,13 +17,13 @@ export const applicationKeys = {
 }
 
 // ─── useApplicationList ───────────────────────────────────────────────────────
-export function useApplicationList(filters: ApplicationFilters, token: string) {
+export function useApplicationList(filters: ApplicationFilters, token: string):UseQueryResult<any, Error> {
   return useQuery({
     queryKey:        applicationKeys.list(filters),
     queryFn:         () => StudentApplicationAPI.getAll(filters, token),
     staleTime:       60_000,
     enabled:         !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 }
 
@@ -38,7 +38,14 @@ export function useApplicationStats(token: string) {
 }
 
 // ─── useUpdateApplicationStatus ───────────────────────────────────────────────
-export function useUpdateApplicationStatus(token: string) {
+export function useUpdateApplicationStatus(token: string): UseMutationResult<Application, Error, {
+    id: string;
+    payload: UpdateStatusPayload;
+}, {
+    previousQueries: [QueryKey, {
+        data: Application[];
+    } | undefined][];
+}> {
   const queryClient = useQueryClient()
 
   return useMutation({

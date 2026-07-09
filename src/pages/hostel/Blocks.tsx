@@ -312,7 +312,6 @@ const Blocks: React.FC = () => {
         <p>Manage hostel blocks and their rooms</p>
       </div>
 
-      {/* Stats */}
       <div className="stats-section">
         <div className="stats-grid">
           <div className="stat-card primary">
@@ -350,7 +349,6 @@ const Blocks: React.FC = () => {
         </div>
       </div>
 
-      {/* Create form */}
       <div className="room-form-section">
         <div className="section-card">
           <div className="d-flex justify-content-between align-items-center mb-3">
@@ -376,7 +374,6 @@ const Blocks: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <FilterSection heading="Filter Blocks">
         <InputField
           type="text" name="search"
@@ -397,13 +394,12 @@ const Blocks: React.FC = () => {
         </SelectField>
       </FilterSection>
 
-      {error && (
+      {error==undefined && (
         <div className="alert alert-danger d-flex align-items-center gap-2 py-2 small mx-3">
-          <AlertTriangle size={14} />{error}
+          <AlertTriangle size={14} />{`${error}`}
         </div>
       )}
 
-      {/* Table */}
       <div className="rooms-table-section">
         <div className="section-card">
           <div className="card-header-enhanced">
@@ -431,7 +427,7 @@ const Blocks: React.FC = () => {
                     ? (
                       <tr><td colSpan={4} className="no-data">No blocks found</td></tr>
                     )
-                    : blocks.map((block) => (
+                    : blocks.map((block:Block) => (
                       <tr key={block._id} className="room-row">
                         <td className="room-no-cell">
                           <div className="room-info">
@@ -489,12 +485,10 @@ const Blocks: React.FC = () => {
         </div>
       </div>
 
-      {/* View/Edit modal */}
       {selectedId && (
         <BlockModal blockId={selectedId} token={token} onClose={() => setSelectedId(null)} />
       )}
 
-      {/* Delete confirm */}
       {deleteTarget && (
         <DeleteConfirm
           block={deleteTarget}

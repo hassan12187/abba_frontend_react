@@ -159,7 +159,7 @@ function StatusToggle({ record, token }: { record: AttendanceRecord; token: stri
 
   return (
     <button
-      onClick={() => mutation.mutate(next)}
+      onClick={() => mutation.mutate(next as MealStatus)}
       disabled={mutation.isPending}
       title={`Click to mark ${next}`}
       style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
@@ -322,7 +322,7 @@ export function AttendancePanel() {
     queryKey:  ["attendance", "list", filters],
     queryFn:   () => AttendanceAPI.getAll(filters, token),
     staleTime: 60_000, enabled: !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 
   const dailyQuery = useQuery({
@@ -353,7 +353,7 @@ export function AttendancePanel() {
 
   // ── Client-side search filter ─────────────────────────────────────────────
   const filtered = search
-    ? records.filter(r =>
+    ? records.filter((r:AttendanceRecord) =>
         r.student?.student_name?.toLowerCase().includes(search.toLowerCase()) ||
         String(r.student?.student_roll_no).includes(search)
       )
@@ -371,7 +371,6 @@ export function AttendancePanel() {
   return (
     <div style={{ fontFamily: "'DM Sans',sans-serif", color: "var(--text-pri)", display: "flex", flexDirection: "column", gap: 24 }}>
 
-      {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -387,7 +386,6 @@ export function AttendancePanel() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {/* Date picker */}
           <div style={{ position: "relative" }}>
             <CalendarDays size={13} color="var(--text-muted)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
             <input
@@ -400,7 +398,6 @@ export function AttendancePanel() {
             />
           </div>
 
-          {/* Jump to today */}
           {selectedDate !== todayISO() && (
             <button onClick={() => { setSelectedDate(todayISO()); setPage(1) }}
               style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "transparent", color: "var(--text-sec)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
@@ -408,7 +405,6 @@ export function AttendancePanel() {
             </button>
           )}
 
-          {/* Bulk mark */}
           <button onClick={() => setBulkOpen(true)}
             style={{ padding: "8px 18px", borderRadius: 12, border: "none", background: "var(--accent)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 0 20px var(--accent-glow)" }}>
             <Users size={14} /> Bulk Mark
@@ -416,7 +412,6 @@ export function AttendancePanel() {
         </div>
       </div>
 
-      {/* ── Meal cards ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
         {MEAL_TYPES.map(meal => (
           <MealCard
@@ -431,10 +426,8 @@ export function AttendancePanel() {
         ))}
       </div>
 
-      {/* ── Table card ── */}
       <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
 
-        {/* Toolbar */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "18px 24px", borderBottom: "1px solid var(--border)", flexWrap: "wrap", gap: 12,
@@ -458,7 +451,6 @@ export function AttendancePanel() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Search */}
             <div style={{ position: "relative" }}>
               <Search size={13} color="var(--text-muted)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
               <input
@@ -476,7 +468,6 @@ export function AttendancePanel() {
               )}
             </div>
 
-            {/* Status filter pills */}
             <div style={{ display: "flex", gap: 4, background: "var(--input-bg)", padding: 3, borderRadius: 10, border: "1px solid var(--border)" }}>
               {(["All", ...MEAL_TYPES] as const).map(m => {
                 const active = selectedMeal === m
@@ -498,7 +489,6 @@ export function AttendancePanel() {
           </div>
         </div>
 
-        {/* Column headers */}
         <div style={{
           display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
           gap: 16, padding: "10px 24px",
@@ -509,7 +499,6 @@ export function AttendancePanel() {
           ))}
         </div>
 
-        {/* Rows */}
         <div>
           {listQuery.isLoading
             ? Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
@@ -526,7 +515,7 @@ export function AttendancePanel() {
                 </div>
               </div>
             )
-            : filtered.map((rec, idx) => (
+            : filtered.map((rec:AttendanceRecord, idx:number) => (
               <div key={rec._id}
                 style={{
                   display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
@@ -539,7 +528,6 @@ export function AttendancePanel() {
                 onMouseEnter={e => (e.currentTarget.style.background = "var(--card-hover)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
-                {/* Student */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                   <Avatar name={rec.student?.student_name ?? "?"} />
                   <div style={{ minWidth: 0 }}>
@@ -552,7 +540,6 @@ export function AttendancePanel() {
                   </div>
                 </div>
 
-                {/* Meal */}
                 <div>
                   <span style={{
                     display: "inline-flex", alignItems: "center", gap: 5,
@@ -563,17 +550,14 @@ export function AttendancePanel() {
                   </span>
                 </div>
 
-                {/* Room */}
                 <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-sec)", fontFamily: "'JetBrains Mono',monospace" }}>
                   {(rec.student as any)?.room_id?.room_no ?? "—"}
                 </div>
 
-                {/* Status — clickable to cycle */}
                 <div>
                   <StatusToggle record={rec} token={token} />
                 </div>
 
-                {/* Marked at */}
                 <div style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
                   <Clock size={11} />
                   {fmtTime(rec.markedAt)}
@@ -584,7 +568,6 @@ export function AttendancePanel() {
         </div>
       </div>
 
-      {/* ── Pagination ── */}
       {totalPages > 1 && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Page {page} of {totalPages}</span>
@@ -602,13 +585,12 @@ export function AttendancePanel() {
         </div>
       )}
 
-      {listQuery.error && (
+      {listQuery.error!=undefined && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,.1)", color: "var(--red)", fontSize: 13, border: "1px solid rgba(239,68,68,.2)" }}>
-          <AlertTriangle size={15} />{(listQuery.error as Error).message}
+          <AlertTriangle size={15} />{(listQuery.error as unknown as Error).message}
         </div>
       )}
 
-      {/* Bulk mark modal */}
       {bulkOpen && (
         <BulkMarkPanel date={selectedDate} token={token} onClose={() => setBulkOpen(false)} />
       )}

@@ -2,8 +2,7 @@
 
 import React, { useState, useCallback, type ChangeEvent } from "react"
 import {
-  CreditCard, Search, X, Printer, Loader2, AlertTriangle,
-  ChevronLeft, ChevronRight, CheckCircle2, Clock, XCircle,
+  CreditCard, Search, X, Printer, AlertTriangle, CheckCircle2, Clock, XCircle,
   Wallet, TrendingUp, Hash, Filter,
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -148,7 +147,7 @@ const Payments: React.FC = () => {
     queryFn:   () => PaymentAPI.getAll(filters, token),
     staleTime: 60_000,
     enabled:   !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev:any) => prev,
   })
 
   const statsQuery = useQuery({
@@ -172,7 +171,6 @@ const Payments: React.FC = () => {
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif",color:"var(--text-pri)",display:"flex",flexDirection:"column",gap:24 }}>
 
-      {/* ── Header ── */}
       <div>
         <div style={{ display:"flex",alignItems:"center",gap:8,marginBottom:4 }}>
           <div style={{ width:8,height:8,borderRadius:"50%",background:"var(--accent)",boxShadow:"0 0 8px var(--accent)" }} />
@@ -182,7 +180,6 @@ const Payments: React.FC = () => {
         <p style={{ margin:"5px 0 0",fontSize:13,color:"var(--text-sec)" }}>Track and manage student payment records</p>
       </div>
 
-      {/* ── Stats ── */}
       <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14 }}>
         <StatCard icon={<Wallet    size={18}/>} label="Total Revenue"   value={`₹${totalRevenue.toLocaleString("en-IN")}`}  colorVar="var(--green)"  isLoading={statsQuery.isLoading} />
         <StatCard icon={<Clock     size={18}/>} label="Pending"         value={`₹${pendingAmount.toLocaleString("en-IN")}`} colorVar="var(--amber)"  isLoading={statsQuery.isLoading} />
@@ -190,10 +187,8 @@ const Payments: React.FC = () => {
         <StatCard icon={<TrendingUp size={18}/>} label="This Page Total" value={`₹${pageTotal.toLocaleString("en-IN")}`}    colorVar="#06b6d4"       isLoading={listQuery.isLoading}  />
       </div>
 
-      {/* ── Table card ── */}
       <div style={{ background:"var(--card)",border:"1px solid var(--border)",borderRadius:20,overflow:"hidden" }}>
 
-        {/* Toolbar */}
         <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 24px",borderBottom:"1px solid var(--border)",flexWrap:"wrap",gap:12 }}>
           <div>
             <div style={{ fontSize:15,fontWeight:700,color:"var(--text-pri)" }}>Payment History</div>
@@ -221,7 +216,6 @@ const Payments: React.FC = () => {
           </div>
         </div>
 
-        {/* Advanced filters */}
         {showFilters && (
           <div style={{ padding:"16px 24px",borderBottom:"1px solid var(--border)",background:"var(--surface)",display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end" }}>
             {[
@@ -253,14 +247,12 @@ const Payments: React.FC = () => {
           </div>
         )}
 
-        {/* Column headers */}
         <div style={{ display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 48px",gap:16,padding:"10px 24px",borderBottom:"1px solid var(--border)",background:"var(--surface)" }}>
           {["Student","Amount","Method","Status","Date",""].map((h,i)=>(
             <div key={h+i} style={{ fontSize:10,fontWeight:700,color:"var(--text-muted)",textTransform:"uppercase",letterSpacing:"0.08em",textAlign:i===5?"right":"left" }}>{h}</div>
           ))}
         </div>
 
-        {/* Rows */}
         <div>
           {listQuery.isLoading
             ? Array.from({length:6}).map((_,i)=><SkeletonRow key={i}/>)
@@ -272,13 +264,12 @@ const Payments: React.FC = () => {
                 <div style={{ fontSize:12,marginTop:4 }}>Payments recorded via Fee Invoice will appear here</div>
               </div>
             )
-            : payments.map((p,idx) => (
+            : payments.map((p:PopulatedPayment,idx:number) => (
               <div key={p._id}
                 style={{ display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 48px",gap:16,alignItems:"center",padding:"13px 24px",borderBottom:idx<payments.length-1?"1px solid var(--border)":"none",transition:"background .15s",animation:`fadeUp .25s ease ${idx*.025}s both` }}
                 onMouseEnter={e=>(e.currentTarget.style.background="var(--card-hover)")}
                 onMouseLeave={e=>(e.currentTarget.style.background="transparent")}
               >
-                {/* Student */}
                 <div style={{ display:"flex",alignItems:"center",gap:10,minWidth:0 }}>
                   <Avatar name={p.student?.student_name ?? "?"} />
                   <div style={{ minWidth:0 }}>
@@ -287,23 +278,17 @@ const Payments: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Amount */}
                 <div style={{ fontSize:14,fontWeight:800,color:"var(--green)",fontFamily:"'DM Serif Display',serif" }}>
                   ₹{p.totalAmount?.toLocaleString("en-IN")}
                 </div>
-
-                {/* Method */}
                 <div><MethodPill method={p.paymentMethod} /></div>
 
-                {/* Status */}
                 <div><StatusPill status={p.paymentStatus} /></div>
 
-                {/* Date */}
                 <div style={{ fontSize:12,color:"var(--text-muted)" }}>
                   {new Date(p.paymentDate).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
                 </div>
 
-                {/* Print */}
                 <div style={{ display:"flex",justifyContent:"flex-end" }}>
                   <button onClick={()=>printReceipt(p)} title="Print receipt"
                     style={{ width:30,height:30,borderRadius:8,border:"none",background:"var(--accent-lo)",color:"var(--accent)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
@@ -316,7 +301,6 @@ const Payments: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Pagination ── */}
       {totalPages > 1 && (
         <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between" }}>
           <span style={{ fontSize:12,color:"var(--text-muted)" }}>Page {filters.page} of {totalPages}</span>
@@ -334,9 +318,9 @@ const Payments: React.FC = () => {
         </div>
       )}
 
-      {listQuery.error && (
+      {listQuery.error!=undefined && (
         <div style={{ display:"flex",alignItems:"center",gap:8,padding:"12px 16px",borderRadius:12,background:"rgba(239,68,68,.1)",color:"var(--red)",fontSize:13,border:"1px solid rgba(239,68,68,.2)" }}>
-          <AlertTriangle size={15}/>{(listQuery.error as Error).message}
+          <AlertTriangle size={15}/>{(listQuery.error as unknown as Error).message}
         </div>
       )}
 

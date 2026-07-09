@@ -45,8 +45,8 @@ export interface Student {
 }
 
 export interface StudentFilters {
-  status?:    ApplicationStatus | "All"
-  search?:    string
+  status?:    ApplicationStatus | undefined
+  search?:    string|undefined
   page?:      number
   limit?:     number
   sortBy?:    "student_name" | "createdAt" | "application_submit_date"
@@ -102,7 +102,7 @@ export const StudentsAPI = {
   getAll(filters: StudentFilters, token: string): Promise<PaginatedStudents> {
     const params = new URLSearchParams()
 
-    if (filters.status && filters.status !== "All")
+    if (filters.status && filters.status !== undefined)
       params.set("status",    filters.status)
     if (filters.search)
       params.set("search",    filters.search)

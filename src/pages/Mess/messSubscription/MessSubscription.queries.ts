@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult, QueryKey } from "@tanstack/react-query"
 import { useCustom } from "../../../Store/Store"
 import { MessSubscriptionAPI, Subscription, SubscriptionFilters, UpdateStatusPayload } from "./messSubscription.api"
 import { useState, useCallback } from "react"
@@ -11,13 +11,13 @@ export const subscriptionKeys = {
 }
 
 // ─── useSubscriptionList ──────────────────────────────────────────────────────
-export function useSubscriptionList(filters: SubscriptionFilters, token: string) {
+export function useSubscriptionList(filters: SubscriptionFilters, token: string):UseQueryResult<any, Error> {
   return useQuery({
     queryKey: subscriptionKeys.list(filters),
     queryFn:  () => MessSubscriptionAPI.getAll(filters,token).then((r) => r),
     staleTime: 60_000,       // 1 min — subscription data changes infrequently
     enabled:   !!token,
-    placeholderData: (prev) => prev,   // keeps previous page visible while next loads
+    placeholderData: (prev:any) => prev,   // keeps previous page visible while next loads
   })
 }
 
@@ -32,7 +32,14 @@ export function useSubscriptionStats(token: string) {
 }
 
 // ─── useUpdateSubscriptionStatus ─────────────────────────────────────────────
-export function useUpdateSubscriptionStatus(token: string) {
+export function useUpdateSubscriptionStatus(token: string): UseMutationResult<Subscription, Error, {
+    id: string;
+    payload: UpdateStatusPayload;
+}, {
+    previousQueries: [QueryKey, {
+        data: Subscription[];
+    } | undefined][];
+}> {
   const queryClient = useQueryClient()
 
   return useMutation({

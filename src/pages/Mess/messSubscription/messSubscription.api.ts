@@ -55,9 +55,9 @@ export interface SubscriptionFilters {
 
 export interface CreateSubscriptionPayload {
   student:    string        // ObjectId — field name is "student" not "student_id"
-  planType?:  PlanType
+  planType?:  PlanType|undefined
   monthlyFee: number
-  validUntil?: string      // ISO 8601 datetime — required for Monthly/Semester, omit for Pay_Per_Meal
+  validUntil?: string|undefined      // ISO 8601 datetime — required for Monthly/Semester, omit for Pay_Per_Meal
 }
 
 export interface UpdateStatusPayload {

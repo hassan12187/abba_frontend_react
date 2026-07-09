@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from "@tanstack/react-query"
 import { useCustom }              from "../../Store/Store"
 import { useState, useCallback }  from "react"
 import { ApplicationFilters, Application } from "../StudentApplications/studentapplication.api"
-import {StudentsAPI,BlocksAPI,RoomsAPI} from "./student.api";
+import {StudentsAPI,BlocksAPI,RoomsAPI,PaginatedStudents, StudentFilters, Student} from "./student.api";
 import { RoomAPI }   from "./room.api"
 import { applicationKeys }        from "../StudentApplications/studentapplication.queries";
 
@@ -33,7 +33,14 @@ export function useRoomsByBlock(blockId: string | null, token: string) {
 }
 
 // ─── useAssignRoom ────────────────────────────────────────────────────────────
-export function useAssignRoom(token: string) {
+export function useAssignRoom(token: string):UseMutationResult<{
+    success: boolean;
+    message: string;
+    data: Student;
+}, Error, {
+    studentId: string;
+    roomId: string | null;
+}, unknown> {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -54,7 +61,7 @@ export function useAssignRoom(token: string) {
 export function useStudents() {
   const { token } = useCustom()
 
-  const [filters, setFiltersState] = useState<ApplicationFilters>({
+  const [filters, setFiltersState] = useState<StudentFilters>({
     status:    "approved",   // Students page shows approved + accepted only
     page:      1,
     limit:     10,
@@ -62,16 +69,16 @@ export function useStudents() {
     sortOrder: "asc",
   })
 
-  const setFilters = useCallback((partial: Partial<ApplicationFilters>) => {
-    setFiltersState((prev) => ({ ...prev, ...partial, page: partial.page ?? 1 }))
+  const setFilters = useCallback((partial: Partial<StudentFilters>) => {
+    setFiltersState((prev) => ({ ...prev, ...partial, page: partial?.page ?? 1 }))
   }, [])
 
-  const listQuery = useQuery({
+  const listQuery:UseQueryResult<any,Error> = useQuery({
     queryKey:        applicationKeys.list(filters),
     queryFn:         () => StudentsAPI.getAll(filters, token),
     staleTime:       60_000,
     enabled:         !!token,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev?:PaginatedStudents) => prev,
   })
 
   // Fetch detail for the currently selected student (for the modal)
@@ -88,11 +95,13 @@ export function useStudents() {
 
   return {
     // List
+    stats:{access:{total:undefined,withRoom:undefined,messEnabled:undefined},byStatus:{approved:undefined}},
+      isStatsLoading:false,
     students:   listQuery.data?.data       ?? [],
     total:      listQuery.data?.total      ?? 0,
     totalPages: listQuery.data?.totalPages ?? 1,
     isLoading:  listQuery.isLoading,
-    error:      listQuery.error?.message   ?? null,
+    error:      listQuery.error?.message ?? undefined,
 
     // Filters
     filters,
