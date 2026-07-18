@@ -465,7 +465,6 @@ function RoomModal({ roomId, token, onClose }: { roomId:string; token:string; on
                 </div>
               </div>
 
-              {/* Right: occupants */}
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:16 }}>
                   Occupants ({room.occupants?.length ?? 0})
@@ -580,7 +579,6 @@ const Rooms: React.FC = () => {
   return (
     <div style={{ background:"var(--bg)", minHeight:"100vh", padding:"28px 32px", fontFamily:"'DM Sans',sans-serif", color:"var(--text-pri)", transition:"background .25s ease" }}>
 
-      {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:32 }}>
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:6 }}>
@@ -651,13 +649,12 @@ const Rooms: React.FC = () => {
         </div>
       </div>
 
-      {error==undefined && (
+      {error!=undefined && (
         <div style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 18px", borderRadius:12, background:"rgba(239,68,68,.1)", color:"var(--red)", fontSize:13, marginBottom:20 }}>
           <AlertTriangle size={15} />{`${error}`}
         </div>
       )}
 
-      {/* Rooms grid */}
       {isLoading ? (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
           {Array.from({length:6}).map((_,i) => (
@@ -680,7 +677,6 @@ const Rooms: React.FC = () => {
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:28, paddingTop:24, borderTop:"1px solid var(--border)" }}>
           <span style={{ fontSize:12, color:"var(--text-muted)" }}>Page {filters.page ?? 1} of {totalPages}</span>

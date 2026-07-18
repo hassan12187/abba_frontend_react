@@ -394,7 +394,7 @@ const Blocks: React.FC = () => {
         </SelectField>
       </FilterSection>
 
-      {error==undefined && (
+      {error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 py-2 small mx-3">
           <AlertTriangle size={14} />{`${error}`}
         </div>
