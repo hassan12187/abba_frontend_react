@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
 
   const sendEmailVerification = async (): Promise<{ status: number; message?: string }> => {
     try {
-      const result = await Axios.post('/static/forgot-password', { email });
+      const result = await Axios.post('/api/auth/forgot-password', { email });
       return { status: result.status };
     } catch (err: any) {
       return { 
