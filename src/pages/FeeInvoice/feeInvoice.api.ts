@@ -1,6 +1,6 @@
 // const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
-const BASE_URL = "http://localhost:8000/api/admin"
-const ENDPOINT = `${BASE_URL}/invoices`
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api` || "http://localhost:8000/api"
+const ENDPOINT = `${BASE_URL}/admin/invoices`
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type InvoiceStatus = "Paid" | "Partially Paid" | "Pending" | "Overdue" | "Cancelled"
@@ -101,7 +101,6 @@ async function request<T>(url: string, token: string, options?: RequestInit): Pr
   })
 
   const json = await res.json()
-  console.log(json);
   if (!res.ok) throw new Error(json.message ?? `Request failed: ${res.status}`)
   return json as T
 }

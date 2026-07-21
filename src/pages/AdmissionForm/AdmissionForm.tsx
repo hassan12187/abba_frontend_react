@@ -37,8 +37,8 @@ interface FormData {
 type FieldErrors = Partial<Record<keyof FormData, string>>
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-const BASE =
-  (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
+const BASE = `${import.meta.env.VITE_API_URL}/api`
+  // (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
   "http://localhost:8000/api"
 
 async function submitApplication(data: FormData): Promise<{ message: string }> {

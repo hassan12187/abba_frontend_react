@@ -58,7 +58,7 @@ export interface PaginatedNotificationsResponse {
 
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 const BASE =
-  (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
+  `${(typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL)}/api` ||
   "http://localhost:8000/api"
 
 async function request<T>(url: string, token: string, opts?: RequestInit): Promise<T> {

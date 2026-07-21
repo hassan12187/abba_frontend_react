@@ -77,18 +77,18 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     let responseStatus: number | undefined;
     try {
-      const result = await Axios.post('/static/verify-code', { email, code: fullCode });
-      if (result.status === 200) {
+      const result = await Axios.post('/api/auth/verify-code', { code: fullCode,email });
+      if (result.data.success) {
         setToken(result.data.token);
         responseStatus = 200;
       }
     } catch (err: any) {
-      responseStatus = err.response?.status;
+      responseStatus=400;
     }
 
     setTimeout(() => {
       setLoading(false);
-      if (responseStatus === 403) {
+      if (responseStatus != 200) {
         setError("Please Enter a Valid Code.");
         return;
       }
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     let responseStatus: number | undefined;
     try {
-      const result = await Axios.patch('/static/change-password', { token, password });
+      const result = await Axios.patch('/api/auth/change-password', { token, password });
       responseStatus = result.status;
     } catch (err: any) {
       responseStatus = err.response?.status;

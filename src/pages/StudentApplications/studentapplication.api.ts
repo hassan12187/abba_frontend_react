@@ -1,6 +1,6 @@
 // const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
-const BASE_URL = "http://localhost:8000/api/admin"
-const ENDPOINT = `${BASE_URL}/applications`
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api` || "http://localhost:8000/api"
+const ENDPOINT = `${BASE_URL}/admin/applications`
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type ApplicationStatus = "pending" | "accepted" | "approved" | "rejected"

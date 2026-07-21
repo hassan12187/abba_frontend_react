@@ -1,5 +1,5 @@
-// const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
-const BASE_URL = "http://localhost:8000/api/admin"
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api` || "http://localhost:8000/api"
+// const BASE_URL = "http://localhost:8000/api/admin"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type BlockStatus = "under construction" | "ready" | "maintenance"
@@ -149,37 +149,37 @@ export const BlocksAPI = {
     if (filters.limit)     p.set("limit",     String(filters.limit))
     if (filters.sortBy)    p.set("sortBy",    filters.sortBy)
     if (filters.sortOrder) p.set("sortOrder", filters.sortOrder)
-    return request(`${BASE_URL}/blocks?${p.toString()}`, token)
+    return request(`${BASE_URL}/admin/blocks?${p.toString()}`, token)
   },
 
   getById(id: string, token: string): Promise<{ success: boolean; data: Block }> {
-    return request(`${BASE_URL}/blocks/${id}`, token)
+    return request(`${BASE_URL}/admin/blocks/${id}`, token)
   },
 
   getOverview(token: string): Promise<{ success: boolean; data: BlockSummary[] }> {
-    return request(`${BASE_URL}/blocks/overview`, token)
+    return request(`${BASE_URL}/admin/blocks/overview`, token)
   },
 
   getStats(token: string): Promise<{ success: boolean; data: BlockStats }> {
-    return request(`${BASE_URL}/blocks/stats`, token)
+    return request(`${BASE_URL}/admin/blocks/stats`, token)
   },
 
   create(payload: CreateBlockPayload, token: string): Promise<{ success: boolean; message: string; data: Block }> {
-    return request(`${BASE_URL}/blocks`, token, {
+    return request(`${BASE_URL}/admin/blocks`, token, {
       method: "POST",
       body:   JSON.stringify(payload),
     })
   },
 
   update(id: string, payload: UpdateBlockPayload, token: string): Promise<{ success: boolean; message: string; data: Block }> {
-    return request(`${BASE_URL}/blocks/${id}`, token, {
+    return request(`${BASE_URL}/admin/blocks/${id}`, token, {
       method: "PATCH",
       body:   JSON.stringify(payload),
     })
   },
 
   delete(id: string, token: string): Promise<{ success: boolean; message: string }> {
-    return request(`${BASE_URL}/blocks/${id}`, token, { method: "DELETE" })
+    return request(`${BASE_URL}/admin/blocks/${id}`, token, { method: "DELETE" })
   },
 }
 
@@ -197,44 +197,44 @@ export const RoomsAPI = {
     if (filters.limit)                 p.set("limit",     String(filters.limit))
     if (filters.sortBy)                p.set("sortBy",    filters.sortBy)
     if (filters.sortOrder)             p.set("sortOrder", filters.sortOrder)
-    return request(`${BASE_URL}/rooms?${p.toString()}`, token)
+    return request(`${BASE_URL}/admin/rooms?${p.toString()}`, token)
   },
 
   getById(id: string, token: string): Promise<{ success: boolean; data: Room }> {
-    return request(`${BASE_URL}/rooms/${id}`, token)
+    return request(`${BASE_URL}/admin/rooms/${id}`, token)
   },
 
   getByBlock(blockId: string, token: string, availableOnly = false): Promise<{ success: boolean; data: Room[] }> {
-    return request(`${BASE_URL}/blocks/${blockId}/rooms${availableOnly ? "?available=true" : ""}`, token)
+    return request(`${BASE_URL}/admin/blocks/${blockId}/rooms${availableOnly ? "?available=true" : ""}`, token)
   },
 
   getStats(token: string, blockId?: string): Promise<{ success: boolean; data: RoomStats }> {
     const qs = blockId ? `?block_id=${blockId}` : ""
-    return request(`${BASE_URL}/rooms/stats${qs}`, token)
+    return request(`${BASE_URL}/admin/rooms/stats${qs}`, token)
   },
 
   create(payload: CreateRoomPayload, token: string): Promise<{ success: boolean; message: string; data: Room }> {
-    return request(`${BASE_URL}/rooms`, token, {
+    return request(`${BASE_URL}/admin/rooms`, token, {
       method: "POST",
       body:   JSON.stringify(payload),
     })
   },
 
   update(id: string, payload: UpdateRoomPayload, token: string): Promise<{ success: boolean; message: string; data: Room }> {
-    return request(`${BASE_URL}/rooms/${id}`, token, {
+    return request(`${BASE_URL}/admin/rooms/${id}`, token, {
       method: "PATCH",
       body:   JSON.stringify(payload),
     })
   },
 
   updateStatus(id: string, status: RoomStatus, token: string): Promise<{ success: boolean; message: string; data: Room }> {
-    return request(`${BASE_URL}/rooms/${id}/status`, token, {
+    return request(`${BASE_URL}/admin/rooms/${id}/status`, token, {
       method: "PATCH",
       body:   JSON.stringify({ status }),
     })
   },
 
   delete(id: string, token: string): Promise<{ success: boolean; message: string }> {
-    return request(`${BASE_URL}/rooms/${id}`, token, { method: "DELETE" })
+    return request(`${BASE_URL}/admin/rooms/${id}`, token, { method: "DELETE" })
   },
 }

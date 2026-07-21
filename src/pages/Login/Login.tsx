@@ -7,7 +7,7 @@ import { useCustom } from "../../Store/Store"
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const BASE =
-  (import.meta as any).env?.VITE_API_URL ??
+  `${import.meta.env.VITE_API_URL}/api` ||
   "http://localhost:8000/api"
 
 async function loginRequest(email: string, password: string) {

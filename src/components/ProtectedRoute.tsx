@@ -6,13 +6,13 @@ import { isTokenExpired } from "../Services/Services";
 import { connectSocket } from "../Services/socket.client";
 
 
-const BASE=import.meta.env.VITE_API_URL??"http://localhost:8000/api";
+const BASE=import.meta.env.VITE_API_URL||"http://localhost:8000/api";
 let refreshPromise:Promise<string|null>|null=null;
 
 const refreshAccessToken=async():Promise<string|null>=>{
   if(refreshPromise)return refreshPromise;
 
-  refreshPromise=Axios.post(`${BASE}/auth/refresh`,{},{
+  refreshPromise=Axios.post(`${BASE}/api/auth/refresh`,{},{
     withCredentials:true
   }).then(res=>res.data?.accessToken ?? null).catch(()=>null)
 .finally(()=>{refreshPromise=null});

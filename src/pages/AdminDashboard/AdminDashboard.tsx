@@ -237,7 +237,6 @@ const AdminDashboard: React.FC = () => {
   ) as { data: { data: DashboardData } | undefined; isLoading: boolean }
   // Backend wraps response in { success, data }
   const data = raw?.data
-  console.log(data);
 
   const occupancyRate = data?.occupancyRate
     ? Number(data.occupancyRate)

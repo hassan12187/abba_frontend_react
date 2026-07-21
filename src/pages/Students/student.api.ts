@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000/api/admin"
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/admin` || "http://localhost:8000/api/admin"
 // const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
 
 // ─── Types ────────────────────────────────────────────────────────────────────

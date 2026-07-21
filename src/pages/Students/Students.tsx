@@ -695,8 +695,6 @@ const Students: React.FC = () => {
     assignRoom, isAssigning, assignError,
     token,
   } = useStudents()
- console.log(selectedStudent);
-  console.log(stats);
   const [searchInput, setSearchInput] = useState("")
 
   const applySearch = useDebounce((val: string) => setFilters({ search: val }), 500)

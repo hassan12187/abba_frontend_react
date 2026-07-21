@@ -128,7 +128,7 @@ export interface StudentSummaryResponse {
 //   (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
 //   process.env.NEXT_PUBLIC_API_URL ||
 //   "http://localhost:5000/api"
-const BASE="http://localhost:8000/api"
+const BASE= `${import.meta.env.VITE_API_URL}/api` || "http://localhost:8000/api"
 
 const ENDPOINT = `${BASE}/admin/attendance`
 
